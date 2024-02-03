@@ -1,5 +1,6 @@
 package frc.robot;
 
+import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drive;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -12,8 +13,7 @@ public class OperatorInterface extends SubsystemBase {
     public static OperatorInterface oi = null;
 
     // JOYSTICKS
-    private static Joystick 
-    driverController;
+    private static Joystick driverController;
     private static Joystick operatorController;
 
     // Create the OI if doesn't exist
@@ -36,13 +36,12 @@ public class OperatorInterface extends SubsystemBase {
     @Override
     public void periodic() {
 
-
         if (DriverStation.isTeleop()) {
-            boolean fieldRelative = false;//!driverController.getRawButton(1);
+            boolean fieldRelative = false;// !driverController.getRawButton(1);
 
-            double xSpeed = 0;//driverController.getRawAxis(0) * Constants.kMaxSpeed;
-            double ySpeed = 1;//-driverController.getRawAxis(1) * Constants.kMaxSpeed;
-            double rSpeed = 0;//driverController.getRawAxis(4) * Constants.kMaxAngularSpeed;
+            double xSpeed = driverController.getRawAxis(0) * Constants.kMaxSpeed;
+            double ySpeed = -driverController.getRawAxis(1) * Constants.kMaxSpeed;
+            double rSpeed =  driverController.getRawAxis(4) * Constants.kMaxAngularSpeed;
 
             Drive.get_instance().set_speed(xSpeed, ySpeed, rSpeed, fieldRelative);
             SmartDashboard.putNumber("ySpeed", ySpeed);
@@ -50,8 +49,14 @@ public class OperatorInterface extends SubsystemBase {
             SmartDashboard.putNumber("rSpeed", rSpeed);
             SmartDashboard.putBoolean("FieldRelative", fieldRelative);
         }
-        
+
+        // Arm Control
+      
+
+
+
     }
+
     public static OperatorInterface get_instance() {
         if (oi == null) {
             oi = new OperatorInterface();

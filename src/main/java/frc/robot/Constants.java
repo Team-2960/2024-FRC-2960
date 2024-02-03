@@ -32,23 +32,23 @@ public class Constants {
     public static double driveSwerveI = 0;
     public static double driveSwerveD = 0;
 
-    public static double angleSwerveP = .5;
+    public static double angleSwerveP = .095;
     public static double angleSwerveI = 0;
     public static double angleSwerveD = 0;
 
-    public static double maxSwerveAngularSpeed = 3;//Rad per second
-    public static double maxSwerveAngularAccel = Math.PI * 6;//Rad per second
+    public static double maxSwerveAngularSpeed = Math.PI * 5;//Rad per second
+    public static double maxSwerveAngularAccel = Math.PI * 10;//Rad per second
 
-    public static double angleSwerveSFF = .451;//volts
-    public static double angleSwerveVFF = .385;//volts * seconds/radian
+    public static double angleSwerveSFF = 0;//.451;//volts
+    public static double angleSwerveVFF = .195;//volts * seconds/radian
     public static double angleSwerveAFF = 0;
 
     public static double driveSwerveSFF = 0;//volts
-    public static double driveSwerveVFF = 1.193;//volts * seconds/meters
+    public static double driveSwerveVFF = 0.5;//volts * seconds/meters
     public static double driveSwerveAFF = 0;
 
     public static final double kMaxSpeed = 5;
-    public static final double kMaxAngularSpeed = Math.PI;
+    public static final double kMaxAngularSpeed = 5 * 2 * Math.PI;
 
     public static double xSpeed;
     public static double ySpeed;
