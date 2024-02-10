@@ -47,7 +47,7 @@ public class Constants {
     public static double driveSwerveVFF = 0.5;//volts * seconds/meters
     public static double driveSwerveAFF = 0;
 
-    public static final double kMaxSpeed = 10;
+    public static final double kMaxSpeed = 15;
     public static final double kMaxAngularSpeed = 12 * 2 * Math.PI;
 
     public static double xSpeed;
@@ -60,5 +60,9 @@ public class Constants {
     public static double wheelCirc = 4 * .0254 * Math.PI; //In Meters
 
     public static AHRS navx;
+
+    //Auton
+    public static double autonRampDownSpeed = 1;
+    public static double minSpeed = 1;
 
 }

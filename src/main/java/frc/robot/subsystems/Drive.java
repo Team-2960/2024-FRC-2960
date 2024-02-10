@@ -6,6 +6,7 @@ import frc.robot.Constants;
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -96,8 +97,12 @@ public class Drive extends SubsystemBase {
         frontRight.setDesiredState(swerveModuleStates[1]);
         backLeft.setDesiredState(swerveModuleStates[2]);
         backRight.setDesiredState(swerveModuleStates[3]); 
+    }
 
-
+    public void setVector(double speed, Rotation2d heading, double rSpeed){
+        double xSpeed = Math.cos(heading.getRadians()) * speed;
+        double ySpeed = Math.sin(heading.getRadians()) * speed;
+        set_speed(xSpeed, ySpeed, rSpeed, false);
     }
 
     public void updateOdometry() {
@@ -110,6 +115,10 @@ public class Drive extends SubsystemBase {
                 });
 
                 
+    }
+
+    public Pose2d getOdomXYPos() {
+        return swerveDriveOdometry.getPoseMeters();
     }
 
     @Override
@@ -133,4 +142,5 @@ public class Drive extends SubsystemBase {
 
         return drive;
     }
+
 }

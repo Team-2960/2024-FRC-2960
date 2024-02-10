@@ -79,14 +79,23 @@ public class Swerve extends SubsystemBase {
                 return
                 new Rotation2d(encAngle.getAbsolutePosition().getValueAsDouble() * (2 * Math.PI));
         }
+        public double getCurrentVelocity(){
+                return
+                (mDrive.getVelocity().getValueAsDouble()/Constants.driveGearRatio)
+                        * Constants.wheelCirc;
+        }
+        public double getCurrentDrivePos(){
+                return
+                (mDrive.getPosition().getValueAsDouble()/Constants.driveGearRatio)
+                        * Constants.wheelCirc;
+        }
         public SwerveModulePosition getPosition() {
-                return new SwerveModulePosition((mDrive.getPosition().getValueAsDouble() / Constants.driveGearRatio)
-                 * Constants.wheelCirc,
-                                new Rotation2d(encAngle.getAbsolutePosition().getValueAsDouble()));
+                return new SwerveModulePosition(getCurrentDrivePos(),
+                                getCurrentAngle());
         }
         public SwerveModuleState getState() {
-                return new SwerveModuleState(mDrive.getVelocity().getValueAsDouble(),
-                                new Rotation2d(encAngle.getAbsolutePosition().getValueAsDouble()));
+                return new SwerveModuleState(getCurrentVelocity(),
+                                getCurrentAngle());
         }
 
        
@@ -112,8 +121,7 @@ public class Swerve extends SubsystemBase {
                 // state.speedMetersPerSecond *= state.angle.minus(encoderRotation).getCos();
 
                 // Calculate the drive output from the drive PID controller.
-                double curMetersPerSecond = (mDrive.getVelocity().getValueAsDouble()/Constants.driveGearRatio)
-                        * Constants.wheelCirc;
+                double curMetersPerSecond = getCurrentVelocity();
                  double driveOutput = drivePIDcontroller.calculate(curMetersPerSecond,
                                 state.speedMetersPerSecond);
 

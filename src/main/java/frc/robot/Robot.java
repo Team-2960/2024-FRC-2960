@@ -4,8 +4,12 @@
 
 package frc.robot;
 
+import java.io.IOException;
+
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Auton.forwardAuton;
 import frc.robot.subsystems.Drive;
 
 /**
@@ -23,10 +27,17 @@ public class Robot extends TimedRobot {
    * for any
    * initialization code.
    */
+  private Command autonCommand;
+
   @Override
   public void robotInit() {
     var drive = Drive.get_instance();
     var oi = OperatorInterface.get_instance();
+    try{
+      autonCommand = new forwardAuton("lol this does nothing");
+    }catch (IOException e){
+      e.printStackTrace();
+    }
   }
 
   @Override
@@ -36,10 +47,14 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    if(autonCommand != null){
+      autonCommand.schedule();
+    }
   }
 
   @Override
   public void autonomousPeriodic() {
+
   }
 
   @Override
