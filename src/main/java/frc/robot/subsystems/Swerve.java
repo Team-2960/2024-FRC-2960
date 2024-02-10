@@ -10,6 +10,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -73,24 +75,27 @@ public class Swerve extends SubsystemBase {
                 desiredState = new SwerveModuleState();
         }
 
+         public Rotation2d getCurrentAngle(){
+                return
+                new Rotation2d(encAngle.getAbsolutePosition().getValueAsDouble() * (2 * Math.PI));
+        }
+        public SwerveModulePosition getPosition() {
+                return new SwerveModulePosition((mDrive.getPosition().getValueAsDouble() / Constants.driveGearRatio)
+                 * Constants.wheelCirc,
+                                new Rotation2d(encAngle.getAbsolutePosition().getValueAsDouble()));
+        }
         public SwerveModuleState getState() {
                 return new SwerveModuleState(mDrive.getVelocity().getValueAsDouble(),
                                 new Rotation2d(encAngle.getAbsolutePosition().getValueAsDouble()));
         }
 
-        public SwerveModulePosition getPosition() {
-                return new SwerveModulePosition(mDrive.getPosition().getValueAsDouble(),
-                                new Rotation2d(encAngle.getAbsolutePosition().getValueAsDouble()));
-        }
+       
 
         public void setDesiredState(SwerveModuleState desiredState) {
                 this.desiredState = desiredState;
         }
 
-        public Rotation2d getCurrentAngle(){
-                return
-                new Rotation2d(encAngle.getAbsolutePosition().getValueAsDouble() * (2 * Math.PI));
-        }
+       
 
         @Override
         public void periodic() {
@@ -157,19 +162,17 @@ public class Swerve extends SubsystemBase {
                 SmartDashboard.putNumber("driveVelocity", mDrive.getVelocity().getValueAsDouble());
                 SmartDashboard.putNumber("state.SpeedMeters/second", state.speedMetersPerSecond);
                 */
+                /*
+                var swerve_tab = Shuffleboard.getTab("Swerve");
+                var module_layout = swerve_tab.getLayout(swerveName, BuiltInLayouts.kList);
 
-                SmartDashboard.putNumber(swerveName + "_AngleFF", outputAngleFF);
-                //SmartDashboard.putNumber(swerveName + "_AnglePID", outputAngleFF);
-                SmartDashboard.putNumber(swerveName + "PIDAngleOutput",turnOutput1);
-                SmartDashboard.putNumber(swerveName + "_CurrentAngleSpeed", encAngle.getVelocity().getValueAsDouble() * 2*Math.PI);
-                SmartDashboard.putNumber(swerveName + "DesiredAngle", state.angle.getRadians());
-                SmartDashboard.putNumber(swerveName+ "CurrentAngle", encoderRotation.getRadians());
-                SmartDashboard.putNumber(swerveName + "_Error", error);
-
-
-
-                
-
+                module_layout.add(swerveName + "_AngleFF", outputAngleFF);
+                module_layout.add(swerveName + "PIDAngleOutput",turnOutput1);
+                module_layout.add(swerveName + "_CurrentAngleSpeed", encAngle.getVelocity().getValueAsDouble() * 2*Math.PI);
+                module_layout.add(swerveName + "DesiredAngle", state.angle.getRadians());
+                module_layout.add(swerveName+ "CurrentAngle", encoderRotation.getRadians());
+                module_layout.add(swerveName + "_Error", error);
+                */
         }
 
 }

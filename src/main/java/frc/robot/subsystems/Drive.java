@@ -5,6 +5,7 @@ import frc.robot.Constants;
 
 import com.ctre.phoenix6.mechanisms.swerve.SwerveModule;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -30,8 +31,10 @@ public class Drive extends SubsystemBase {
 
     private final AHRS navx;
 
+    private final SwerveDriveOdometry swerveDriveOdometry;
 
     private final SwerveDriveKinematics kinematics;
+    private Pose2d getPosition;
 
     /*
      * private final SwerveDriveOdometry odometry = new SwerveDriveOdometry(
@@ -54,18 +57,29 @@ public class Drive extends SubsystemBase {
         kinematics = new SwerveDriveKinematics(
                 frontLeftLocation, frontRightLocation, backLeftLocation, backRightLocation);
 
-        frontLeft = new Swerve(Constants.frontLeftDriveM, Constants.frontLeftAngleM, Constants.frontLeftAngleENC, "FrontLeft");
-        frontRight = new Swerve(Constants.frontRightDriveM, Constants.frontRightAngleM, Constants.frontRightAngleENC, "FrontRight");
-        backLeft = new Swerve(Constants.backLeftDriveM, Constants.backLeftAngleM, Constants.backLeftAngleENC, "BackLeft");
-        backRight = new Swerve(Constants.backRightDriveM, Constants.backRightAngleM, Constants.backRightAngleENC, "BackRight");
+        frontLeft = new Swerve(Constants.frontLeftDriveM, Constants.frontLeftAngleM, Constants.frontLeftAngleENC,
+                "FrontLeft");
+        frontRight = new Swerve(Constants.frontRightDriveM, Constants.frontRightAngleM, Constants.frontRightAngleENC,
+                "FrontRight");
+        backLeft = new Swerve(Constants.backLeftDriveM, Constants.backLeftAngleM, Constants.backLeftAngleENC,
+                "BackLeft");
+        backRight = new Swerve(Constants.backRightDriveM, Constants.backRightAngleM, Constants.backRightAngleENC,
+                "BackRight");
 
         navx = new AHRS(SPI.Port.kMXP);
         navx.reset();
+
+        swerveDriveOdometry = new SwerveDriveOdometry(kinematics, navx.getRotation2d(),
+                new SwerveModulePosition[] {
+                        frontLeft.getPosition(),
+                        frontRight.getPosition(),
+                        backLeft.getPosition(),
+                        backRight.getPosition()
+                });
     }
 
     public void set_speed(double xSpeed, double ySpeed, double rSpeed, boolean fieldRelative) {
         ChassisSpeeds speeds;
-
         if (fieldRelative) {
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rSpeed, navx.getRotation2d());
         } else {
@@ -81,24 +95,30 @@ public class Drive extends SubsystemBase {
         frontLeft.setDesiredState(swerveModuleStates[0]);
         frontRight.setDesiredState(swerveModuleStates[1]);
         backLeft.setDesiredState(swerveModuleStates[2]);
-        backRight.setDesiredState(swerveModuleStates[3]);
-        /* 
-        SmartDashboard.putNumber("FrontLeftDrive", swerveModuleStates[0].speedMetersPerSecond);
-        SmartDashboard.putNumber("FrontRightDrive", swerveModuleStates[1].speedMetersPerSecond);
-        SmartDashboard.putNumber("BackLeftDrive", swerveModuleStates[2].speedMetersPerSecond);
-        SmartDashboard.putNumber("BackRightDrive", swerveModuleStates[3].speedMetersPerSecond);
-        */
-        SmartDashboard.putNumber("desiredFrontLeftAngle", swerveModuleStates[0].angle.getDegrees());
-        SmartDashboard.putNumber("desiredFrontRightAngle", swerveModuleStates[1].angle.getDegrees());
-        SmartDashboard.putNumber("desiredBackLeftAngle", swerveModuleStates[2].angle.getDegrees());
-        SmartDashboard.putNumber("desiredBackRightAngle", swerveModuleStates[3].angle.getDegrees());
+        backRight.setDesiredState(swerveModuleStates[3]); 
 
-        SmartDashboard.putNumber("FR current angle", frontRight.getCurrentAngle().getDegrees());
-        SmartDashboard.putNumber("FL current angle", frontLeft.getCurrentAngle().getDegrees());
-        SmartDashboard.putNumber("BR current angle", backRight.getCurrentAngle().getDegrees());
-        SmartDashboard.putNumber("BL current angle", backLeft.getCurrentAngle().getDegrees());
 
-        
+    }
+
+    public void updateOdometry() {
+        getPosition = swerveDriveOdometry.update(navx.getRotation2d(),
+                new SwerveModulePosition[] {
+                        frontLeft.getPosition(),
+                        frontRight.getPosition(),
+                        backLeft.getPosition(),
+                        backRight.getPosition()
+                });
+
+                
+    }
+
+    @Override
+    public void periodic() {
+        updateOdometry();
+        SmartDashboard.putNumber("Current X", getPosition.getX());
+        SmartDashboard.putNumber("Current Y", getPosition.getY() );
+        SmartDashboard.putNumber("Current Rotation", getPosition.getRotation().getDegrees());
+       // System.out.println("I'm Working");
     }
 
     /**

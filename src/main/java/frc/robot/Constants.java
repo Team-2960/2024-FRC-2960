@@ -47,8 +47,8 @@ public class Constants {
     public static double driveSwerveVFF = 0.5;//volts * seconds/meters
     public static double driveSwerveAFF = 0;
 
-    public static final double kMaxSpeed = 5;
-    public static final double kMaxAngularSpeed = 5 * 2 * Math.PI;
+    public static final double kMaxSpeed = 10;
+    public static final double kMaxAngularSpeed = 12 * 2 * Math.PI;
 
     public static double xSpeed;
     public static double ySpeed;
@@ -57,7 +57,7 @@ public class Constants {
     public static boolean fieldRelative;
 
     public static double driveGearRatio = 6.75;
-    public static double wheelCirc = 0.319185544; //In Meters
+    public static double wheelCirc = 4 * .0254 * Math.PI; //In Meters
 
     public static AHRS navx;
 
