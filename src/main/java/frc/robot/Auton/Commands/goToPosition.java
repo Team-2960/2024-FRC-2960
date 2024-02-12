@@ -62,7 +62,7 @@ public class goToPosition extends Command {
         double complementaryTheta = 2 * Math.PI - (Math.abs(tError));
         double compareThetaError = Math.min(Math.abs(tError), complementaryTheta);
         double direction;
-        double rampDistance = 1;
+        double rampDistance = 0.5;
 
         if (tError < 0) {
             direction = -1;
@@ -76,7 +76,7 @@ public class goToPosition extends Command {
         double finalError = compareThetaError * direction;
         double thetaVelocity = finalError * (getDistToTarget()/rampDistance);
 
-        double rampDownSpeed = (getDistToTarget() / Constants.autonRampDownSpeed)  * speed;
+        double rampDownSpeed = (getDistToTarget() / rampDistance)  * speed;
         speed = Math.min(speed, rampDownSpeed);
         speed = Math.max(speed, Constants.minSpeed);
         SmartDashboard.putNumber("autonSpeed", speed);

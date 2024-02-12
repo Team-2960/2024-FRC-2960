@@ -62,7 +62,7 @@ public class Constants {
     public static AHRS navx;
 
     //Auton
-    public static double autonRampDownSpeed = 1;
-    public static double minSpeed = 1;
+    public static double autonRampDownSpeed = 0.5;
+    public static double minSpeed = 2;
 
 }
