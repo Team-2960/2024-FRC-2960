@@ -31,7 +31,7 @@ public class goToPosition extends Command {
 
     @Override
     public void initialize() {
-        currentPos = drive.getOdomXYPos();
+        currentPos = drive.getEstimatedPos();
     }
 
     @Override
@@ -51,7 +51,7 @@ public class goToPosition extends Command {
 
     @Override
     public void execute() {
-        currentPos = drive.getOdomXYPos();
+        currentPos = drive.getEstimatedPos();
         double xError = xTarget - currentPos.getX();
         double yError = yTarget - currentPos.getY();
         double tError = currentPos.getRotation().getRadians() - thetaTarget.getRadians();

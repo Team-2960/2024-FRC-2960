@@ -56,13 +56,22 @@ public class Constants {
     public static double periodSeconds;
     public static boolean fieldRelative;
 
-    public static double driveGearRatio = 6.75;
-    public static double wheelCirc = 4 * .0254 * Math.PI; //In Meters
+    public static double driveGearRatio = 5.08;
+    public static double wheelCirc = 2.95 * .0254 * Math.PI; //In Meters
 
     public static AHRS navx;
 
     //Auton
     public static double autonRampDownSpeed = 0.5;
     public static double minSpeed = 2;
+
+    //Camera
+    public static double cameraToRobotX;
+    public static double cameraToRobotY;
+    public static double cameraToRobotHeight;
+
+    public static double cameraRoll;
+    public static double cameraPitch;
+    public static double cameraYaw;
 
 }
