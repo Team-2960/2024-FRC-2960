@@ -2,6 +2,10 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.fasterxml.jackson.databind.AnnotationIntrospector.ReferenceProperty.Type;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.SparkAbsoluteEncoder;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -20,9 +24,9 @@ public class Swerve extends SubsystemBase {
 
         private final TalonFX mDrive;
 
-        private final TalonFX mAngle;
+        private final CANSparkMax mAngle;
 
-        private final CANcoder encAngle;
+        private final SparkAbsoluteEncoder encAngle;
 
         private final PIDController drivePIDcontroller;
 
@@ -44,8 +48,8 @@ public class Swerve extends SubsystemBase {
         public Swerve(int driveMotorID, int angleMotorID, int angleMotorEncID, String swerveName) {
 
                 mDrive = new TalonFX(driveMotorID);
-                mAngle = new TalonFX(angleMotorID);
-                encAngle = new CANcoder(angleMotorEncID);
+                mAngle = new CANSparkMax(angleMotorID, MotorType.kBrushless);
+                encAngle = mAngle.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
 
                 this.swerveName = swerveName;
 
@@ -77,7 +81,7 @@ public class Swerve extends SubsystemBase {
 
          public Rotation2d getCurrentAngle(){
                 return
-                new Rotation2d(encAngle.getAbsolutePosition().getValueAsDouble() * (2 * Math.PI));
+                new Rotation2d(encAngle.getPosition() * (2 * Math.PI));
         }
         public double getCurrentVelocity(){
                 return

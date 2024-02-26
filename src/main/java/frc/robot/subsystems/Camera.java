@@ -40,7 +40,7 @@ public class Camera extends SubsystemBase {
         var estPoseUpdate = photonPoseEstimator.update();
         SmartDashboard.putBoolean("IsPresent", estPoseUpdate.isPresent());
         SmartDashboard.putNumber("thenumberzero", 0);
-        if (estPoseUpdate.isPresent() && lastTimeStamp < estPoseUpdate.get().timestampSeconds) {
+       /*  if (estPoseUpdate.isPresent() && lastTimeStamp < estPoseUpdate.get().timestampSeconds) {
             var poseUpdate = estPoseUpdate.get();
             double ts = poseUpdate.timestampSeconds;
             if (lastTimeStamp < ts) {
@@ -51,7 +51,22 @@ public class Camera extends SubsystemBase {
             }
 
         }
-    }
+            */
+            if (estPoseUpdate.isPresent() && lastTimeStamp < estPoseUpdate.get().timestampSeconds){
+                 var poseUpdate = estPoseUpdate.get();
+                 double ts = poseUpdate.timestampSeconds;
+                    if (lastTimeStamp < ts) {
+                    Pose3d pose3d = poseUpdate.estimatedPose;
+                    Pose2d pose2d = pose3d.toPose2d();
+
+                    Drive.get_instance().setVisionPose(pose2d, ts, true);
+            }
+            }else if (estPoseUpdate.isPresent() == false){
+                Pose2d pose2d = Drive.get_instance().getEstimatedPos();
+                Drive.get_instance().setVisionPose(pose2d, 0, false);
+            }
+        }
+    
 
     public static Camera get_instance() {
         if (vision == null) {
