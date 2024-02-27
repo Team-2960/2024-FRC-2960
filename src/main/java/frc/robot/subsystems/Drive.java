@@ -238,7 +238,7 @@ public class Drive extends SubsystemBase {
         double minError = Math.min(Math.abs(error), math.abs(compError));
 
         // Calculate ramp down speed
-        double speed = Math.min(minError * rampDistance, kMaxAngularSpeed);
+        double speed = Math.min(minError * rampDistance , kMaxAngularSpeed);
         
         // Set direction
         double direction = error > 0 ? 1 : -1;
