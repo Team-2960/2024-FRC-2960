@@ -26,13 +26,18 @@ import frc.robot.Constants;
 
 public class Camera extends SubsystemBase {
     private static Camera vision = null;
+
     PhotonCamera camera = new PhotonCamera("Camera_Module_v1");
+
     AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+
     Transform3d robotToCamera = new Transform3d(
             new Translation3d(Constants.cameraToRobotX, Constants.cameraToRobotY, Constants.cameraToRobotHeight),
             new Rotation3d(Constants.cameraRoll, Constants.cameraPitch, Constants.cameraYaw));
+
     PhotonPoseEstimator photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout,
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, camera, robotToCamera);
+            
     double lastTimeStamp = 0;
 
     @Override
@@ -40,32 +45,17 @@ public class Camera extends SubsystemBase {
         var estPoseUpdate = photonPoseEstimator.update();
         SmartDashboard.putBoolean("IsPresent", estPoseUpdate.isPresent());
         SmartDashboard.putNumber("thenumberzero", 0);
-       /*  if (estPoseUpdate.isPresent() && lastTimeStamp < estPoseUpdate.get().timestampSeconds) {
-            var poseUpdate = estPoseUpdate.get();
-            double ts = poseUpdate.timestampSeconds;
-            if (lastTimeStamp < ts) {
+
+        if (estPoseUpdate.isPresent() && lastTimeStamp < estPoseUpdate.get().timestampSeconds){
+                var poseUpdate = estPoseUpdate.get();
+                double ts = poseUpdate.timestampSeconds;
+                if (lastTimeStamp < ts) {
                 Pose3d pose3d = poseUpdate.estimatedPose;
                 Pose2d pose2d = pose3d.toPose2d();
 
                 Drive.get_instance().setVisionPose(pose2d, ts);
-            }
-
         }
-            */
-            if (estPoseUpdate.isPresent() && lastTimeStamp < estPoseUpdate.get().timestampSeconds){
-                 var poseUpdate = estPoseUpdate.get();
-                 double ts = poseUpdate.timestampSeconds;
-                    if (lastTimeStamp < ts) {
-                    Pose3d pose3d = poseUpdate.estimatedPose;
-                    Pose2d pose2d = pose3d.toPose2d();
-
-                    Drive.get_instance().setVisionPose(pose2d, ts, true);
-            }
-            }else if (estPoseUpdate.isPresent() == false){
-                Pose2d pose2d = Drive.get_instance().getEstimatedPos();
-                Drive.get_instance().setVisionPose(pose2d, 0, false);
-            }
-        }
+    }
     
 
     public static Camera get_instance() {
