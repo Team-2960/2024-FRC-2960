@@ -27,19 +27,38 @@ import frc.robot.Constants;
 public class Camera extends SubsystemBase {
     private static Camera vision = null;
 
-    private PhotonCamera camera = new PhotonCamera("Camera_Module_v1");
+    private PhotonCamera camera;
 
-    private AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+    private AprilTagFieldLayout aprilTagFieldLayout;
 
-    private Transform3d robotToCamera = new Transform3d(
-            new Translation3d(Constants.cameraToRobotX, Constants.cameraToRobotY, Constants.cameraToRobotHeight),
-            new Rotation3d(Constants.cameraRoll, Constants.cameraPitch, Constants.cameraYaw));
+    private Transform3d robotToCamera;
 
-    private PhotonPoseEstimator photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout,
-            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, camera, robotToCamera);
+    private PhotonPoseEstimator photonPoseEstimator;
             
-    private double lastTimeStamp = 0;
+    private double lastTimeStamp;
 
+    /**
+     * Constructor
+     */
+    private Camera() {
+        camera = new PhotonCamera("Camera_Module_v1");
+
+        aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+        
+        // TODO Initialize transform 3d in constants
+        robotToCamera = new Transform3d(
+                new Translation3d(Constants.cameraToRobotX, Constants.cameraToRobotY, Constants.cameraToRobotHeight),
+                new Rotation3d(Constants.cameraRoll, Constants.cameraPitch, Constants.cameraYaw));  
+
+        photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout,
+                PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, camera, robotToCamera);
+                
+        lastTimeStamp = 0;
+    }
+
+    /**
+     * Periodically checks the camera for updates
+     */
     @Override
     public void periodic() {
         var estPoseUpdate = photonPoseEstimator.update();
@@ -48,18 +67,26 @@ public class Camera extends SubsystemBase {
         SmartDashboard.putBoolean("IsPresent", estPoseUpdate.isPresent());
         SmartDashboard.putNumber("thenumberzero", 0);
 
-        if (estPoseUpdate.isPresent() && lastTimeStamp < estPoseUpdate.get().timestampSeconds){
+        // Check if an AprilTag is visible
+        if (estPoseUpdate.isPresent()) {
+            // Retrieve pose update
             var poseUpdate = estPoseUpdate.get();
+
+            // Check if the camera has a new value
             double ts = poseUpdate.timestampSeconds;
             if (lastTimeStamp < ts) {
-                Pose3d pose3d = poseUpdate.estimatedPose;
-                Pose2d pose2d = pose3d.toPose2d();
+                // Update drivetrain pose estimation
+                Drive.getInstance().setVisionPose(poseUpdate.estimatedPose.toPose2d(), ts);
 
-                Drive.getInstance().setVisionPose(pose2d, ts);
+                // Update last timestamp
+                lastTimeStamp = ts;
+            }
         }
     }
     
-
+    /**
+     * Static initializer
+     */
     public static Camera getInstance() {
         if (vision == null) {
             vision = new Camera();
