@@ -163,7 +163,7 @@ public class Drive extends SubsystemBase {
      */
     public void setAngleRate(double rSpeed) {
         this.rSpeed = rSpeed;
-        this.angleMode = AngleRate;
+        this.angleMode = AngleControlMode.AngleRate;
     }
 
     /**
@@ -173,7 +173,7 @@ public class Drive extends SubsystemBase {
      */
     public void setTargetAngle(Rotation2d angle) {
         this.targetAngle = angle;
-        this.angleMode = Angle;
+        this.angleMode = AngleControlMode.Angle;
     }
 
     /**
@@ -185,7 +185,7 @@ public class Drive extends SubsystemBase {
     public void setTargetPoint(Translation2d point, Rotation2d offset) {
         this.targetPoint = point;
         this.targetAngle = offset;
-        this.angleMode = LookAtPoint;
+        this.angleMode = AngleControlMode.LookAtPoint;
     }
 
     /**
@@ -264,7 +264,7 @@ public class Drive extends SubsystemBase {
             case LookAtPoint:
                 return calcRateToPoint(targetPoint, targetAngle);
             case Angle:
-                return calcRateToAngle(TargetAngle);
+                return calcRateToAngle(targetAngle);
             case AngleRate:
             default:
                 return rSpeed;    
@@ -289,15 +289,15 @@ public class Drive extends SubsystemBase {
      * @param   currentAngle    current robot angle
      */
     private double calcRateToAngle(Rotation2d targetAngle, Rotation2d currentAngle) {
-        Rotatation2d rampDistance = Rotation2d(0.5);    // TODO move to constants
+        Rotation2d rampDistance = Rotation2d.fromRadians(0.5);    // TODO move to constants
 
         // Determine minimum error distance
-        double error = currentAngle.minus(targetAngle).toRadians();
-        double compError = 2 * Math.Pi - Math.abs(error);
-        double minError = Math.min(Math.abs(error), math.abs(compError));
+        double error = currentAngle.minus(targetAngle).getRadians();
+        double compError = 2 * Math.PI - Math.abs(error);
+        double minError = Math.min(Math.abs(error), Math.abs(compError));
 
         // Calculate ramp down speed
-        double speed = Math.min(minError * rampDistance , kMaxAngularSpeed);
+        double speed = Math.min(minError * rampDistance.getRadians(), Constants.kMaxAngularSpeed);
         
         // Set direction
         double direction = error > 0 ? 1 : -1;
@@ -312,10 +312,10 @@ public class Drive extends SubsystemBase {
      * @param   point   target point
      * @param   offset  target orientation offset
      */
-    private double calcRateToPoint(Translation2d point, Rotatation2d offset) {
+    private double calcRateToPoint(Translation2d point, Rotation2d offset) {
         Pose2d pose = getEstimatedPos();
         Translation2d targetOffset = targetPoint.minus(pose.getTranslation());
-        Rotation2d targetAngle = targetOffset.getAngle().add(offset);
+        Rotation2d targetAngle = targetOffset.getAngle().plus(offset);
 
         return calcRateToAngle(targetAngle, pose.getRotation());
     }

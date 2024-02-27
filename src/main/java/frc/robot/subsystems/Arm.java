@@ -43,7 +43,7 @@ public class Arm extends SubsystemBase {
         STAGE2
     }
 
-    public class ArmStateValues() {
+    public class ArmStateValues {
         public Rotation2d targetAngle;
         public Rotation2d angleTol;
         public ExtensionState extState;
@@ -59,13 +59,13 @@ public class Arm extends SubsystemBase {
         }
     }
 
-    private final ArmStateValues defaultState = new ArmStateValue(Rotation2d.fromDegrees(10), Stage0);
+    private final ArmStateValues defaultState = new ArmStateValues(Rotation2d.fromDegrees(10), ExtensionState.STAGE0);
 
     private ArmStateValues targetState = defaultState;
     private Timer extenderTimer;
     private double targetPos = 0;
 
-    private Map<String, ArmStateValues> armStates = Map.of(
+    private Map<String, ArmStateValues> armStates = HashMap.of(
         "Match Start", new ArmStateValue(Rotation2d.fromDegrees(60), Stage0),
         "Home", defaultState,
         "Intake", new ArmStateValue(Rotation2d.fromDegrees(-5), Stage1),
@@ -167,8 +167,8 @@ public class Arm extends SubsystemBase {
     }
 
     public boolean isInClimberZone() {
-        Rotation2d climberZoneLowerAngle =  Rotatation2d.fromDegrees(60);  // TODO Move to constants
-        Rotation2d climberZoneUpperAngle =  Rotatation2d.fromDegrees(75);  // TODO Move to constants 
+        Rotation2d climberZoneLowerAngle =  Rotation2d.fromDegrees(60);  // TODO Move to constants
+        Rotation2d climberZoneUpperAngle =  Rotation2d.fromDegrees(75);  // TODO Move to constants 
         Rotation2d currentAngle = getArmAngle();
 
         boolean in_zone = currentAngle.getDegrees() > climberZoneLowerAngle.getDegrees();
@@ -226,7 +226,7 @@ public class Arm extends SubsystemBase {
         Rotation2d targetAngle = targetState.targetAngle;
         Rotation2d angleError = targetAngle.minus(currentAngle);
         
-        double targetSpeed = maxAngleRate * (angleError.toRadians() > 0 ? 1 : -1);
+        double targetSpeed = maxAngleRate * (angleError.toRadians() > 0 ? 1 :+ -1);
         double rampDownSpeed = angleError.toRadians() / rampDownDist * maxAngleRate;
 
         if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed)) targetSpeed = rampDownSpeed;
