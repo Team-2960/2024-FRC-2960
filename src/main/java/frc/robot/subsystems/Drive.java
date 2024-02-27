@@ -41,6 +41,11 @@ public class Drive extends SubsystemBase {
     private Pose2d getPosition;
     private Pose2d initialPosition;
 
+    private double xSpeed = 0;
+    private double ySpeed = 0;
+    private double rSpeed = 0;
+    private boolean fieldRelative = true;
+
     /*
      * private final SwerveDriveOdometry odometry = new SwerveDriveOdometry(
      * kinematics,
@@ -62,14 +67,10 @@ public class Drive extends SubsystemBase {
         kinematics = new SwerveDriveKinematics(
                 frontLeftLocation, frontRightLocation, backLeftLocation, backRightLocation);
 
-        frontLeft = new Swerve(Constants.frontLeftDriveM, Constants.frontLeftAngleM, Constants.frontLeftAngleENC,
-                "FrontLeft");
-        frontRight = new Swerve(Constants.frontRightDriveM, Constants.frontRightAngleM, Constants.frontRightAngleENC,
-                "FrontRight");
-        backLeft = new Swerve(Constants.backLeftDriveM, Constants.backLeftAngleM, Constants.backLeftAngleENC,
-                "BackLeft");
-        backRight = new Swerve(Constants.backRightDriveM, Constants.backRightAngleM, Constants.backRightAngleENC,
-                "BackRight");
+        frontLeft = new Swerve(Constants.frontLeftDriveM, Constants.frontLeftAngleM, Constants.frontLeftAngleENC, "FrontLeft");
+        frontRight = new Swerve(Constants.frontRightDriveM, Constants.frontRightAngleM, Constants.frontRightAngleENC, "FrontRight");
+        backLeft = new Swerve(Constants.backLeftDriveM, Constants.backLeftAngleM, Constants.backLeftAngleENC, "BackLeft");
+        backRight = new Swerve(Constants.backRightDriveM, Constants.backRightAngleM, Constants.backRightAngleENC, "BackRight");
 
         navx = new AHRS(SPI.Port.kMXP);
         navx.reset();
@@ -88,8 +89,48 @@ public class Drive extends SubsystemBase {
                 VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
     }
 
-    public void set_speed(double xSpeed, double ySpeed, double rSpeed, boolean fieldRelative) {
+    public void set_speed(double xSpeed, double ySpeed, boolean fieldRelative) {
+        this.xSpeed = xSpeed;
+        this.ySpeed = ySpeed;
+        this.fieldRelative = fieldRelative;
+    }
+
+    public void setVector(double speed, Rotation2d heading, boolean fieldRelative) {
+        double xSpeed = Math.cos(heading.getRadians()) * speed;
+        double ySpeed = Math.sin(heading.getRadians()) * speed;
+        
+        set_speed(xSpeed, ySpeed, rSpeed, fieldRelative);
+    }
+
+    public void setAngleRate(double rSpeed) {
+        this.rSpeed = rSpeed;
+    }
+
+    public Pose2d getEstimatedPos() {
+        return swerveDrivePoseEstimator.getEstimatedPosition();
+    }
+
+    public void setVisionPose(Pose2d pose, double timeStamp) {
+        swerveDrivePoseEstimator.addVisionMeasurement(pose, timeStamp);
+
+        SmartDashboard.putNumber("Current X", getPosition.getX());
+        SmartDashboard.putNumber("Current Y", getPosition.getY());
+        SmartDashboard.putNumber("Current Rotation", getPosition.getRotation().getDegrees());
+        SmartDashboard.putNumber("Estimated X", swerveDrivePoseEstimator.getEstimatedPosition().getX());
+        SmartDashboard.putNumber("Estimated Y", swerveDrivePoseEstimator.getEstimatedPosition().getY());
+        SmartDashboard.putNumber("Estimated Rotation", swerveDrivePoseEstimator.getEstimatedPosition().getRotation().getDegrees());
+
+    }
+
+    @Override
+    public void periodic() {
+        update_kinematics();
+        update_odometry();
+    }
+
+    private void update_kinematics() {
         ChassisSpeeds speeds;
+
         if (fieldRelative) {
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rSpeed, navx.getRotation2d());
         } else {
@@ -108,49 +149,14 @@ public class Drive extends SubsystemBase {
         backRight.setDesiredState(swerveModuleStates[3]);
     }
 
-    public void setVector(double speed, Rotation2d heading, double rSpeed) {
-        double xSpeed = Math.cos(heading.getRadians()) * speed;
-        double ySpeed = Math.sin(heading.getRadians()) * speed;
-        set_speed(xSpeed, ySpeed, rSpeed, false);
-    }
-
-    public Pose2d getEstimatedPos() {
-        return swerveDrivePoseEstimator.getEstimatedPosition();
-    }
-
-    public void setVisionPose(Pose2d pose, double timeStamp, boolean isPresent) {
-       if (isPresent == true){
-        getPosition = swerveDrivePoseEstimator.update(navx.getRotation2d(),
+    private void update_odometry() {
+        swerveDrivePoseEstimator.update(navx.getRotation2d(),
                 new SwerveModulePosition[] {
                         frontLeft.getPosition(),
                         frontRight.getPosition(),
                         backLeft.getPosition(),
                         backRight.getPosition()
                 });
-        swerveDrivePoseEstimator.addVisionMeasurement(pose, timeStamp);
-        
-        }else if(isPresent == false){
-            getPosition = swerveDrivePoseEstimator.update(navx.getRotation2d(),
-                new SwerveModulePosition[] {
-                        frontLeft.getPosition(),
-                        frontRight.getPosition(),
-                        backLeft.getPosition(),
-                        backRight.getPosition()
-                });
-        }
-
-        SmartDashboard.putNumber("Current X", getPosition.getX());
-        SmartDashboard.putNumber("Current Y", getPosition.getY());
-        SmartDashboard.putNumber("Current Rotation", getPosition.getRotation().getDegrees());
-        SmartDashboard.putNumber("Estimated X", swerveDrivePoseEstimator.getEstimatedPosition().getX());
-        SmartDashboard.putNumber("Estimated Y", swerveDrivePoseEstimator.getEstimatedPosition().getY());
-        SmartDashboard.putNumber("Estimated Rotation", swerveDrivePoseEstimator.getEstimatedPosition().getRotation().getDegrees());
-
-    }
-
-    @Override
-    public void periodic() {
-        // System.out.println("I'm Working");
     }
 
     /**
