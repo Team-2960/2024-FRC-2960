@@ -13,7 +13,7 @@ public class goToPosition extends Command {
 
     Drive drive;
 
-    public goToPosition(Translation2d targetPos, double tolerance)
+    public goToPosition(Translation2d targetPos, double tolerance) {
         this.targetPos = targetPos;
         this.tolerance = tolerance;
 
@@ -33,8 +33,7 @@ public class goToPosition extends Command {
     public void execute() {
         Translation2d error = getTargetError();
 
-        double rampDownSpeed = (error.getDistance() / rampDistance)  * speed;
-        speed = Math.min(speed, rampDownSpeed);
+        double speed = Math.min(error.getDistance() / rampDistance, 1) * Constants.kMaxSpeed ;
         speed = Math.max(speed, Constants.minSpeed);
         
         SmartDashboard.putNumber("autonSpeed", speed);
