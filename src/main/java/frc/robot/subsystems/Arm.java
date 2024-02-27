@@ -263,7 +263,7 @@ public class Arm extends SubsystemBase {
     /**
      * Static initializer for the arm class
      */
-    public static Arm getArm() {
+    public static Arm getInstance() {
         if (arm == null) {
             arm = new Arm();
         }

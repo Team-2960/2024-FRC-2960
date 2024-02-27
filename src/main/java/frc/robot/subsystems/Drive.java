@@ -261,7 +261,7 @@ public class Drive extends SubsystemBase {
      * 
      * @return Common object of Drive
      */
-    public static Drive get_instance() {
+    public static Drive getInstance() {
         if (drive == null) {
             drive = new Drive();
         }

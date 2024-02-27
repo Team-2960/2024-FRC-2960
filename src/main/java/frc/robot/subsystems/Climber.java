@@ -11,6 +11,8 @@ public class Climber extends SubsystemBase{
         Climb
     }
 
+    private static Climber climber = null;
+
     private CANSparkMax winchL;
     private CANSparkMax winchR;
 
@@ -108,6 +110,15 @@ public class Climber extends SubsystemBase{
             }
 
         }
+    }
+    
+
+    public static Climber getInstance() {
+        if (climber == null) {
+            climber = new Climber();
+        }
+
+        return climber;
     }
 }
 

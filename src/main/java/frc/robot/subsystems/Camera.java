@@ -55,12 +55,12 @@ public class Camera extends SubsystemBase {
                 Pose3d pose3d = poseUpdate.estimatedPose;
                 Pose2d pose2d = pose3d.toPose2d();
 
-                Drive.get_instance().setVisionPose(pose2d, ts);
+                Drive.getInstance().setVisionPose(pose2d, ts);
         }
     }
     
 
-    public static Camera get_instance() {
+    public static Camera getInstance() {
         if (vision == null) {
             vision = new Camera();
         }
