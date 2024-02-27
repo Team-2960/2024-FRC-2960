@@ -31,14 +31,25 @@ public class Robot extends TimedRobot {
    * initialization code.
    */
   private Command autonCommand;
+  
+  private Drive drive;
+  private IO oi;
+  private Camera camera;
+  private Arm arm;
+  private Climber climber;
+  private IntakePizzaBox intake;
 
   @Override
   public void robotInit() {
-    var drive = Drive.get_instance();
-    var oi = OperatorInterface.get_instance();
-    var vision = Camera.get_instance();
+    drive = Drive.getInstance();
+    oi = OperatorInterface.getInstance();
+    vision = Camera.getInstance();
+    arm = Arm.getInstance();
+    climber = Arm.getInstance();
+    intake = IntakePizzaBox.getInstance();
+
     try {
-      autonCommand = new forwardAuton("lol this does nothing");
+      autonCommand = forwardAuton.getCommand();
     } catch (IOException e) {
       e.printStackTrace();
     }
