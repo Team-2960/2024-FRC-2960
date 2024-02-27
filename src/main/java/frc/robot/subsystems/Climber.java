@@ -60,7 +60,8 @@ public class Climber extends SubsystemBase{
     }
 
     public boolean isClearOfArm() {
-        return isDown(); // TODO: Find mininum height for arm to move freely
+        double armContactHeight = 15;
+        return isDown() || getExtension() < armContactHeight;
     }
 
     @Override
@@ -91,9 +92,9 @@ public class Climber extends SubsystemBase{
     }
 
     private void extendClimber() {
-        boolean armInPosition = true;// TODO Check if arm is in climb position
+        boolean armClear = !arm.getInstance().isInClimberZone();
 
-        if(armInPosition) {
+        if(armClear) {
             if(getExtension() < 20) { // TODO Determine maximum extension and move to constants 
                 // Disengage ratchet
                 if(ratchedRelease.get() != DoubleSolenoid.kForward) ratchetTimer.restart();

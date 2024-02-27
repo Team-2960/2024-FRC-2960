@@ -166,6 +166,17 @@ public class Arm extends SubsystemBase {
         return atAngle() && atExtention();
     }
 
+    public boolean isInClimberZone() {
+        Rotation2d climberZoneLowerAngle =  Rotatation2d.fromDegrees(60);  // TODO Move to constants
+        Rotation2d climberZoneUpperAngle =  Rotatation2d.fromDegrees(75);  // TODO Move to constants 
+        Rotation2d currentAngle = getArmAngle();
+
+        boolean in_zone = currentAngle.getDegrees() > climberZoneLowerAngle.getDegrees();
+        in_zone &= currentAngle.getDegrees() < climberZoneUpperAngle.getDegrees();
+
+        return in_zone;
+    }
+
     /**
      * Looks up a standard target state
      * @param   Name of the standard state. If an unknown name is supplied, 
@@ -223,6 +234,9 @@ public class Arm extends SubsystemBase {
         // Set soft limits
         if(currentAngle.getDegrees() >= Constants.maxArmPos && targetSpeed > 0) targetSpeed = 0;
         if(currentAngle.getDegrees() <= Constants.minArmPos && targetSpeed > 0) targetSpeed = 0;
+
+        // Protect against climber collisions
+        if(!Climber.getInstance().isClearOfArm() && isInClimberZone()) targetSpeed = 0;
 
         // Calculate motor voltage output
         double calcPID = armPID.calculate(getArmVelocity(), targetSpeed);
