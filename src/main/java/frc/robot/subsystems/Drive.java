@@ -20,6 +20,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.kauailabs.navx.frc.AHRS;
 
+import java.util.Map;
+
 public class Drive extends SubsystemBase {
     public enum AngleControlMode = {
         AngleRate,
@@ -55,6 +57,28 @@ public class Drive extends SubsystemBase {
     private Translation2d targetPoint = new Translation2d();
     private AngleControlMode angleMode = AngleRate;
     private boolean fieldRelative = true;
+
+    public class DriveDiag extends ComplexData<DriveDiag> {
+        
+        private Drive drive;
+
+        public DriveDiag(Drive drive) {
+            this.drive = drive;
+        }
+
+        @Override
+        public Map<String, Object> asMap() {
+            Pose2d pose = drive.getEstimatedPos();
+
+
+            return Map.of(
+                "x", pose.getX(),
+                "y", pose.getY(),
+                "r", pose.getRotation().asDegrees()
+                )
+        }
+
+    }
 
     /*
      * private final SwerveDriveOdometry odometry = new SwerveDriveOdometry(
@@ -97,6 +121,12 @@ public class Drive extends SubsystemBase {
                 new Pose2d(),
                 VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
                 VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
+
+        
+        var tab = ShuffleBoard.getTab("Diag");
+        var layout = tab.getLayout("Drive", BuiltInLayouts.kList);
+        
+        elevatorCommands.add("Estimated Position", new DriveDiag(this));
     }
 
     public void setfieldRelative(boolean enable) {
@@ -137,14 +167,6 @@ public class Drive extends SubsystemBase {
 
     public void setVisionPose(Pose2d pose, double timeStamp) {
         swerveDrivePoseEstimator.addVisionMeasurement(pose, timeStamp);
-
-        SmartDashboard.putNumber("Current X", getPosition.getX());
-        SmartDashboard.putNumber("Current Y", getPosition.getY());
-        SmartDashboard.putNumber("Current Rotation", getPosition.getRotation().getDegrees());
-        SmartDashboard.putNumber("Estimated X", swerveDrivePoseEstimator.getEstimatedPosition().getX());
-        SmartDashboard.putNumber("Estimated Y", swerveDrivePoseEstimator.getEstimatedPosition().getY());
-        SmartDashboard.putNumber("Estimated Rotation", swerveDrivePoseEstimator.getEstimatedPosition().getRotation().getDegrees());
-
     }
 
     @Override

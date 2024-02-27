@@ -27,29 +27,31 @@ import frc.robot.Constants;
 public class Camera extends SubsystemBase {
     private static Camera vision = null;
 
-    PhotonCamera camera = new PhotonCamera("Camera_Module_v1");
+    private PhotonCamera camera = new PhotonCamera("Camera_Module_v1");
 
-    AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+    private AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
 
-    Transform3d robotToCamera = new Transform3d(
+    private Transform3d robotToCamera = new Transform3d(
             new Translation3d(Constants.cameraToRobotX, Constants.cameraToRobotY, Constants.cameraToRobotHeight),
             new Rotation3d(Constants.cameraRoll, Constants.cameraPitch, Constants.cameraYaw));
 
-    PhotonPoseEstimator photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout,
+    private PhotonPoseEstimator photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout,
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, camera, robotToCamera);
             
-    double lastTimeStamp = 0;
+    private double lastTimeStamp = 0;
 
     @Override
     public void periodic() {
         var estPoseUpdate = photonPoseEstimator.update();
+
+        // TODO move to shuffle board
         SmartDashboard.putBoolean("IsPresent", estPoseUpdate.isPresent());
         SmartDashboard.putNumber("thenumberzero", 0);
 
         if (estPoseUpdate.isPresent() && lastTimeStamp < estPoseUpdate.get().timestampSeconds){
-                var poseUpdate = estPoseUpdate.get();
-                double ts = poseUpdate.timestampSeconds;
-                if (lastTimeStamp < ts) {
+            var poseUpdate = estPoseUpdate.get();
+            double ts = poseUpdate.timestampSeconds;
+            if (lastTimeStamp < ts) {
                 Pose3d pose3d = poseUpdate.estimatedPose;
                 Pose2d pose2d = pose3d.toPose2d();
 
