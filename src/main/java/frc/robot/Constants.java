@@ -9,21 +9,21 @@ public class Constants {
     public final static int armMotor1 = 1;
     public final static int armMotor2 = 2;
 
-    public final static int frontLeftDriveM = 4;
-    public final static int frontLeftAngleM = 3;
+    public final static int frontLeftDriveM = 3;
+    public final static int frontLeftAngleM = 4;
     public final static int frontLeftAngleENC = 10;
-    public final static int frontRightDriveM = 6;
-    public final static int frontRightAngleM = 5;
+    public final static int frontRightDriveM = 1;
+    public final static int frontRightAngleM = 2;
     public final static int frontRightAngleENC = 11;
 
-    public final static int backLeftDriveM = 2;
-    public final static int backLeftAngleM = 1;
+    public final static int backLeftDriveM = 5;
+    public final static int backLeftAngleM = 8;
     public final static int backLeftAngleENC = 9;
-    public final static int backRightDriveM = 8;
-    public final static int backRightAngleM = 7;
+    public final static int backRightDriveM = 7;
+    public final static int backRightAngleM = 6;
     public final static int backRightAngleENC = 12;
 
-    // Arm PID values
+    // Swerve PID values
     public static double kpArm1 = 0;
     public static double kiArm1 = 0;
     public static double kdArm1 = 0;
@@ -73,5 +73,21 @@ public class Constants {
     public static double cameraRoll;
     public static double cameraPitch;
     public static double cameraYaw;
+
+    //Arm
+    public static final double maxArmPos = 0;
+    public static final double minArmPos = 0;
+    public static double maxArmSpeed;
+    public static double maxArmAccel;
+
+    public static final double homePos = 0;
+    public static final double extendedHomePos = 0;
+    public static final double speakerPos = 0;
+    public static final double ampPos = 0;
+    public static final double climbPrepPos = 0;
+    public static final double trapClimbPos = 0;
+    public static final double trapScorePos = 0;
+
+    //TODO test and change these values
 
 }
