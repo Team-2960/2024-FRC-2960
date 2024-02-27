@@ -13,6 +13,7 @@ import frc.robot.Auton.Commands.goToAngle;
 public class forwardAuton {
     public static Command getCommand() {
         Command command = new SequentialCommandGroup(
+            new setFieldRelative(true),
             new ParallelCommandGroup(
                 new goToPosition(new Translation2d(0, 5), 10, .5),
                 new goToAngle(new Rotation2d(), new Rotation2d(.5))
