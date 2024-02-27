@@ -21,6 +21,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.kauailabs.navx.frc.AHRS;
 
 public class Drive extends SubsystemBase {
+    public enum AngleControlMode = {
+        AngleRate,
+        Angle,
+        LookAtPoint
+    }
+
+
     private static Drive drive = null; // Statically initialized instance
 
     private final Translation2d frontLeftLocation;
@@ -44,6 +51,9 @@ public class Drive extends SubsystemBase {
     private double xSpeed = 0;
     private double ySpeed = 0;
     private double rSpeed = 0;
+    private Rotation2d targetAngle = new Rotation2d();
+    private Translation2d targetPoint = new Translation2d();
+    private AngleControlMode angleMode = AngleRate;
     private boolean fieldRelative = true;
 
     /*
@@ -89,13 +99,17 @@ public class Drive extends SubsystemBase {
                 VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
     }
 
-    public void set_speed(double xSpeed, double ySpeed, boolean fieldRelative) {
+    public void setfieldRelative(boolean enable) {
+        this.fieldRelative = enable;
+    }
+
+    public void setSpeed(double xSpeed, double ySpeed) {
         this.xSpeed = xSpeed;
         this.ySpeed = ySpeed;
         this.fieldRelative = fieldRelative;
     }
 
-    public void setVector(double speed, Rotation2d heading, boolean fieldRelative) {
+    public void setVector(double speed, Rotation2d heading) {
         double xSpeed = Math.cos(heading.getRadians()) * speed;
         double ySpeed = Math.sin(heading.getRadians()) * speed;
         
@@ -104,6 +118,17 @@ public class Drive extends SubsystemBase {
 
     public void setAngleRate(double rSpeed) {
         this.rSpeed = rSpeed;
+        this.angleMode = AngleRate;
+    }
+
+    public void setTargetAngle(Rotation2d angle) {
+        this.targetAngle = angle;
+        this.angleMode = Angle;
+    }
+
+    public void setTargetPoint(Translation2d point, Rotation2d offset) {
+        this.targetPoint = point;
+        this.targetAngle = offset;
     }
 
     public Pose2d getEstimatedPos() {
@@ -131,6 +156,8 @@ public class Drive extends SubsystemBase {
     private void update_kinematics() {
         ChassisSpeeds speeds;
 
+        rSpeed = getAngleRate();
+
         if (fieldRelative) {
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rSpeed, navx.getRotation2d());
         } else {
@@ -157,6 +184,54 @@ public class Drive extends SubsystemBase {
                         backLeft.getPosition(),
                         backRight.getPosition()
                 });
+    }
+
+    private double getAngleRate() {
+        switch (angleMode) {
+            case LookAtPoint:
+                return calcRateToPoint(targetPoint, targetAngle);
+            case Angle:
+                return calcRateToAngle(TargetAngle);
+            case AngleRate:
+            default:
+                return rSpeed;    
+        }
+    }
+
+    private double calcRateToAngle(Rotation2d targetAngle) { 
+        // Get current angle position
+        Pose2d pose = getEstimatedPos()
+        Rotation2d currentAngle = pose.getRotation();
+
+        return calcRateToAngle(targetAngle, currentAngle);
+    }
+
+    private double calcRateToAngle(Rotation2d targetAngle, Rotation2d currentAngle) {
+        Rotatation2d rampDistance = Rotation2d(0.5);    // TODO move to constants
+
+        
+        // Determine minimum error distance
+        double error = currentAngle.minus(targetAngle).toRadians();
+        double compError = 2 * Math.Pi - Math.abs(error);
+        double minError = Math.min(Math.abs(error), math.abs(compError));
+
+        // Calculate ramp down speed
+        double speed = Math.min(minError * rampDistance, kMaxAngularSpeed);
+        
+        // Set direction
+        double direction = error > 0 ? 1 : -1;
+        if (minError == compError)  direction *= -1;
+        speed *= direction;
+
+        return speed;
+    }
+
+    private double calcRateToPoint(Translation2d point, Rotatation2d offset) {
+        Pose2d pose = getEstimatedPos();
+        Translation2d targetOffset = targetPoint.minus(pose.getTranslation());
+        Rotation2d targetAngle = targetOffset.getAngle().add(offset);
+
+        return calcRateToAngle(targetAngle, pose.getRotation());
     }
 
     /**
