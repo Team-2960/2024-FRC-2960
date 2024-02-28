@@ -3,6 +3,7 @@ package frc.robot;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.Arm.ArmState;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
@@ -45,6 +46,21 @@ public class OperatorInterface extends SubsystemBase {
             double ySpeed = -MathUtil.applyDeadband(driverController.getRawAxis(1), 0.1) * Constants.kMaxSpeed;
             double rSpeed =  MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1) * Constants.kMaxAngularSpeed;
 
+            if (operatorController.getRawButton(1)){
+                Arm.getInstance().setState(Arm.);
+            }else if(operatorController.getRawButton(2)){
+                Arm.get_Arm().setState(ArmState.EXTENDEDHOME);
+            }else if(operatorController.getRawButton(3)){
+                Arm.get_Arm().setState(ArmState.SPEAKER);
+            }else if(operatorController.getRawButton(4)){
+                Arm.get_Arm().setState(ArmState.AMP);
+            }
+
+            if (driverController.getRawButton(1)){
+                Climber.get_Climber().setClimberState(-1, true);
+            }
+
+
             
 
             Drive.get_instance().set_speed(xSpeed, ySpeed, rSpeed, fieldRelative);
@@ -59,7 +75,6 @@ public class OperatorInterface extends SubsystemBase {
             */
         }
 
-        // Arm Control
       
 
 

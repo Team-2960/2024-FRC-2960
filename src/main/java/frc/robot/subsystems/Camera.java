@@ -52,18 +52,19 @@ public class Camera extends SubsystemBase {
 
         }
             */
-            if (estPoseUpdate.isPresent() && lastTimeStamp < estPoseUpdate.get().timestampSeconds){
-                 var poseUpdate = estPoseUpdate.get();
-                 double ts = poseUpdate.timestampSeconds;
-                    if (lastTimeStamp < ts) {
-                    Pose3d pose3d = poseUpdate.estimatedPose;
-                    Pose2d pose2d = pose3d.toPose2d();
-
-                    Drive.get_instance().setVisionPose(pose2d, ts, true);
-            }
-            }else if (estPoseUpdate.isPresent() == false){
-                Pose2d pose2d = Drive.get_instance().getEstimatedPos();
-                Drive.get_instance().setVisionPose(pose2d, 0, false);
+            if (estPoseUpdate.isPresent()) {
+                // Retrieve pose update
+                var poseUpdate = estPoseUpdate.get();
+    
+                // Check if the camera has a new value
+                double ts = poseUpdate.timestampSeconds;
+                if (lastTimeStamp < ts) {
+                    // Update drivetrain pose estimation
+                    Drive.get_instance().setVisionPose(poseUpdate.estimatedPose.toPose2d(), ts);
+    
+                    // Update last timestamp
+                    lastTimeStamp = ts;
+                }
             }
         }
     

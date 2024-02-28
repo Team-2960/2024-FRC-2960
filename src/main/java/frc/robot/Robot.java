@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Auton.forwardAuton;
+import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Camera;
 import frc.robot.subsystems.Drive;
 
@@ -37,6 +38,7 @@ public class Robot extends TimedRobot {
     var drive = Drive.get_instance();
     var oi = OperatorInterface.get_instance();
     var vision = Camera.get_instance();
+    var arm = Arm.get_instance();
     try {
       autonCommand = new forwardAuton("lol this does nothing");
     } catch (IOException e) {

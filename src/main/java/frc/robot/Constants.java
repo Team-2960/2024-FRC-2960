@@ -17,17 +17,13 @@ public class Constants {
     public final static int frontRightAngleENC = 11;
 
     public final static int backLeftDriveM = 5;
-    public final static int backLeftAngleM = 8;
+    public final static int backLeftAngleM = 6;
     public final static int backLeftAngleENC = 9;
     public final static int backRightDriveM = 7;
-    public final static int backRightAngleM = 6;
+    public final static int backRightAngleM = 8;
     public final static int backRightAngleENC = 12;
 
     // Swerve PID values
-    public static double kpArm1 = 0;
-    public static double kiArm1 = 0;
-    public static double kdArm1 = 0;
-
     public static double driveSwerveP = 0.1;
     public static double driveSwerveI = 0;
     public static double driveSwerveD = 0;
@@ -75,11 +71,15 @@ public class Constants {
     public static double cameraYaw;
 
     //Arm
+    public static double kpArm1 = 0;
+    public static double kiArm1 = 0;
+    public static double kdArm1 = 0;
+    //TODO Test and change PID values
     public static final double maxArmPos = 0;
     public static final double minArmPos = 0;
-    public static double maxArmSpeed;
-    public static double maxArmAccel;
-
+    public static double maxArmSpeed = 1;
+    public static double maxArmAccel = 1;
+    //TODO Test minimum and maximum values and find these
     public static final double homePos = 0;
     public static final double extendedHomePos = 0;
     public static final double speakerPos = 0;
@@ -87,7 +87,24 @@ public class Constants {
     public static final double climbPrepPos = 0;
     public static final double trapClimbPos = 0;
     public static final double trapScorePos = 0;
+    //TODO test these positions and put them in later
+    public static final double armSFF = 0;
+    public static final double armVFF = 0;
+    //TODO test and change Feed Forward values
 
+    //Climber
+    public static final int winchL = 10;
+    public static final int winchR = 9;
+    
+    public static final double kpWinch = 0;
+    public static final double kiWinch = 0;
+    public static final double kdWinch = 0;
+    
+    public static final double ksWinch = 0;
+    public static final double kvWinch = 0;
+
+    public static final double winchSpeedUp = 0.2;
+    public static final double winchSpeedDown = 0.2;
     //TODO test and change these values
 
 }

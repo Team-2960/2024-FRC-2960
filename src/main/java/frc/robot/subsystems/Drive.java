@@ -19,8 +19,15 @@ import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.kauailabs.navx.frc.AHRS;
+import java.util.Map;
+
 
 public class Drive extends SubsystemBase {
+    public enum AngleControlMode {
+        AngleRate,
+        Angle,
+        LookAtPoint
+    } 
     private static Drive drive = null; // Statically initialized instance
 
     private final Translation2d frontLeftLocation;
@@ -40,6 +47,14 @@ public class Drive extends SubsystemBase {
     private final SwerveDriveKinematics kinematics;
     private Pose2d getPosition;
     private Pose2d initialPosition;
+
+    private boolean fieldRelative = true;
+    private double xSpeed = 0;
+    private double ySpeed = 0;
+    private double rSpeed = 0;
+    private Rotation2d targetAngle;
+    private Translation2d targetPoint = new Translation2d();
+    private AngleControlMode angleMode = AngleControlMode.AngleRate;
 
     /*
      * private final SwerveDriveOdometry odometry = new SwerveDriveOdometry(
@@ -88,7 +103,32 @@ public class Drive extends SubsystemBase {
                 VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
     }
 
-    public void set_speed(double xSpeed, double ySpeed, double rSpeed, boolean fieldRelative) {
+    public void setSpeed(double xSpeed, double ySpeed){
+        this.xSpeed = xSpeed;
+        this.ySpeed = ySpeed;
+    }
+
+    public void setAngleRate(double rSpeed){
+        this.rSpeed = rSpeed;
+        this.angleMode = AngleControlMode.AngleRate;
+    }
+
+    public void setFieldRelative(boolean fieldRelative){
+        this.fieldRelative = fieldRelative;
+    }
+
+    public void setTargetAngle(Rotation2d angle){
+        this.targetAngle = angle;
+        this.angleMode = AngleControlMode.Angle;
+    }
+
+    public void setTargetPoint(Translation2d point, Rotation2d offset) {
+        this.targetPoint = point;
+        this.targetAngle = offset;
+        this.angleMode = AngleControlMode.LookAtPoint;
+    }
+
+    public void updateKinematics() {
         ChassisSpeeds speeds;
         if (fieldRelative) {
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rSpeed, navx.getRotation2d());
@@ -111,33 +151,28 @@ public class Drive extends SubsystemBase {
     public void setVector(double speed, Rotation2d heading, double rSpeed) {
         double xSpeed = Math.cos(heading.getRadians()) * speed;
         double ySpeed = Math.sin(heading.getRadians()) * speed;
-        set_speed(xSpeed, ySpeed, rSpeed, false);
+        setSpeed(xSpeed, ySpeed);
+        setAngleRate(rSpeed);
+        setFieldRelative(false);
     }
 
     public Pose2d getEstimatedPos() {
         return swerveDrivePoseEstimator.getEstimatedPosition();
     }
 
-    public void setVisionPose(Pose2d pose, double timeStamp, boolean isPresent) {
-       if (isPresent == true){
-        getPosition = swerveDrivePoseEstimator.update(navx.getRotation2d(),
+    public void updateOdometry(){
+         swerveDrivePoseEstimator.update(navx.getRotation2d(),
                 new SwerveModulePosition[] {
                         frontLeft.getPosition(),
                         frontRight.getPosition(),
                         backLeft.getPosition(),
                         backRight.getPosition()
                 });
+    }
+
+    public void setVisionPose(Pose2d pose, double timeStamp) {
         swerveDrivePoseEstimator.addVisionMeasurement(pose, timeStamp);
         
-        }else if(isPresent == false){
-            getPosition = swerveDrivePoseEstimator.update(navx.getRotation2d(),
-                new SwerveModulePosition[] {
-                        frontLeft.getPosition(),
-                        frontRight.getPosition(),
-                        backLeft.getPosition(),
-                        backRight.getPosition()
-                });
-        }
 
         SmartDashboard.putNumber("Current X", getPosition.getX());
         SmartDashboard.putNumber("Current Y", getPosition.getY());
@@ -147,10 +182,63 @@ public class Drive extends SubsystemBase {
         SmartDashboard.putNumber("Estimated Rotation", swerveDrivePoseEstimator.getEstimatedPosition().getRotation().getDegrees());
 
     }
+    private double getAngleRate() {
+        switch (angleMode) {
+            case LookAtPoint:
+                return calcRateToPoint(targetPoint, targetAngle);
+            case Angle:
+                return calcRateToAngle(targetAngle);
+            case AngleRate:
+            default:
+                return rSpeed;    
+        }
+    }
+
+    private double calcRateToAngle(Rotation2d targetAngle) { 
+        // Get current angle position
+        Pose2d pose = getEstimatedPos();
+        Rotation2d currentAngle = pose.getRotation();
+
+        return calcRateToAngle(targetAngle, currentAngle);
+    }
+
+    private double calcRateToAngle(Rotation2d targetAngle, Rotation2d currentAngle) {
+        Rotation2d rampDistance = Rotation2d.fromRadians(0.5);    // TODO move to constants
+
+        // Determine minimum error distance
+        double error = currentAngle.minus(targetAngle).getRadians();
+        double compError = 2 * Math.PI - Math.abs(error);
+        double minError = Math.min(Math.abs(error), Math.abs(compError));
+
+        // Calculate ramp down speed
+        double speed = Math.min(minError * rampDistance.getRadians(), Constants.kMaxAngularSpeed);
+        
+        // Set direction
+        double direction = error > 0 ? 1 : -1;
+        if (minError == compError)  direction *= -1;
+        speed *= direction;
+
+        return speed;
+    }
+
+    /**
+     * Calculates the angle rate to look at a target point
+     * @param   point   target point
+     * @param   offset  target orientation offset
+     */
+    private double calcRateToPoint(Translation2d point, Rotation2d offset) {
+        Pose2d pose = getEstimatedPos();
+        Translation2d targetOffset = targetPoint.minus(pose.getTranslation());
+        Rotation2d targetAngle = targetOffset.getAngle().plus(offset);
+
+        return calcRateToAngle(targetAngle, pose.getRotation());
+    }
 
     @Override
     public void periodic() {
         // System.out.println("I'm Working");
+        updateOdometry();
+        updateKinematics();
     }
 
     /**
