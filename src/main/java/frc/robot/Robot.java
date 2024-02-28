@@ -38,6 +38,9 @@ public class Robot extends TimedRobot {
   private Arm arm;
   private Climber climber;
   private IntakePizzaBox intake;
+  private Pneumatics pneumatics;
+
+  private final Compressor m_compressor;
 
   @Override
   public void robotInit() {
@@ -47,6 +50,7 @@ public class Robot extends TimedRobot {
     arm = Arm.getInstance();
     climber = Arm.getInstance();
     intake = IntakePizzaBox.getInstance();
+    pneumatics = Pneumatics.GetInstance();
 
     try {
       autonCommand = forwardAuton.getCommand();
