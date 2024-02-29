@@ -38,7 +38,7 @@ public class Camera extends SubsystemBase {
             
     private double lastTimeStamp;
 
-    private Transform2d fieldCenterOffset = new Transform2d(8.270875, 4.105275, new Rotation2d()); // TODO Move to constants
+    private Transform2d fieldCenterOffset = new Transform2d(-8.270875, -4.105275, new Rotation2d(0.0)); // TODO Move to constants
 
     /**
      * Constructor
