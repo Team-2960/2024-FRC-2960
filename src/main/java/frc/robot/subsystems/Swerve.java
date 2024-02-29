@@ -22,169 +22,176 @@ import frc.robot.Constants;
 
 public class Swerve extends SubsystemBase {
 
-        private final TalonFX mDrive;
+    private String swerveName;
 
-        private final CANSparkMax mAngle;
+    private final TalonFX mDrive;
 
-        private final SparkAbsoluteEncoder encAngle;
+    private final CANSparkMax mAngle;
 
-        private final PIDController drivePIDcontroller;
+    private final SparkAbsoluteEncoder encAngle;
 
-        private final ProfiledPIDController angleProfiledPIDController;
+    private final PIDController drivePIDcontroller;
+    private final SimpleMotorFeedforward driveFeedforward;
+    
+    private final PIDController anglePIDController;
+    private final SimpleMotorFeedforward angleFeedforward;
+
+    private SwerveModuleState desiredState;
+
+    private GenericEntry sb_angleSetPoint;
+    private GenericEntry sb_angleCurrent;
+    private GenericEntry sb_driveSetPoint;
+    private GenericEntry sb_driveCurrent;
+
+    public final double driveRatio =  Constants.wheelCirc / Constants.driveGearRatio;   // TODO Move to constants
+
+    public Swerve(int driveMotorID, int angleMotorID, int angleMotorEncID, String swerveName) {
+        // Initialize Motors
+        mDrive = new TalonFX(driveMotorID);
+        mAngle = new CANSparkMax(angleMotorID, MotorType.kBrushless);
+
+        // Initalize Angle Sensor
+        encAngle = mAngle.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
+
+        // Set swerve name
+        this.swerveName = swerveName;
+
+        // Initialize Drive rate controllers 
+        drivePIDcontroller = new PIDController(Constants.driveSwerveP, Constants.driveSwerveI,
+                Constants.driveSwerveD);
+        driveFeedforward = new SimpleMotorFeedforward(Constants.driveSwerveSFF, Constants.driveSwerveVFF,
+                Constants.driveSwerveAFF);
+
+        // Initalize angle position controllers
+        AngleTrapezoidProfile = new TrapezoidProfile.Constraints(Constants.maxSwerveAngularSpeed,
+                Constants.maxSwerveAngularAccel);
+
+        anglePIDController = new PIDController(Constants.angleSwerveP, Constants.angleSwerveI, Constants.angleSwerveD);
+        angleFeedforward = new SimpleMotorFeedforward(Constants.angleSwerveSFF, Constants.angleSwerveVFF,
+                Constants.angleSwerveAFF);
         
-        private final PIDController AnglePIDController;
+        //Initialize desired state
+        desiredState = new SwerveModuleState();
 
-        // TODO Move to constants
-        private final TrapezoidProfile.Constraints AngleTrapezoidProfile;
+        // Setup Shuffleboard
+        
+    }
 
-        private final SimpleMotorFeedforward driveFeedforward;
+    /**
+     * Gets the current swerve module angle
+     * @return  current swerve module angle
+     */
+    public Rotation2d getAnglePos() {
+        return Rotation2d.fromRotations(encAngle.getPosition());
+    }
 
-        private final SimpleMotorFeedforward angleFeedforward;
+    /**
+     * Get the current swerve module angle rate
+     */
+    public double getAngleRate() {
+        return encAngle.GetVelocity()
+    }
 
-        private SwerveModuleState desiredState;
+    /**
+     * Gets the current swerve module drive distance
+     * @return  current swerve module drive distance
+     */
+    public double gettDrivePos() {
+        return mDrive.getPosition().getValueAsDouble() * driveRatio;
+    }
 
-        private String swerveName;
+    /**
+     * Gets the current swerve module drive speed
+     * @return  current swerve module drive speed
+     */
+    public double getDriveVelocity() {
+        return mDrive.getVelocity().getValueAsDouble() * driveRatio;
+    }
 
-        public Swerve(int driveMotorID, int angleMotorID, int angleMotorEncID, String swerveName) {
+    /**
+     * Gets the current swerve module positions
+     * @return  current swerve module positions 
+     */
+    public SwerveModulePosition getPosition() {
+        return new SwerveModulePosition(getDrivePos(),getAnglePos());
+    }
 
-                mDrive = new TalonFX(driveMotorID);
-                mAngle = new CANSparkMax(angleMotorID, MotorType.kBrushless);
-                encAngle = mAngle.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
+    /**
+     * Gets the current swerve module state
+     * @return  current swerve module state
+     */
+    public SwerveModuleState getState() {
+        return new SwerveModuleState(getDriveVelocity(),
+                getCurrentAngle());
+    }
 
-                this.swerveName = swerveName;
+    /**
+     * Sets the desired module state
+     * @param   desiredState    desired state of the swerve module
+     */
+    public void setDesiredState(SwerveModuleState desiredState) {
+        this.desiredState = desiredState;
+    }
 
+    /**
+     * Subsystem period update
+     */
+    @Override
+    public void periodic() {
+
+        updateDrive();
+        updateAngle();
+        updateUI();
+    }
+
+    /**
+     * Updates the drive rate controllers
+     */
+    private void updateDrive() {
+        // Calculate the drive output from the drive PID controller.
+        double pidOutput = drivePIDcontroller.calculate(getCurrentVelocity(),
+                state.speedMetersPerSecond);
+
+        double ffOutput = driveFeedforward.calculate(state.speedMetersPerSecond);
+
+        mDrive.setVoltage(pidOutput + ffOutput);
+    }
+
+    /**
+     * Updates the angle position and rate controllers
+     */
+    private void updateAngle() {
+        // Get current module angle
+        Rotation2d encoderRotation = getCurrentAngle();
+
+        //Optimize desired state
+        SwerveModuleState state = SwerveModuleState.optimize(desiredState, encoderRotation);
+        
+        // Calculate target rate
+        double error = encoderRotation.getRadians() - state.angle.getRadians();
+        double compError = 2 * Math.PI - (Math.abs(error));
+        double compareError = Math.min(Math.abs(error), compError);
+        double direction = error > 0 ? 1 : -1;
+        double rampRate = 20; // TODO Move to constants
+        
+        if(compareError == compError) direction *= -1;
+            
+        double finalError = compareError * direction;
+        double angleVelocity = finalError * rampRate;
+        
+        // Calcualate motor output
+        double pidOutput = anglePIDController.calculate(getAngleRate(), angleVelocity);
                 
-                //Drive control
-                drivePIDcontroller = new PIDController(Constants.driveSwerveP, Constants.driveSwerveI,
-                                Constants.driveSwerveD);
-                driveFeedforward = new SimpleMotorFeedforward(Constants.driveSwerveSFF, Constants.driveSwerveVFF,
-                                Constants.driveSwerveAFF);
-
-                //Angle control
-                AngleTrapezoidProfile = new TrapezoidProfile.Constraints(Constants.maxSwerveAngularSpeed,
-                                Constants.maxSwerveAngularAccel);
-                angleProfiledPIDController = new ProfiledPIDController(Constants.angleSwerveP, Constants.angleSwerveI,
-                                Constants.angleSwerveD,
-                                AngleTrapezoidProfile);
-
-                AnglePIDController = new PIDController(Constants.angleSwerveP, Constants.angleSwerveI, Constants.angleSwerveD);
-                angleFeedforward = new SimpleMotorFeedforward(Constants.angleSwerveSFF, Constants.angleSwerveVFF,
-                                Constants.angleSwerveAFF);
-
-                //Configure anglePID
-                angleProfiledPIDController.enableContinuousInput(-Math.PI, Math.PI);
-
-                
-                //Initialize desired state
-                desiredState = new SwerveModuleState();
-        }
-
-         public Rotation2d getCurrentAngle(){
-                return
-                new Rotation2d(encAngle.getPosition() * (2 * Math.PI));
-        }
-        public double getCurrentVelocity(){
-                return
-                (mDrive.getVelocity().getValueAsDouble()/Constants.driveGearRatio)
-                        * Constants.wheelCirc;
-        }
-        public double getCurrentDrivePos(){
-                return
-                (mDrive.getPosition().getValueAsDouble()/Constants.driveGearRatio)
-                        * Constants.wheelCirc;
-        }
-        public SwerveModulePosition getPosition() {
-                return new SwerveModulePosition(getCurrentDrivePos(),
-                                getCurrentAngle());
-        }
-        public SwerveModuleState getState() {
-                return new SwerveModuleState(getCurrentVelocity(),
-                                getCurrentAngle());
-        }
-
-       
-
-        public void setDesiredState(SwerveModuleState desiredState) {
-                this.desiredState = desiredState;
-        }
-
-       
-
-        @Override
-        public void periodic() {
-                var encoderRotation = getCurrentAngle();
-
-                //Optimize desired state
-                SwerveModuleState state = SwerveModuleState.optimize(desiredState, encoderRotation);
-
-                // Scale speed by cosine of angle error. This scales down movement perpendicular
-                // to the desired
-                // direction of travel that can occur when modules change directions. This
-                // results in smoother
-                // driving.
-                // state.speedMetersPerSecond *= state.angle.minus(encoderRotation).getCos();
-
-                // Calculate the drive output from the drive PID controller.
-                double curMetersPerSecond = getCurrentVelocity();
-                 double driveOutput = drivePIDcontroller.calculate(curMetersPerSecond,
-                                state.speedMetersPerSecond);
-
-                final double outputDriveFF = driveFeedforward.calculate(state.speedMetersPerSecond);
-
-                // Calculate the turning motor output from the turning PID controller.
-                double turnOutput = angleProfiledPIDController
-                                .calculate(encoderRotation.getRadians(), state.angle.getRadians());
-                
-                double error = encoderRotation.getRadians() - state.angle.getRadians();
-                double compError = 2*Math.PI - (Math.abs(error));
-                double compareError = Math.min(Math.abs(error), compError);
-                double direction;
-                double rampRate = 20;
-                
-                if(error < 0){
-                        direction = -1;
-                }else{
-                        direction = 1;
-                }
-
-                if(compareError == compError){
-                        direction *= -1;
-                }
-                double finalError = compareError * direction;
-                double angleVelocity = finalError * rampRate;
-                double turnOutput1 = AnglePIDController
-                                .calculate(angleVelocity);
-                //System.out.println("Current" + encoderRotation.getRadians() + " Desired" + state.angle.getRadians());
-                double outputAngleFF = angleFeedforward
-                                .calculate(angleVelocity);
-
-                mDrive.setVoltage(driveOutput + outputDriveFF);
-
-                mAngle.setVoltage(turnOutput1 + outputAngleFF);
+        double ffOutput = angleFeedforward.calculate(angleVelocity);
 
 
-                
-                
-                /* 
-                SmartDashboard.putNumber("driveOutput", driveOutput);
-                SmartDashboard.putNumber("turnOutput", turnOutput);
-                SmartDashboard.putNumber("outputDriveFF", outputDriveFF);
-                SmartDashboard.putNumber("outputAngleFF", outputAngleFF);
+        mAngle.setVoltage(pidOutput + ffOutput);
+    }
 
-                SmartDashboard.putNumber("driveVelocity", mDrive.getVelocity().getValueAsDouble());
-                SmartDashboard.putNumber("state.SpeedMeters/second", state.speedMetersPerSecond);
-                */
-                /*
-                var swerve_tab = Shuffleboard.getTab("Swerve");
-                var module_layout = swerve_tab.getLayout(swerveName, BuiltInLayouts.kList);
+    /**
+     * Updated shuffleboard outputs
+     */
+    private void updateUI() {
 
-                module_layout.add(swerveName + "_AngleFF", outputAngleFF);
-                module_layout.add(swerveName + "PIDAngleOutput",turnOutput1);
-                module_layout.add(swerveName + "_CurrentAngleSpeed", encAngle.getVelocity().getValueAsDouble() * 2*Math.PI);
-                module_layout.add(swerveName + "DesiredAngle", state.angle.getRadians());
-                module_layout.add(swerveName+ "CurrentAngle", encoderRotation.getRadians());
-                module_layout.add(swerveName + "_Error", error);
-                */
-        }
-
+    }
 }
