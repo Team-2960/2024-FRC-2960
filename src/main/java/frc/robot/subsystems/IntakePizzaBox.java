@@ -33,22 +33,48 @@ public class IntakePizzaBox extends SubsystemBase{
 
     PizzaboxState state;
 
+    private GenericEntry sb_state;
+    private GenericEntry sb_shooter1Volt;
+    private GenericEntry sb_shooter2Volt;
+    private GenericEntry sb_shooter1Rate;
+    private GenericEntry sb_shooter2Rate;
+    private GenericEntry sb_intakeRollerVolt;
+    private GenericEntry sb_intakeRollerRate;
+    private GenericEntry sb_notePresent;
+
     /**
      * Constructor
      */
     private IntakePizzaBox(){
-       intakeRollers = new TalonFX(0);
+        // Initialize Intake Motor  
+        intakeRollers = new TalonFX(0);
 
-       shooter1 = new CANSparkMax(0, MotorType.kBrushless);
-       shooter2 = new CANSparkMax(0, MotorType.kBrushless);
-       shooter2.follow(shooter1, true);
+        // Initialize Shooter Motors
+        shooter1 = new CANSparkMax(0, MotorType.kBrushless);
+        shooter2 = new CANSparkMax(0, MotorType.kBrushless);
+        shooter2.follow(shooter1, true);
 
-       shootEncoder1 = shooter1.getEncoder();
-       shootEncoder2 = shooter1.getEncoder();
+        // Initialize Shooter Encoders
+        shootEncoder1 = shooter1.getEncoder();
+        shootEncoder2 = shooter1.getEncoder();
 
-       photoeye = new DigitalInput(0);
-       
-       state = PizzaboxState.IDLE;
+        // Initialize photoeye
+        photoeye = new DigitalInput(0);
+        
+        // Initialize state
+        state = PizzaboxState.IDLE;
+
+        // Setup Shuffleboard
+        var layout = Shuffleboard.getTab("Status").getLayout("Pizzabox");
+
+        sb_state = layout.add("State", state.name());
+        sb_shooter1Volt = layout.add("Shooter 1 Voltage", 0);
+        sb_shooter2Volt = layout.add("Shooter 2 Voltage", 0);
+        sb_shooter1Rate = layout.add("Shooter 1 Rate", 0);
+        sb_shooter2Rate = layout.add("Shooter 2 Rate", 0);
+        sb_intakeRollerVolt = layout.add("Intake Roller Voltage", 0);
+        sb_intakeRollerRate = layout.add("Intake Roller Rate", 0);
+        sb_notePresent = layout.add("Note Present", false);
     }
 
     /**
@@ -111,6 +137,17 @@ public class IntakePizzaBox extends SubsystemBase{
             intakeRollers.set(0);
         }
 
+    }
+
+    private void updateUI() {
+        sb_state.setString(state.name());
+        sb_shooter1Volt.setDouble(shooter1.getBusVoltage() * shooter1.getAppliedOutput());
+        sb_shooter2Volt.setDouble(shooter1.getBusVoltage() * shooter1.getAppliedOutput());
+        sb_shooter1Rate.setDouble(shootEncoder1.getVelocity()); 
+        sb_shooter2Rate.setDouble(shootEncoder2.getVelocity());
+        sb_intakeRollerVolt.setDouble(intakeRollers.getMotorVoltage());
+        sb_intakeRollerRate.setDouble(intakeRollers.getVelocity());
+        sb_notePresent.setBoolean(isNotePresent());
     }
 
     /**
