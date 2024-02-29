@@ -40,8 +40,10 @@ public class Swerve extends SubsystemBase {
 
     private GenericEntry sb_angleSetPoint;
     private GenericEntry sb_angleCurrent;
+    private GenericEntry sb_angleVolt;
     private GenericEntry sb_driveSetPoint;
     private GenericEntry sb_driveCurrent;
+    private GenericEntry sb_driveVolt;
 
     public final double driveRatio =  Constants.wheelCirc / Constants.driveGearRatio;   // TODO Move to constants
 
@@ -74,7 +76,14 @@ public class Swerve extends SubsystemBase {
         desiredState = new SwerveModuleState();
 
         // Setup Shuffleboard
-        
+        var layout = Shuffleboard.getTab("Status").getLayout(swerveName + " Swerve");
+        sb_angleSetPoint = layout.add("Angle Desired", 0);
+        sb_angleCurrent = layout.add("Angle Current", 0);
+        sb_angleVolt = layout.add("Angle Voltage", 0);
+
+        sb_driveSetPoint = layout.add("Drive Desired", 0);
+        sb_driveCurrent = layout.add("Drive Current", 0);
+        sb_driveVolt = layout.add("Drive Voltage", 0);
     }
 
     /**
@@ -138,16 +147,18 @@ public class Swerve extends SubsystemBase {
      */
     @Override
     public void periodic() {
+        //Optimize desired state
+        SwerveModuleState state = SwerveModuleState.optimize(desiredState, encoderRotation);
 
-        updateDrive();
-        updateAngle();
+        updateDrive(state);
+        updateAngle(state);
         updateUI();
     }
 
     /**
      * Updates the drive rate controllers
      */
-    private void updateDrive() {
+    private void updateDrive(SwerveModuleStates state) {
         // Calculate the drive output from the drive PID controller.
         double pidOutput = drivePIDcontroller.calculate(getCurrentVelocity(),
                 state.speedMetersPerSecond);
@@ -160,12 +171,9 @@ public class Swerve extends SubsystemBase {
     /**
      * Updates the angle position and rate controllers
      */
-    private void updateAngle() {
+    private void updateAngle(SwerveModuleStates state) {
         // Get current module angle
         Rotation2d encoderRotation = getCurrentAngle();
-
-        //Optimize desired state
-        SwerveModuleState state = SwerveModuleState.optimize(desiredState, encoderRotation);
         
         // Calculate target rate
         double error = encoderRotation.getRadians() - state.angle.getRadians();
@@ -184,7 +192,7 @@ public class Swerve extends SubsystemBase {
                 
         double ffOutput = angleFeedforward.calculate(angleVelocity);
 
-
+        // Set Motor Output
         mAngle.setVoltage(pidOutput + ffOutput);
     }
 
@@ -192,6 +200,11 @@ public class Swerve extends SubsystemBase {
      * Updated shuffleboard outputs
      */
     private void updateUI() {
-
+        sb_angleSetPoint.setDouble(desiredState.angle.getDegrees());
+        sb_angleCurrent.setDouble(getAnglePos());
+        sb_angleVolt.setDouble(mAngle.getBusVoltage() * mAngle.getAppliedOuput());
+        sb_driveSetPoint.setDouble(state.speedMetersPerSecond);
+        sb_driveCurrent.setDouble(getCurrentVelocity());
+        sb_driveVolt.setDouble(mDrive.getMotorVoltage());
     }
 }
