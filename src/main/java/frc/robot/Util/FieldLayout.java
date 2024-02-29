@@ -85,6 +85,12 @@ public class FieldLayout {
         NoteType.FAR_AMP2, cNoteAmp2
     )
 
+    public static final double rAutoLineX = 6.137;  // Meters
+    public static final double bAutoLineX = -6.137; // Meters
+
+    public static final double rWingLineX = 2.338; // Meters
+    public static final double bWingLineX = -2.338; // Meters
+
     /**
      * Gets the pose of the speaker for the current alliance
      * @return  pose of the speaker for the current alliance
@@ -156,6 +162,30 @@ public class FieldLayout {
             return rNotes.get(note_type);
         } else {
             return bNotes.get(note_type);
+        }
+    }
+
+    /**
+     * Gets the x position of the autoline for the current alliance
+     * @return  x position of the autoline for the current alliance
+     */
+    public double getAutoLineX() {
+        if(Drivestation.getAlliance() == Drivestation.Alliance.Red) {
+            return rAutoLineX;
+        } else {
+            return bAutoLineX;
+        }
+    }
+
+    /**
+     * Gets the x position of the wing line for the current alliance
+     * @return  x position of the wing line for the current alliance
+     */
+    public double getWingLineX() {
+        if(Drivestation.getAlliance() == Drivestation.Alliance.Red) {
+            return rWingLineX;
+        } else {
+            return bWingLineX;
         }
     }
 }
