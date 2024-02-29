@@ -17,14 +17,6 @@ public class OperatorInterface extends SubsystemBase {
     private static Joystick driverController;
     private static Joystick operatorController;
 
-    // Create the OI if doesn't exist
-    public static OperatorInterface get_OperatorInterface() {
-        if (oi == null) {
-            oi = new OperatorInterface();
-        }
-        return oi;
-    }
-
     private OperatorInterface() {
         // Initiating Subystems
 
