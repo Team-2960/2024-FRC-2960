@@ -31,7 +31,7 @@ public class IntakePizzaBox extends SubsystemBase{
 
     private DigitalInput photoeye;
 
-    PizzaboxState state;
+    private PizzaboxState state;
 
     private GenericEntry sb_state;
     private GenericEntry sb_shooter1Volt;
