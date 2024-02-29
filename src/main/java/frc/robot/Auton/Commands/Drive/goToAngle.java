@@ -1,4 +1,4 @@
-package frc.robot.Auton.Commands;
+package frc.robot.Auton.Commands.Drive;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;

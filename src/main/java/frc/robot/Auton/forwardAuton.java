@@ -6,7 +6,8 @@ import com.ctre.phoenix6.configs.GyroTrimConfigs;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj2.command.*;
-import frc.robot.Auton.Commands.*;
+import frc.robot.Auton.Commands.Drive.*;
+import frc.robot.Auton.Commands.Arm.*;
 
 public class forwardAuton {
     public static Command getCommand() {
