@@ -13,6 +13,10 @@ public class goToPosition extends Command {
 
     Drive drive;
 
+    public goToPosition(double x, double y, double speed, double tolerance) {
+        this(new Translation2d(x, y), speed, tolerance);
+    }
+
     public goToPosition(Translation2d targetPos, double speed, double tolerance) {
         this.targetPos = targetPos;
         this.speed = speed;

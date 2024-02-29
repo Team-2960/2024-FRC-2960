@@ -16,6 +16,10 @@ public class alignToPoint extends Command {
 
     Drive drive;
 
+    public alignToPoint(double x, double y, Rotation2d tolerance) {
+        this(new Translation2d(x, y), tolerance);
+    }
+
     /**
      * Constructor
      * @param   targetPoint     Point for the robot to track
