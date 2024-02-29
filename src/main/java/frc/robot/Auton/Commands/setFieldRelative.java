@@ -8,7 +8,7 @@ import frc.robot.Constants;
 import frc.robot.subsystems.Drive;
 
 
-public class setFieldRelative extends Commands {
+public class setFieldRelative extends Command {
     boolean isFieldRelative;
 
     Drive drive;
@@ -25,6 +25,6 @@ public class setFieldRelative extends Commands {
 
     @Override
     public void execute() {
-        drive.setFieldRelative(isFieldRelative);
+        Drive.getInstance().setfieldRelative(isFieldRelative);
     }
 }

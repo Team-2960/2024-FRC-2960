@@ -1,7 +1,6 @@
 package frc.robot.Auton.Commands;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
@@ -23,7 +22,7 @@ public class alignToPoint extends Command {
      * @param   tolerance       Angle tolerance on tracking the target
      */
     public alignToPoint(Translation2d targetPoint, Rotation2d tolerance) {
-        this.alignToPoint(targetPoint, Rotaiton2d(), speed, tolerance);
+        this(targetPoint, new Rotation2d(), tolerance);
     }
 
     /**
@@ -37,7 +36,7 @@ public class alignToPoint extends Command {
         this.offsetAngle = offsetAngle;
         this.tolerance = tolerance;
 
-        drive = Drive.get_instance();
+        drive = Drive.getInstance();
     }
 
     /**
@@ -60,7 +59,7 @@ public class alignToPoint extends Command {
      * Initialize command
      */
     @Override
-    public void initiaize() {
+    public void initialize() {
         // Set robot to target point tracking mode
         drive.setTargetPoint(targetPoint, offsetAngle);
     }
@@ -71,5 +70,6 @@ public class alignToPoint extends Command {
     @Override
     public boolean isFinished() {
         // Check if the robot is at the target angle
-        return Math.abs(getTargetError().toRadians()) < tolerance.toRadians();
+        return Math.abs(getTargetError().getRadians()) < tolerance.getRadians();
     }
+}

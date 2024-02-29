@@ -17,7 +17,7 @@ public class goToAngle extends Command {
         this.targetAngle = targetAngle;
         this.tolerance = tolerance;
 
-        drive = Drive.get_instance();
+        drive = Drive.getInstance();
     }
 
     public Rotation2d getTargetError() {
@@ -25,11 +25,12 @@ public class goToAngle extends Command {
     }
 
     @Override
-    public void initiaize() {
+    public void initialize() {
         drive.setTargetAngle(targetAngle);
     }
 
     @Override
     public boolean isFinished() {
-        return Math.abs(getTargetError().toRadians()) < tolerance.toRadians();
+        return Math.abs(getTargetError().getRadians()) < tolerance.getRadians();
     }
+}

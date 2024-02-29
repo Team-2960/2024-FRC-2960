@@ -49,8 +49,6 @@ public class Drive extends SubsystemBase {
     private final SwerveDrivePoseEstimator swerveDrivePoseEstimator;
 
     private final SwerveDriveKinematics kinematics;
-    private Pose2d getPosition;
-    private Pose2d initialPosition;
 
     private double xSpeed = 0;
     private double ySpeed = 0;
@@ -59,32 +57,6 @@ public class Drive extends SubsystemBase {
     private Translation2d targetPoint = new Translation2d();
     private AngleControlMode angleMode = AngleControlMode.AngleRate;
     private boolean fieldRelative = true;
-
-
-    /**
-     * Class for updating shuffleboard
-     */
-    public class DriveDiag extends ComplexData<DriveDiag> {
-        
-        private Drive drive;
-
-        public DriveDiag(Drive drive) {
-            this.drive = drive;
-        }
-
-        @Override
-        public Map<String, Object> asMap() {
-            Pose2d pose = drive.getEstimatedPos();
-
-
-            return Map.of(
-                "x", pose.getX(),
-                "y", pose.getY(),
-                "r", pose.getRotation().getDegrees()
-                );
-        }
-
-    }
 
     /**
      * Constructor
@@ -118,12 +90,6 @@ public class Drive extends SubsystemBase {
                 new Pose2d(),
                 VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
                 VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
-
-        
-        var tab = Shuffleboard.getTab("Diag");
-        var layout = tab.getLayout("Drive", BuiltInLayouts.kList);
-        
-        elevatorCommands.add("Estimated Position", new DriveDiag(this));
     }
 
     /**
@@ -155,7 +121,7 @@ public class Drive extends SubsystemBase {
         double xSpeed = Math.cos(heading.getRadians()) * speed;
         double ySpeed = Math.sin(heading.getRadians()) * speed;
         
-        set_speed(xSpeed, ySpeed);
+        setSpeed(xSpeed, ySpeed);
     }
 
     /**

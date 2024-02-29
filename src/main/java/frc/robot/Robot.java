@@ -12,8 +12,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Auton.forwardAuton;
-import frc.robot.subsystems.Camera;
-import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.*;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -31,32 +30,26 @@ public class Robot extends TimedRobot {
    * initialization code.
    */
   private Command autonCommand;
-  
+
   private Drive drive;
-  private IO oi;
+  private OperatorInterface oi;
   private Camera camera;
   private Arm arm;
   private Climber climber;
   private IntakePizzaBox intake;
   private Pneumatics pneumatics;
 
-  private final Compressor m_compressor;
-
   @Override
   public void robotInit() {
     drive = Drive.getInstance();
     oi = OperatorInterface.getInstance();
-    vision = Camera.getInstance();
+    camera = Camera.getInstance();
     arm = Arm.getInstance();
-    climber = Arm.getInstance();
+    climber = Climber.getInstance();
     intake = IntakePizzaBox.getInstance();
-    pneumatics = Pneumatics.GetInstance();
+    pneumatics = Pneumatics.getInstance();
 
-    try {
-      autonCommand = forwardAuton.getCommand();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    autonCommand = forwardAuton.getCommand();
 
   }
 

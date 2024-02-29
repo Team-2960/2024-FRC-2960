@@ -4,11 +4,9 @@ import java.io.IOException;
 
 import com.ctre.phoenix6.configs.GyroTrimConfigs;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import frc.robot.Auton.Commands.goToPosition;
-import frc.robot.Auton.Commands.goToAngle;
+import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.wpilibj2.command.*;
+import frc.robot.Auton.Commands.*;
 
 public class forwardAuton {
     public static Command getCommand() {

@@ -16,6 +16,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -37,7 +38,7 @@ public class Camera extends SubsystemBase {
             
     private double lastTimeStamp;
 
-    private Transform2d fieldCenterOffset = new Transform2d(8.270875, 4.105275, 0); // TODO Move to constants
+    private Transform2d fieldCenterOffset = new Transform2d(8.270875, 4.105275, new Rotation2d()); // TODO Move to constants
 
     /**
      * Constructor

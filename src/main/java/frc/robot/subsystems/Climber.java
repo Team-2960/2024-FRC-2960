@@ -1,10 +1,18 @@
 package frc.robot.subsystems;
+
+import edu.wpi.first.hal.CANAPITypes.CANDeviceType;
+import edu.wpi.first.units.Time;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkAbsoluteEncoder;
+import com.revrobotics.SparkLimitSwitch;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 
-public class Climber extends SubsystemBase{
-    
+public class Climber extends SubsystemBase {
+
     public enum ClimberStates {
         MatchStart,
         ClimbStart,
@@ -16,58 +24,62 @@ public class Climber extends SubsystemBase{
     private CANSparkMax winchL;
     private CANSparkMax winchR;
 
-    private RelativeEncoder winchEncodre;
 
     private SparkLimitSwitch winchLimit;
+    private RelativeEncoder winchEncoder;
 
-    private DoubleSolenoid ratchedRelease;
+    private DoubleSolenoid ratchetRelease;
     private Timer ratchetTimer;
 
-    private ClimberState climbState;
+    private ClimberStates climbState;
 
     /**
      * Constructor
      */
     private Climber() {
-        winchL = CANSparkMax(/* TODO Set Left Winch ID */);
-        winchR = CANSparkMax(/* TODO Set Left Winch ID */);
+        winchL = new CANSparkMax(10,MotorType.kBrushless);
+        winchR = new CANSparkMax(9,MotorType.kBrushless);
         winchR.follow(winchL, true);
 
-        winchEncodre = winchL.getEncoder();
-        winchEncodre.setPositionConversionFactor(Math.Pi * 1.5); // TODO Move circumfrance to Constants
+        winchEncoder = winchL.getEncoder();
+        winchEncoder.setPositionConversionFactor(Math.PI * 1.5); // TODO Move circumfrance to Constants
 
         winchLimit = winchL.getForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen);
 
-        climbState = MatchStart;
+        climbState = ClimberStates.MatchStart;
     }
 
     /**
      * Sets the current climber state
-     * @param   climbState  new climber state
+     * 
+     * @param climbState new climber state
      */
-    public void setClimbState(ClimberState climbState) {
+    public void setClimbState(ClimberStates climbState) {
         this.climbState = climbState;
     }
 
     /**
      * Gets the current set state for the climber
-     * @return  current set climber state
+     * 
+     * @return current set climber state
      */
-    public ClimberState getClimbState() {
+    public ClimberStates getClimbState() {
         return climbState;
     }
 
     /**
-     * Gets the current extension distance 
+     * Gets the current extension distance
+     * 
      * @return distance the climber is extended
      */
     public double getExtension() {
-        return winchEncodre.getPosition();
+        return winchEncoder.getPosition();
     }
 
     /**
      * Checks if the climber is hitting the limit sensor
-     * @return  true if the climber is hitting the limit sensor, false otherwise.
+     * 
+     * @return true if the climber is hitting the limit sensor, false otherwise.
      */
     public boolean isDown() {
         return winchLimit.isPressed();
@@ -82,7 +94,8 @@ public class Climber extends SubsystemBase{
 
     /**
      * Checks if the climber is in a position that is clear of the arm
-     * @return  true if the climber is in a position clear of the arm
+     * 
+     * @return true if the climber is in a position clear of the arm
      */
     public boolean isClearOfArm() {
         double armContactHeight = 15;
@@ -94,7 +107,7 @@ public class Climber extends SubsystemBase{
      */
     @Override
     public void periodic() {
-        switch(climbState) {
+        switch (climbState) {
             case MatchStart:
                 retractClimber(.2);
                 break;
@@ -105,22 +118,23 @@ public class Climber extends SubsystemBase{
                 extendClimber();
                 break;
         }
-        
+
         // Reset the climber encoder if the limit switch is set
-        if(isDown()) resetClimber();
+        if (isDown())
+            resetClimber();
     }
 
     /**
      * Retracts the climber until the limit sensor is tripped
      */
     private void retractClimber(double winchSpeed) {
-        ratchedRelease.set(DoubleSolenoid.kReverse);
+        ratchetRelease.set(DoubleSolenoid.Value.kReverse);
 
         if(!isDown()) {
             winchL.set(winchSpeed);
         }else {
             winchL.set(0);
-            resetClimber()
+            resetClimber();
         }
     }
 
@@ -132,23 +146,23 @@ public class Climber extends SubsystemBase{
         double ratchedDelay = .25;  // TODO Move ratchet delay time to constants
 
         // Check if the arm is clear of the climber
-        if(!arm.getInstance().isInClimberZone()) {
+        if(!Arm.getInstance().isInClimberZone()) {
             // Check if the climber is at its max extention
             if(getExtension() < maxExtension) { 
                 // Disengage ratchet
-                if(ratchedRelease.get() != DoubleSolenoid.kForward) ratchetTimer.restart();
-                ratchedRelease.set(DoubleSolenoid.kForward);
+                if(ratchetRelease.get() != DoubleSolenoid.Value.kForward) ratchetTimer.restart();
+                ratchetRelease.set(DoubleSolenoid.Value.kForward);
                 
                 // Extend the climber if the ratchet is disengaged
                 if (ratchetTimer.get() > ratchedDelay) winchL.set(-1);
 
             } else {
-                winchL.set(0)
-                ratchedRelease.set(DoubleSolenoid.kReverse);
+                winchL.set(0);
+                ratchetRelease.set(DoubleSolenoid.Value.kReverse);
             }
         }
     }
-    
+
     /**
      * Static initializer
      */
@@ -160,4 +174,3 @@ public class Climber extends SubsystemBase{
         return climber;
     }
 }
-

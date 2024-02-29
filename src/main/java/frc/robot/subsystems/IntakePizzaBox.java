@@ -4,6 +4,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkAbsoluteEncoder;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.RelativeEncoder;
 
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -47,7 +48,7 @@ public class IntakePizzaBox extends SubsystemBase{
 
        photoeye = new DigitalInput(0);
        
-       state = IDLE;
+       state = PizzaboxState.IDLE;
     }
 
     /**
@@ -77,37 +78,37 @@ public class IntakePizzaBox extends SubsystemBase{
     /**
      * Subsystem periodic function
      */
-    @override
+    @Override
     public void periodic() {
-        if(state == INTAKE) {
+        if(state == PizzaboxState.INTAKE) {
             // Check if a gamepiece is present
             if (isNotePresent()) {
-                intake.set(0);  // Stop intake if a gamepiece is present
+                intakeRollers.set(0);  // Stop intake if a gamepiece is present
             } else {
-                intake.set(1);  // Run motor if no intake is present
+                intakeRollers.set(1);  // Run motor if no intake is present
             }
-        }else if(state == SHOOT_PREP) {
+        }else if(state == PizzaboxState.SHOOT_PREP) {
             shooter1.set(.2);    // Turn shooter to idle speed
-        } else if (state == SHOOT) {
+        } else if (state == PizzaboxState.SHOOT) {
             shooter1.set(1);    // Turn shooter to max power
 
             double minShootSpeed = 500;     // TODO Move to constants
             
             // Check if shooter is ready to shoot
             if(shootEncoder1.getVelocity() > minShootSpeed && shootEncoder2.getVelocity() > minShootSpeed) {
-                intake.set(1);  // Run intake 
+                intakeRollers.set(1);  // Run intake 
             }else{
-                intake.set(0);  // Turn Intake Off
+                intakeRollers.set(0);  // Turn Intake Off
             }
  
-        } else if (state == REVERSE) {
+        } else if (state == PizzaboxState.REVERSE) {
             // Reverse shooter and intake
             shooter1.set(-1);
-            intake.set(-1);
+            intakeRollers.set(-1);
         } else {
             // Turn shooter and intake off
             shooter1.set(0);
-            intake.set(0);
+            intakeRollers.set(0);
         }
 
     }

@@ -46,8 +46,12 @@ public class OperatorInterface extends SubsystemBase {
             double rSpeed =  MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1) * Constants.kMaxAngularSpeed;
 
             
-
-            Drive.get_instance().set_speed(xSpeed, ySpeed, rSpeed, fieldRelative);
+            Drive drive = Drive.getInstance();
+            
+            drive.setfieldRelative(fieldRelative);
+            drive.setSpeed(xSpeed, ySpeed);    
+            drive.setAngleRate(rSpeed);
+                        
             SmartDashboard.putNumber("ySpeed", ySpeed);
             SmartDashboard.putNumber("xSpeed", xSpeed);
             SmartDashboard.putNumber("rSpeed", rSpeed);
@@ -66,7 +70,7 @@ public class OperatorInterface extends SubsystemBase {
 
     }
 
-    public static OperatorInterface get_instance() {
+    public static OperatorInterface getInstance() {
         if (oi == null) {
             oi = new OperatorInterface();
         }
