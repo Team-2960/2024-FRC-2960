@@ -11,7 +11,7 @@ import com.ctre.phoenix6.Orchestra;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Auton.forwardAuton;
+import frc.robot.Auton.AutonList;
 import frc.robot.subsystems.*;
 
 /**
@@ -24,86 +24,84 @@ import frc.robot.subsystems.*;
  * project.
  */
 public class Robot extends TimedRobot {
-  /**
-   * This function is run when the robot is first started up and should be used
-   * for any
-   * initialization code.
-   */
-  private Command autonCommand;
+    /**
+     * This function is run when the robot is first started up and should be used
+     * for any
+     * initialization code.
+     */
+    private Optional<Command> autonCommand;
 
-  private Drive drive;
-  private OperatorInterface oi;
-  private Camera camera;
-  private Arm arm;
-  private Climber climber;
-  private IntakePizzaBox intake;
-  private Pneumatics pneumatics;
+    private Drive drive;
+    private OperatorInterface oi;
+    private Camera camera;
+    private Arm arm;
+    private Climber climber;
+    private IntakePizzaBox intake;
+    private Pneumatics pneumatics;
 
-  @Override
-  public void robotInit() {
-    drive = Drive.getInstance();
-    oi = OperatorInterface.getInstance();
-    camera = Camera.getInstance();
-    arm = Arm.getInstance();
-    climber = Climber.getInstance();
-    intake = IntakePizzaBox.getInstance();
-    pneumatics = Pneumatics.getInstance();
+    @Override
+    public void robotInit() {
+        drive = Drive.getInstance();
+        oi = OperatorInterface.getInstance();
+        camera = Camera.getInstance();
+        arm = Arm.getInstance();
+        climber = Climber.getInstance();
+        intake = IntakePizzaBox.getInstance();
+        pneumatics = Pneumatics.getInstance();
 
-    autonCommand = forwardAuton.getCommand();
+        autonCommand = AutonList.getDefaultCommand();
 
-  }
-
-  @Override
-  public void robotPeriodic() {
-    CommandScheduler.getInstance().run();
-
-  }
-
-  @Override
-  public void autonomousInit() {
-    if (autonCommand != null) {
-      autonCommand.schedule();
     }
-  }
 
-  @Override
-  public void autonomousPeriodic() {
+    @Override
+    public void robotPeriodic() {
+        CommandScheduler.getInstance().run();
 
-  }
+    }
 
-  @Override
-  public void teleopInit() {
+    @Override
+    public void autonomousInit() {
+        if (autonCommand.isPresent()) autonCommand.get().schedule();
+    }
 
-  }
+    @Override
+    public void autonomousPeriodic() {
 
-  @Override
-  public void teleopPeriodic() {
+    }
 
-  }
+    @Override
+    public void teleopInit() {
 
-  @Override
-  public void disabledInit() {
-  }
+    }
 
-  @Override
-  public void disabledPeriodic() {
+    @Override
+    public void teleopPeriodic() {
 
-  }
+    }
 
-  @Override
-  public void testInit() {
-  }
+    @Override
+    public void disabledInit() {
+    }
 
-  @Override
-  public void testPeriodic() {
-  }
+    @Override
+    public void disabledPeriodic() {
 
-  @Override
-  public void simulationInit() {
-  }
+    }
 
-  @Override
-  public void simulationPeriodic() {
-  }
+    @Override
+    public void testInit() {
+    }
+
+    @Override
+    public void testPeriodic() {
+    }
+
+    @Override
+    public void simulationInit() {
+    }
+
+    @Override
+    public void simulationPeriodic() {
+    }
 
 }

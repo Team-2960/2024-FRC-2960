@@ -44,4 +44,8 @@ public class AutonList {
 
         return Optional<Comamnds>.ofNullable(auton);
     }
+
+    public static Optional<Comamnds> getDefaultCommands() {
+        return getCommands("Shoot and Drive");
+    }
 }
