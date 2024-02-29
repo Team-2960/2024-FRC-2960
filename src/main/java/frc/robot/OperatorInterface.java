@@ -58,8 +58,10 @@ public class OperatorInterface extends SubsystemBase {
     private void updateDrive() {
         boolean fieldRelative = !driverController.getRawButton(1);
         
-        double xSpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.1) * Constants.kMaxSpeed;
-        double ySpeed = -MathUtil.applyDeadband(driverController.getRawAxis(1), 0.1) * Constants.kMaxSpeed;
+        double alliance_dir = DriverStation.getAlliance() == Alliance.Red ? 1 : -1;
+
+        double xSpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.1) * Constants.kMaxSpeed * alliance_dir;
+        double ySpeed = -MathUtil.applyDeadband(driverController.getRawAxis(1), 0.1) * Constants.kMaxSpeed * alliance_dir;
         double rSpeed =  MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1) * Constants.kMaxAngularSpeed;
 
         Drive drive = Drive.getInstance();
