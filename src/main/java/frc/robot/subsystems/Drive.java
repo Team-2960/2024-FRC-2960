@@ -58,26 +58,35 @@ public class Drive extends SubsystemBase {
     private AngleControlMode angleMode = AngleControlMode.AngleRate;
     private boolean fieldRelative = true;
 
+    private GenericEntry sb_posEstX;
+    private GenericEntry sb_posEstY;
+    private GenericEntry sb_posEstR;
+
     /**
      * Constructor
      */
     private Drive() {
+        // Set swerve drive positions
         frontLeftLocation = new Translation2d(-0.3302, 0.3302);
         frontRightLocation = new Translation2d(0.3302, 0.3302);
         backLeftLocation = new Translation2d(-0.3302, -0.3302);
         backRightLocation = new Translation2d(0.3302, -0.3302);
 
+        // Initialize Swerve Kinematics
         kinematics = new SwerveDriveKinematics(
                 frontLeftLocation, frontRightLocation, backLeftLocation, backRightLocation);
 
+        // Create swerve drive module objects
         frontLeft = new Swerve(Constants.frontLeftDriveM, Constants.frontLeftAngleM, Constants.frontLeftAngleENC, "FrontLeft");
         frontRight = new Swerve(Constants.frontRightDriveM, Constants.frontRightAngleM, Constants.frontRightAngleENC, "FrontRight");
         backLeft = new Swerve(Constants.backLeftDriveM, Constants.backLeftAngleM, Constants.backLeftAngleENC, "BackLeft");
         backRight = new Swerve(Constants.backRightDriveM, Constants.backRightAngleM, Constants.backRightAngleENC, "BackRight");
 
+        // Initialize NavX
         navx = new AHRS(SPI.Port.kMXP);
         navx.reset();
 
+        // Initialize pose estimation
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
                 kinematics,
                 navx.getRotation2d(),
@@ -90,6 +99,12 @@ public class Drive extends SubsystemBase {
                 new Pose2d(),
                 VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
                 VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
+
+        // Setup Shuffleboard
+        var pose_layout = Shuffleboard.getTab("Status").getLayout("Pose");
+        sb_posEstX = pose_layout.add("Pose X", 0).getEntry();
+        sb_posEstY = pose_layout.add("Pose Y", 0).getEntry();
+        sb_posEstR = pose_layout.add("Pose R", 0).getEntry();
     }
 
     /**
@@ -286,6 +301,13 @@ public class Drive extends SubsystemBase {
         Rotation2d targetAngle = targetOffset.getAngle().plus(offset);
 
         return calcRateToAngle(targetAngle, pose.getRotation());
+    }
+
+    private void updateUI() {
+        Pose2d pose = getEstimatedPos();
+        sb_posEstX.setDouble(pose.getX());
+        sb_posEstY.setDouble(pose.getY());
+        sb_posEstR.setDouble(pose.getRotation().getDegrees());
     }
 
     /**
