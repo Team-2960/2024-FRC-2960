@@ -49,6 +49,9 @@ public class Arm extends SubsystemBase {
         STAGE2
     }
 
+    /**
+     * Defines an arm position state
+     */
     public class ArmStateValues {
         public Rotation2d targetAngle;
         public Rotation2d angleTol;
@@ -85,19 +88,19 @@ public class Arm extends SubsystemBase {
         "Climb Balance", new ArmStateValues(Rotation2d.fromDegrees(80), ExtensionState.STAGE2),
         "Trap Score",   new ArmStateValues(Rotation2d.fromDegrees(70), ExtensionState.STAGE2)
     );
-    
 
-    ArmStateValues matchStart = new ArmStateValues(Rotation2d.fromDegrees(60), ExtensionState.STAGE0);
-    ArmStateValues Home = defaultState;
-    ArmStateValues Intake = new ArmStateValues(Rotation2d.fromDegrees(-5), ExtensionState.STAGE1);
-    ArmStateValues Speaker = new ArmStateValues(Rotation2d.fromDegrees(10), ExtensionState.STAGE0);
-    ArmStateValues Amp = new ArmStateValues(Rotation2d.fromDegrees(60), ExtensionState.STAGE1);
-    ArmStateValues Climb = new ArmStateValues(Rotation2d.fromDegrees(90), ExtensionState.STAGE2);
-    ArmStateValues ClimbBalance = new ArmStateValues(Rotation2d.fromDegrees(80), ExtensionState.STAGE2);
-    ArmStateValues TrapScore = new ArmStateValues(Rotation2d.fromDegrees(70), ExtensionState.STAGE2);
+    private GenericEntry sb_anglePosCurrent;
+    private GenericEntry sb_anglePosSetPoint;
+    private GenericEntry sb_angleRateCurrent;
+    private GenericEntry sb_angleRateSetPoint;
+    private GenericEntry sb_angleM1Volt;
+    private GenericEntry sb_angleM2Volt;
+    private GenericEntry sb_extStage1;
+    private GenericEntry sb_extStage2;
 
-    
-
+    /**
+     * Constructor
+     */
     private Arm() {
         
         armMotor1 = new TalonFX(Constants.armMotor1);
@@ -125,6 +128,17 @@ public class Arm extends SubsystemBase {
         // Set target state to current state
         targetState = new ArmStateValues(getArmAngle(), getArmExtension());
 
+        // Setup Shuffleboard
+        var layout = Shuffleboard.getTab("Status").getLayout("Arm");
+
+        sb_anglePosCurrent = layout.add("Angle Position Current", 0);
+        sb_anglePosSetPoint = layout.add("Angle Position Set Point", 0);
+        sb_angleRateCurrent = layout.add("Angle Rate Current", 0);
+        sb_angleRateSetPoint = layout.add("Angle Rate Set Point", 0);
+        sb_angleM1Volt = layout.add("Angle Motor 1 Voltage", 0);
+        sb_angleM2Volt = layout.add("Angle Motor 2 Voltage", 0);
+        sb_extStage1 = layout.add("Ext Stage 1 State", armExtender1.get().name());
+        sb_extStage2 = layout.add("Ext State 2 State", armExtender2.get().name());
     }
 
     /**
@@ -255,6 +269,7 @@ public class Arm extends SubsystemBase {
     public void periodic(){
         updateAngleControl(getTargetArmRate());
         updateExtension();
+        updateUI();
     }
 
     /**
@@ -370,6 +385,20 @@ public class Arm extends SubsystemBase {
 
         // Reset extension timer of the extension state has chanced
         if(currentState != targetState) extenderTimer.restart();
+    }
+
+    /**
+     * Updates shuffleboard
+     */
+    private void updateUI(double targetRate) {
+        sb_anglePosCurrent.setDouble(absoluteArmEncoder.get());
+        sb_anglePosSetPoint.setDouble(targetState.targetAngle);
+        sb_angleRateCurrent.setDouble(encoder.getVelocity());
+        sb_angleRateSetPoint.setDouble(targetRate);
+        sb_angleM1Volt.setDouble(armMotor1.getMotorVoltage());
+        sb_angleM2Volt.setDouble(armMotor2.getMotorVoltage());
+        sb_extStage1.setString(armExtender1.get().name());
+        sb_extStage2.setString(armExtender2.get().name());
     }
 
     /**
