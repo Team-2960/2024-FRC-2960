@@ -37,6 +37,8 @@ public class Camera extends SubsystemBase {
             
     private double lastTimeStamp;
 
+    private Transform2d fieldCenterOffset = new Transform2d(8.270875, 4.105275, 0); // TODO Move to constants
+
     /**
      * Constructor
      */
@@ -75,8 +77,10 @@ public class Camera extends SubsystemBase {
             // Check if the camera has a new value
             double ts = poseUpdate.timestampSeconds;
             if (lastTimeStamp < ts) {
+                Pose2d pose_est = poseUpdate.estimatedPose.toPose2d().transformBy(fieldCenterOffset);
+
                 // Update drivetrain pose estimation
-                Drive.getInstance().setVisionPose(poseUpdate.estimatedPose.toPose2d(), ts);
+                Drive.getInstance().setVisionPose(pose_est, ts);
 
                 // Update last timestamp
                 lastTimeStamp = ts;
