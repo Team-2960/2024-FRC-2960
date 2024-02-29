@@ -5,6 +5,13 @@ import com.kauailabs.navx.frc.AHRS;
 public class Constants {
     // Robot constants
     public final static double updatePeriod = 0.02;//seconds
+    
+    public final static double robotWidth = 29.5 * .0254;   // Meters 
+    public final static double robotLength = 29.5 * .0254;  // Meters 
+    public final static double robotDiag = Math.sqrt(Math.pow(robotWidth, 2), Math.pow(robotLength, 2)); // Meters
+
+    public static final double autoClearance = .25; // Meters
+
     // Motor IDs
     public final static int armMotor1 = 1;
     public final static int armMotor2 = 2;

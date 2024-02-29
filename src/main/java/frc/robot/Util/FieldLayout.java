@@ -3,6 +3,7 @@ package frc.robot.util;
 import java.util.Map;
 
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.wpilibj.DriverStation;
 
 public class FieldLayout {
     public enum StageFace {
@@ -169,7 +170,7 @@ public class FieldLayout {
      * Gets the x position of the autoline for the current alliance
      * @return  x position of the autoline for the current alliance
      */
-    public double getAutoLineX() {
+    public static double getAutoLineX() {
         if(Drivestation.getAlliance() == Drivestation.Alliance.Red) {
             return rAutoLineX;
         } else {
@@ -181,11 +182,35 @@ public class FieldLayout {
      * Gets the x position of the wing line for the current alliance
      * @return  x position of the wing line for the current alliance
      */
-    public double getWingLineX() {
+    public static double getWingLineX() {
         if(Drivestation.getAlliance() == Drivestation.Alliance.Red) {
             return rWingLineX;
         } else {
             return bWingLineX;
+        }
+    }
+
+    /**
+     * Gets the x position that will ensure the robot is clear of the auto zone line
+     * @return  x position that will ensure the robot is clear of the auto zone line
+     */
+    public static double getAutoClearX() {
+        if(Drivestation.getAlliance() == Drivestation.Alliance.Red) {
+            return rAutoLineX - Constants.robotDiag - autoClearance;
+        } else {
+            return bAutoLineX + Constants.robotDiag + autoClearance;
+        }
+    }
+
+    /**
+     * Gets the forward angle for the robot for the current alliance
+     * @return  forward angle for the robot for the current alliance
+     */
+    public static Rotation2d getForwardAngle() {
+        if(Drivestation.getAlliance() == Drivestation.Alliance.Red) {
+            return Rotation2d.fromDegrees(180);
+        } else {
+            return Rotation2d.fromDegrees(0);
         }
     }
 }
