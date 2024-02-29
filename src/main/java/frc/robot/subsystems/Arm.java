@@ -2,6 +2,8 @@ package frc.robot.subsystems;
 
 import frc.robot.Constants;
 
+import java.util.Map;
+
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkBase;
@@ -17,8 +19,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-import java.lang.Map;
+import java.util.*;
 
 public class Arm extends SubsystemBase {
     private static Arm arm;
@@ -65,7 +66,7 @@ public class Arm extends SubsystemBase {
     private Timer extenderTimer;
     private double targetPos = 0;
 
-    private Map<String, ArmStateValues> armStates = HashMap.of(
+  /*  private Map<String, ArmStateValues> armStates = HashMap.of(
         "Match Start", new ArmStateValue(Rotation2d.fromDegrees(60), Stage0),
         "Home", defaultState,
         "Intake", new ArmStateValue(Rotation2d.fromDegrees(-5), Stage1),
@@ -74,9 +75,22 @@ public class Arm extends SubsystemBase {
         "Climb", new ArmStateValue(Rotation2d.fromDegrees(90), Stage2),
         "Climb Balance", new ArmStateValue(Rotation2d.fromDegrees(80), Stage2),
         "Trap Score",   new ArmStateValue(Rotation2d.fromDegrees(70), Stage2)
-    )
+    )*/        
+    }
+
+        ArmStateValues matchStart = new ArmStateValues(Rotation2d.fromDegrees(60), ExtensionState.STAGE0);
+        ArmStateValues Home = defaultState;
+        ArmStateValues Intake = new ArmStateValues(Rotation2d.fromDegrees(-5), ExtensionState.STAGE1);
+        ArmStateValues Speaker = new ArmStateValues(Rotation2d.fromDegrees(10), ExtensionState.STAGE0);
+        ArmStateValues Amp = new ArmStateValues(Rotation2d.fromDegrees(60), ExtensionState.STAGE1);
+        ArmStateValues Climb = new ArmStateValues(Rotation2d.fromDegrees(90), ExtensionState.STAGE2);
+        ArmStateValues ClimbBalance = new ArmStateValues(Rotation2d.fromDegrees(80), ExtensionState.STAGE2);
+        ArmStateValues TrapScore = new ArmStateValues(Rotation2d.fromDegrees(70), ExtensionState.STAGE2);
+
+    
 
     private Arm() {
+        
         armMotor1 = new TalonFX(Constants.armMotor1);
         armMotor2 = new TalonFX(Constants.armMotor2);
 
@@ -95,7 +109,7 @@ public class Arm extends SubsystemBase {
         // TODO Set abs encoder offset
 
         // Set target state to current state
-        targetState = new targetState(getArmAngle(), getArmExtension());
+        targetState = new ArmStateValues(getArmAngle(), getArmExtension());
 
     }
 
@@ -120,15 +134,15 @@ public class Arm extends SubsystemBase {
      * @return  current extension state
      */
     public ExtensionState getArmExtension() {
-        boolean isLowerExt = armExtender1.get() == DoubleSolenoid.kReverse;
-        boolean isUpperExt = armExtender2.get() == DoubleSolenoid.kReverse;
-        ExtensionState state = STAGE0;
+        boolean isLowerExt = armExtender1.get() == Value.kForward;
+        boolean isUpperExt = armExtender2.get() == Value.kForward;
+        ExtensionState state = ExtensionState.STAGE0;
 
         if (isLowerExt) {
             if(isUpperExt) {
-                state = STAGE2;
+                state = ExtensionState.STAGE2;
             } else {
-                state = STAGE1;
+                state = ExtensionState.STAGE1;
             }
         }
 
@@ -146,7 +160,7 @@ public class Arm extends SubsystemBase {
         Rotation2d targetAngle = targetState.targetAngle;
         Rotation2d angleTol = targetState.angleTol;
 
-        return Math.abs(tarAngle.minus(curAngle).toDegrees()) < angleTol.toDegrees();
+        return Math.abs(targetAngle.minus(currentAngle).getDegrees()) < angleTol.getDegrees();
     }
 
 
@@ -207,7 +221,7 @@ public class Arm extends SubsystemBase {
      * Looks up standard target values
      */
     private ArmStateValues getTargetValues(String name) {
-        ArmStateValues targetState = armStates.get(name);
+        ArmStateValues targetState = ArmStates.get(name);
 
         if(targetState == null) targetState = defaultState;
 
@@ -218,16 +232,16 @@ public class Arm extends SubsystemBase {
      * Updates the control of the arm angle
      */
     private void updateAngle() {
-        Rotation2d rampDownDist = Rotatation2d.fromDegrees(10); // TODO Move to constants
-        double maxAngleRate = Math.pi;
+        Rotation2d rampDownDist = Rotation2d.fromDegrees(10); // TODO Move to constants
+        double maxAngleRate = Math.PI;
 
         // Calculate trapizoidal profile
         Rotation2d currentAngle = getArmAngle();
         Rotation2d targetAngle = targetState.targetAngle;
         Rotation2d angleError = targetAngle.minus(currentAngle);
         
-        double targetSpeed = maxAngleRate * (angleError.toRadians() > 0 ? 1 :+ -1);
-        double rampDownSpeed = angleError.toRadians() / rampDownDist * maxAngleRate;
+        double targetSpeed = maxAngleRate * (angleError.getRadians() > 0 ? 1 :+ -1);
+        double rampDownSpeed = angleError.getRadians() / rampDownDist.getRadians() * maxAngleRate;
 
         if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed)) targetSpeed = rampDownSpeed;
 

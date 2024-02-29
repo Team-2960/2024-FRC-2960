@@ -16,6 +16,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.kauailabs.navx.frc.AHRS;
@@ -23,7 +25,7 @@ import com.kauailabs.navx.frc.AHRS;
 import java.util.Map;
 
 public class Drive extends SubsystemBase {
-    public enum AngleControlMode = {
+    public enum AngleControlMode {
         AngleRate,
         Angle,
         LookAtPoint
@@ -55,7 +57,7 @@ public class Drive extends SubsystemBase {
     private double rSpeed = 0;
     private Rotation2d targetAngle = new Rotation2d();
     private Translation2d targetPoint = new Translation2d();
-    private AngleControlMode angleMode = AngleRate;
+    private AngleControlMode angleMode = AngleControlMode.AngleRate;
     private boolean fieldRelative = true;
 
 
@@ -78,8 +80,8 @@ public class Drive extends SubsystemBase {
             return Map.of(
                 "x", pose.getX(),
                 "y", pose.getY(),
-                "r", pose.getRotation().asDegrees()
-                )
+                "r", pose.getRotation().getDegrees()
+                );
         }
 
     }
@@ -118,7 +120,7 @@ public class Drive extends SubsystemBase {
                 VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
 
         
-        var tab = ShuffleBoard.getTab("Diag");
+        var tab = Shuffleboard.getTab("Diag");
         var layout = tab.getLayout("Drive", BuiltInLayouts.kList);
         
         elevatorCommands.add("Estimated Position", new DriveDiag(this));
@@ -277,7 +279,7 @@ public class Drive extends SubsystemBase {
      */
     private double calcRateToAngle(Rotation2d targetAngle) { 
         // Get current angle position
-        Pose2d pose = getEstimatedPos()
+        Pose2d pose = getEstimatedPos();
         Rotation2d currentAngle = pose.getRotation();
 
         return calcRateToAngle(targetAngle, currentAngle);
