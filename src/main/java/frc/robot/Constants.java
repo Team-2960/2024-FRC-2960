@@ -1,8 +1,11 @@
 package frc.robot;
 
 import com.kauailabs.navx.frc.AHRS;
+import frc.robot.Util.*;
 
 public class Constants {
+    public static final Transform2d fieldCenterOffset = new Transform2d(-8.270875, -4.105275, new Rotation2d(0.0));
+
     // Robot constants
     public final static double updatePeriod = 0.02;//seconds
     
@@ -12,61 +15,64 @@ public class Constants {
 
     public static final double autoClearance = .25; // Meters
 
+    public static final double driveGearRatio = 5.08;
+    public static final double wheelCirc = 2.95 * .0254 * Math.PI; // Meters
+    public static final double driveRatio =  Constants.wheelCirc / Constants.driveGearRatio;   // Meters
+
+    public static final Transform3d robotToCamera = new Transform3d(
+        Translation3d(10*.0254, 0, 10 * .0254), 
+        new Rotation3d(30 * Math.PI / 180, 0, Math.PI)
+    );  
+
+    
+    public static final double winchDiam = 1.5; // in.
+    public static final double winchCircum = Math.PI * winchDiam; // in.
+
     // Motor IDs
     public final static int armMotor1 = 1;
     public final static int armMotor2 = 2;
 
     public final static int frontLeftDriveM = 3;
     public final static int frontLeftAngleM = 4;
-    public final static int frontLeftAngleENC = 10;
     public final static int frontRightDriveM = 1;
     public final static int frontRightAngleM = 2;
-    public final static int frontRightAngleENC = 11;
 
     public final static int backLeftDriveM = 5;
     public final static int backLeftAngleM = 8;
-    public final static int backLeftAngleENC = 9;
     public final static int backRightDriveM = 7;
     public final static int backRightAngleM = 6;
-    public final static int backRightAngleENC = 12;
 
-    // Swerve PID values
-    public static double kpArm1 = 0;
-    public static double kiArm1 = 0;
-    public static double kdArm1 = 0;
+    // PID & Feed Forward values
+    public static PIDParam armPID = new PIDParam(0.0, 0.0, 0.0);
+    public static FFParam armFF = FFParam.arm(0.0, 0.0, 0.0, 0.0);
 
-    public static double driveSwerveP = 0.1;
-    public static double driveSwerveI = 0;
-    public static double driveSwerveD = 0;
+    public static PIDParam drivePID = new PIDParam(0.1, 0.0, 0.0);
+    public static FFParam driveFF = FFParam.simpleMotor(0.0, 0.5, 0.0);
 
-    public static double angleSwerveP = .095;
-    public static double angleSwerveI = 0;
-    public static double angleSwerveD = 0;
+    public static PIDParam driveAngPID = new PIDParam(.095, 0.0, 0.0);
+    public static FFParam driveAngFF = FFParam.simpleMotor(0.0, 0.195, 0.9)
 
-    public static double maxSwerveAngularSpeed = Math.PI * 5;//Rad per second
-    public static double maxSwerveAngularAccel = Math.PI * 10;//Rad per second
+    // Robot Limits
+    public static final double swerveAngleRampRate = 20; // TODO Move to constants
 
-    public static double angleSwerveSFF = 0;//.451;//volts
-    public static double angleSwerveVFF = .195;//volts * seconds/radian
-    public static double angleSwerveAFF = 0;
+    public static final double maxSwerveAngularSpeed = Math.PI * 5;     //Rad per second
+    public static final double maxSwerveAngularAccel = Math.PI * 10;    //Rad per second ^ 2
 
-    public static double driveSwerveSFF = 0;//volts
-    public static double driveSwerveVFF = 0.5;//volts * seconds/meters
-    public static double driveSwerveAFF = 0;
+    public static final double maxSpeed = 15;
+    public static final double maxAngularSpeed = 12 * 2 * Math.PI;
+    public static final Rotation2d driveAngleRampDistance = Rotation2d.fromRadians(0.5);
 
-    public static final double kMaxSpeed = 15;
-    public static final double kMaxAngularSpeed = 12 * 2 * Math.PI;
+    public static final Rotation2d rampDownDist = Rotation2d.fromDegrees(10);
+    public static final Rotation2d armMinState2Angle = Rotation2d.fromDegrees(30);
+    public static final Rotation2d climberZoneLowerAngle =  Rotation2d.fromDegrees(60); 
+    public static final Rotation2d climberZoneUpperAngle =  Rotation2d.fromDegrees(75);
+    public static final double armExtDelayTime = .25; // Seconds
 
-    public static double xSpeed;
-    public static double ySpeed;
-    public static double rotationalSpeed;
-    public static double periodSeconds;
-    public static boolean fieldRelative;
+    public static final double winchMaxExtension = 20;   // in.
+    public static final double winchRatchedDelay = .25;  // seconds
 
-    public static double driveGearRatio = 5.08;
-    public static double wheelCirc = 2.95 * .0254 * Math.PI; //In Meters
-
-    public static AHRS navx;
+    public static final double minShootSpeed = 500;     // rev / s
+    public static final double shootPrepPower = .2;     
 
     //Auton
     public static double autonRampDownSpeed = 0.5;

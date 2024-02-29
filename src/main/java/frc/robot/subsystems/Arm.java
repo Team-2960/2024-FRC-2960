@@ -24,20 +24,6 @@ import java.util.*;
 public class Arm extends SubsystemBase {
     private static Arm arm;
 
-    private TalonFX armMotor1;
-    private TalonFX armMotor2;
-
-    private DoubleSolenoid armExtender1;
-    private DoubleSolenoid armExtender2;
-
-    private Encoder quadArmEncoder;
-
-    private DutyCycleEncoder absoluteArmEncoder;
-
-    private SimpleMotorFeedforward armFeedForward;
-    private static PIDController armPID;
-    private static SimpleMotorFeedforward armFF;
-
     public enum ArmControlMode {
         MANUAL,
         AUTOMATIC
@@ -67,6 +53,19 @@ public class Arm extends SubsystemBase {
             this.extState = extState;
         }
     }
+
+    private TalonFX armMotor1;
+    private TalonFX armMotor2;
+
+    private DoubleSolenoid armExtender1;
+    private DoubleSolenoid armExtender2;
+
+    private Encoder quadArmEncoder;
+
+    private DutyCycleEncoder absoluteArmEncoder;
+
+    private PIDController armPID;
+    private ArmFeedForward armFF;
 
     private final ArmStateValues defaultState = new ArmStateValues(Rotation2d.fromDegrees(10), ExtensionState.STAGE0);
 
@@ -113,11 +112,11 @@ public class Arm extends SubsystemBase {
 
         absoluteArmEncoder = new DutyCycleEncoder(0);
 
-        armPID = new PIDController(Constants.kpArm1, Constants.kiArm1, Constants.kdArm1);
-        // TODO Init FF
-
-        quadArmEncoder.setDistancePerPulse(360 / 4960);
-        absoluteArmEncoder.setDistancePerRotation(360);
+        armPID = new PIDController(Constants.armPID.kP, Constants.armPID.kP, Constants.armPID.kP);
+        armFF = new ArmFeedForward(Constants.armFF.kS, Constants.armFF.kV, Constants.armFF.kG);
+        
+        quadArmEncoder.setDistancePerPulse(2 * Math.PI / 4960);
+        absoluteArmEncoder.setDistancePerRotation(2 * PI);
         // TODO Set abs encoder offset
 
         // Set control mode
@@ -146,15 +145,15 @@ public class Arm extends SubsystemBase {
      * @return current arm angle
      */
     public Rotation2d getArmAngle() {
-        return Rotation2d.fromDegrees(absoluteArmEncoder.getAbsolutePosition());
+        return Rotation2d.fromRadians(absoluteArmEncoder.getAbsolutePosition());
     }
 
     /**
      * Gets the current arm angle rate
-     * @return current arm angle rate
+     * @return current arm angle rate in radians per second
      */
     public double getArmVelocity() {
-        return quadArmEncoder.getRate();
+        return quadArmEncoder.getRate() ;
     }
 
     /**
@@ -222,7 +221,7 @@ public class Arm extends SubsystemBase {
      * @return  true if the extension are at their target
      */
     public boolean atExtention() {
-        return getArmExtension() == targetState.extState && extenderTimer.get() > .25;  // TODO Get extension time and move to constants
+        return getArmExtension() == targetState.extState && extenderTimer.get() > Constants.armExtDelayTime;
     }
 
     /**
@@ -234,12 +233,10 @@ public class Arm extends SubsystemBase {
     }
 
     public boolean isInClimberZone() {
-        Rotation2d climberZoneLowerAngle =  Rotation2d.fromDegrees(60);  // TODO Move to constants
-        Rotation2d climberZoneUpperAngle =  Rotation2d.fromDegrees(75);  // TODO Move to constants 
         Rotation2d currentAngle = getArmAngle();
 
-        boolean in_zone = currentAngle.getDegrees() > climberZoneLowerAngle.getDegrees();
-        in_zone &= currentAngle.getDegrees() < climberZoneUpperAngle.getDegrees();
+        boolean in_zone = currentAngle.getDegrees() > Constants.climberZoneLowerAngle.getDegrees();
+        in_zone &= currentAngle.getDegrees() < Constants.climberZoneUpperAngle.getDegrees();
 
         return in_zone;
     }
@@ -319,7 +316,6 @@ public class Arm extends SubsystemBase {
      * @return  target arm control rate 
      */
     private double calcTrapezoidalRate() {
-        Rotation2d rampDownDist = Rotation2d.fromDegrees(10); // TODO Move to constants
         double maxAngleRate = Math.PI;
 
         // Calculate trapezoidal profile
@@ -328,7 +324,7 @@ public class Arm extends SubsystemBase {
         Rotation2d angleError = targetAngle.minus(currentAngle);
         
         double targetSpeed = maxAngleRate * (angleError.getRadians() > 0 ? 1 :+ -1);
-        double rampDownSpeed = angleError.getRadians() / rampDownDist.getRadians() * maxAngleRate;
+        double rampDownSpeed = angleError.getRadians() / Constants.armRampDownDist.getRadians() * maxAngleRate;
 
         if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed)) targetSpeed = rampDownSpeed;
 
@@ -341,10 +337,12 @@ public class Arm extends SubsystemBase {
      */
     private void updateAngleControl(double targetSpeed) {
         Rotation2d currentAngle = getArmAngle();
+        double angleRate = getArmVelocity();
+
 
         // Calculate motor voltage output
-        double calcPID = armPID.calculate(getArmVelocity(), targetSpeed);
-        double calcFF = armFeedForward.calculate(currentAngle.getRadians(), targetSpeed);
+        double calcPID = armPID.calculate(angleRate, targetSpeed);
+        double calcFF = armFF.calculate(currentAngle.getRadians(), targetSpeed);
         double targetVoltage = calcPID + calcFF;
         
         // Set Motors
@@ -368,8 +366,7 @@ public class Arm extends SubsystemBase {
                 break;
         }
 
-        Rotation2d minState2Angle = Rotation2d.fromDegrees(30); // TODO Move to constants
-        boolean aboveState2Angle = getArmAngle().getDegrees() > minState2Angle.getDegrees();
+        boolean aboveState2Angle = getArmAngle().getDegrees() > armMinState2Angle.getDegrees();
 
         // Set target extension valve state
         if(targetState == ExtensionState.STAGE2 && aboveState2Angle) {

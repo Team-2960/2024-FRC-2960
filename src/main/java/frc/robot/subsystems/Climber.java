@@ -49,10 +49,8 @@ public class Climber extends SubsystemBase {
         winchR.follow(winchL, true);
 
         // Initialize Encoder
-        double winchDiam = 1.5; // in. // TODO Move to Constants
-        double winchCircum = Math.PI * winchDiam;// TODO Move to Constants
         winchEncoder = winchL.getEncoder();
-        winchEncoder.setPositionConversionFactor(winchCircum); 
+        winchEncoder.setPositionConversionFactor(Constants.winchCircum); 
 
         // Initialize limit switch
         winchLimit = winchL.getForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen);
@@ -163,19 +161,16 @@ public class Climber extends SubsystemBase {
      * Extends the climber to the max height
      */
     private void extendClimber() {
-        double maxExtension = 20;   // TODO Determine maximum extension and move to constants 
-        double ratchedDelay = .25;  // TODO Move ratchet delay time to constants
-
         // Check if the arm is clear of the climber
         if(!Arm.getInstance().isInClimberZone()) {
             // Check if the climber is at its max extention
-            if(getExtension() < maxExtension) { 
+            if(getExtension() < Constatns.winchMaxExtension) { 
                 // Disengage ratchet
                 if(ratchetRelease.get() != DoubleSolenoid.Value.kForward) ratchetTimer.restart();
                 ratchetRelease.set(DoubleSolenoid.Value.kForward);
                 
                 // Extend the climber if the ratchet is disengaged
-                if (ratchetTimer.get() > ratchedDelay) winchL.set(-1);
+                if (ratchetTimer.get() > Constants.winchRatchedDelay) winchL.set(-1);
 
             } else {
                 winchL.set(0);

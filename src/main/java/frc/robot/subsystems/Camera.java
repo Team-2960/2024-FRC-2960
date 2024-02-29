@@ -40,8 +40,6 @@ public class Camera extends SubsystemBase {
     private Pose2d lastPose;
     private double lastTimeStamp;
 
-    private Transform2d fieldCenterOffset = new Transform2d(-8.270875, -4.105275, new Rotation2d(0.0)); // TODO Move to constants
-
     private GenericEntry sb_PoseX;
     private GenericEntry sb_PoseY;
     private GenericEntry sb_PoseR;
@@ -57,15 +55,10 @@ public class Camera extends SubsystemBase {
 
         // Get apriltag layout
         aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
-        
-        // TODO Initialize transform 3d in constants
-        robotToCamera = new Transform3d(
-                new Translation3d(Constants.cameraToRobotX, Constants.cameraToRobotY, Constants.cameraToRobotHeight),
-                new Rotation3d(Constants.cameraRoll, Constants.cameraPitch, Constants.cameraYaw));  
 
         // Initialize camera pose estimator
         photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout,
-                PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, camera, robotToCamera);
+                PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, camera, Constants.robotToCamera);
         
         // Initialize class variables
         lastPose = new Pose2d();
@@ -103,7 +96,7 @@ public class Camera extends SubsystemBase {
             // Check if the camera has a new value
             double ts = poseUpdate.timestampSeconds;
             if (lastTimeStamp < ts) {
-                lastPose = poseUpdate.estimatedPose.toPose2d().transformBy(fieldCenterOffset);
+                lastPose = poseUpdate.estimatedPose.toPose2d().transformBy(Constants.fieldCenterOffset);
 
                 // Update drivetrain pose estimation
                 Drive.getInstance().setVisionPose(lastPose, ts);

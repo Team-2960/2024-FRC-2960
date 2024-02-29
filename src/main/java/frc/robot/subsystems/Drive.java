@@ -272,7 +272,6 @@ public class Drive extends SubsystemBase {
      * @param   currentAngle    current robot angle
      */
     private double calcRateToAngle(Rotation2d targetAngle, Rotation2d currentAngle) {
-        Rotation2d rampDistance = Rotation2d.fromRadians(0.5);    // TODO move to constants
 
         // Determine minimum error distance
         double error = currentAngle.minus(targetAngle).getRadians();
@@ -280,7 +279,7 @@ public class Drive extends SubsystemBase {
         double minError = Math.min(Math.abs(error), Math.abs(compError));
 
         // Calculate ramp down speed
-        double speed = Math.min(minError * rampDistance.getRadians(), Constants.kMaxAngularSpeed);
+        double speed = Math.min(minError * Constants.driveAngleRampDistance.getRadians(), Constants.kMaxAngularSpeed);
         
         // Set direction
         double direction = error > 0 ? 1 : -1;

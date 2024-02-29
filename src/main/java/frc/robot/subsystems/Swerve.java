@@ -45,7 +45,6 @@ public class Swerve extends SubsystemBase {
     private GenericEntry sb_driveCurrent;
     private GenericEntry sb_driveVolt;
 
-    public final double driveRatio =  Constants.wheelCirc / Constants.driveGearRatio;   // TODO Move to constants
 
     public Swerve(int driveMotorID, int angleMotorID, int angleMotorEncID, String swerveName) {
         // Initialize Motors
@@ -180,12 +179,11 @@ public class Swerve extends SubsystemBase {
         double compError = 2 * Math.PI - (Math.abs(error));
         double compareError = Math.min(Math.abs(error), compError);
         double direction = error > 0 ? 1 : -1;
-        double rampRate = 20; // TODO Move to constants
         
         if(compareError == compError) direction *= -1;
             
         double finalError = compareError * direction;
-        double angleVelocity = finalError * rampRate;
+        double angleVelocity = finalError * Constants.swerveAngleRampRate;
         
         // Calcualate motor output
         double pidOutput = anglePIDController.calculate(getAngleRate(), angleVelocity);
