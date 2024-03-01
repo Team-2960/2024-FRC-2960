@@ -1,12 +1,12 @@
 package frc.robot;
 
-import frc.robot.subsystems.Arm;
-import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drive;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class OperatorInterface extends SubsystemBase {
@@ -33,10 +33,10 @@ public class OperatorInterface extends SubsystemBase {
 
         // Setup Shuffleboard
         var drive_layout = Shuffleboard.getTab("OI").getLayout("Drive");
-        sb_driveX = drive_layout.add("X Speed", 0);
-        sb_driveY = drive_layout.add("Y Speed", 0);
-        sb_driveR = drive_layout.add("R Speed", 0);
-        sb_driveFR = drive_layout.add("Field Relative", true);
+        sb_driveX = drive_layout.add("X Speed", 0).getEntry();
+        sb_driveY = drive_layout.add("Y Speed", 0).getEntry();
+        sb_driveR = drive_layout.add("R Speed", 0).getEntry();
+        sb_driveFR = drive_layout.add("Field Relative", true).getEntry();
     }
 
     /**
@@ -57,12 +57,12 @@ public class OperatorInterface extends SubsystemBase {
      */
     private void updateDrive() {
         boolean fieldRelative = !driverController.getRawButton(1);
-        
-        double alliance_dir = DriverStation.getAlliance() == Alliance.Red ? 1 : -1;
+        var alliance = DriverStation.getAlliance();
+        double alliance_dir = alliance.isPresent() && alliance.get()== Alliance.Red ? 1 : -1;
 
-        double xSpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.1) * Constants.kMaxSpeed * alliance_dir;
-        double ySpeed = -MathUtil.applyDeadband(driverController.getRawAxis(1), 0.1) * Constants.kMaxSpeed * alliance_dir;
-        double rSpeed =  MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1) * Constants.kMaxAngularSpeed;
+        double xSpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.1) * Constants.maxSpeed * alliance_dir;
+        double ySpeed = -MathUtil.applyDeadband(driverController.getRawAxis(1), 0.1) * Constants.maxSpeed * alliance_dir;
+        double rSpeed =  MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1) * Constants.maxAngularSpeed;
 
         Drive drive = Drive.getInstance();
         

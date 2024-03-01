@@ -2,13 +2,14 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.SparkAbsoluteEncoder;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 public class IntakePizzaBox extends SubsystemBase{
     public enum PizzaboxState {
@@ -56,7 +57,7 @@ public class IntakePizzaBox extends SubsystemBase{
 
         // Initialize Shooter Encoders
         shootEncoder1 = shooter1.getEncoder();
-        shootEncoder2 = shooter1.getEncoder();
+        shootEncoder2 = shooter2.getEncoder();
 
         // Initialize photoeye
         photoeye = new DigitalInput(0);
@@ -67,14 +68,14 @@ public class IntakePizzaBox extends SubsystemBase{
         // Setup Shuffleboard
         var layout = Shuffleboard.getTab("Status").getLayout("Pizzabox");
 
-        sb_state = layout.add("State", state.name());
-        sb_shooter1Volt = layout.add("Shooter 1 Voltage", 0);
-        sb_shooter2Volt = layout.add("Shooter 2 Voltage", 0);
-        sb_shooter1Rate = layout.add("Shooter 1 Rate", 0);
-        sb_shooter2Rate = layout.add("Shooter 2 Rate", 0);
-        sb_intakeRollerVolt = layout.add("Intake Roller Voltage", 0);
-        sb_intakeRollerRate = layout.add("Intake Roller Rate", 0);
-        sb_notePresent = layout.add("Note Present", false);
+        sb_state = layout.add("State", state.name()).getEntry();
+        sb_shooter1Volt = layout.add("Shooter 1 Voltage", 0).getEntry();
+        sb_shooter2Volt = layout.add("Shooter 2 Voltage", 0).getEntry();
+        sb_shooter1Rate = layout.add("Shooter 1 Rate", 0).getEntry();
+        sb_shooter2Rate = layout.add("Shooter 2 Rate", 0).getEntry();
+        sb_intakeRollerVolt = layout.add("Intake Roller Voltage", 0).getEntry();
+        sb_intakeRollerRate = layout.add("Intake Roller Rate", 0).getEntry();
+        sb_notePresent = layout.add("Note Present", false).getEntry();
     }
 
     /**
@@ -135,6 +136,7 @@ public class IntakePizzaBox extends SubsystemBase{
             intakeRollers.set(0);
         }
 
+        updateUI();
     }
 
     private void updateUI() {
@@ -143,8 +145,8 @@ public class IntakePizzaBox extends SubsystemBase{
         sb_shooter2Volt.setDouble(shooter1.getBusVoltage() * shooter1.getAppliedOutput());
         sb_shooter1Rate.setDouble(shootEncoder1.getVelocity()); 
         sb_shooter2Rate.setDouble(shootEncoder2.getVelocity());
-        sb_intakeRollerVolt.setDouble(intakeRollers.getMotorVoltage());
-        sb_intakeRollerRate.setDouble(intakeRollers.getVelocity());
+        sb_intakeRollerVolt.setDouble(intakeRollers.getMotorVoltage().getValueAsDouble());
+        sb_intakeRollerRate.setDouble(intakeRollers.getVelocity().getValueAsDouble());
         sb_notePresent.setBoolean(isNotePresent());
     }
 

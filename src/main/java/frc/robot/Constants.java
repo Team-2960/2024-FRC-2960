@@ -1,6 +1,6 @@
 package frc.robot;
 
-import com.kauailabs.navx.frc.AHRS;
+import edu.wpi.first.math.geometry.*;
 import frc.robot.Util.*;
 
 public class Constants {
@@ -11,7 +11,7 @@ public class Constants {
     
     public final static double robotWidth = 29.5 * .0254;   // Meters 
     public final static double robotLength = 29.5 * .0254;  // Meters 
-    public final static double robotDiag = Math.sqrt(Math.pow(robotWidth, 2), Math.pow(robotLength, 2)); // Meters
+    public final static double robotDiag = Math.sqrt(Math.pow(robotWidth, 2) + Math.pow(robotLength, 2)); // Meters
 
     public static final double autoClearance = .25; // Meters
 
@@ -20,7 +20,7 @@ public class Constants {
     public static final double driveRatio =  Constants.wheelCirc / Constants.driveGearRatio;   // Meters
 
     public static final Transform3d robotToCamera = new Transform3d(
-        Translation3d(10*.0254, 0, 10 * .0254), 
+        new Translation3d(10*.0254, 0, 10 * .0254), 
         new Rotation3d(30 * Math.PI / 180, 0, Math.PI)
     );  
 
@@ -50,10 +50,10 @@ public class Constants {
     public static FFParam driveFF = FFParam.simpleMotor(0.0, 0.5, 0.0);
 
     public static PIDParam driveAngPID = new PIDParam(.095, 0.0, 0.0);
-    public static FFParam driveAngFF = FFParam.simpleMotor(0.0, 0.195, 0.9)
+    public static FFParam driveAngFF = FFParam.simpleMotor(0.0, 0.195, 0.9);
 
     // Robot Limits
-    public static final double swerveAngleRampRate = 20; // TODO Move to constants
+    public static final double swerveAngleRampRate = 20;
 
     public static final double maxSwerveAngularSpeed = Math.PI * 5;     //Rad per second
     public static final double maxSwerveAngularAccel = Math.PI * 10;    //Rad per second ^ 2
@@ -62,7 +62,7 @@ public class Constants {
     public static final double maxAngularSpeed = 12 * 2 * Math.PI;
     public static final Rotation2d driveAngleRampDistance = Rotation2d.fromRadians(0.5);
 
-    public static final Rotation2d rampDownDist = Rotation2d.fromDegrees(10);
+    public static final Rotation2d armRampDownDist = Rotation2d.fromDegrees(10);
     public static final Rotation2d armMinState2Angle = Rotation2d.fromDegrees(30);
     public static final Rotation2d climberZoneLowerAngle =  Rotation2d.fromDegrees(60); 
     public static final Rotation2d climberZoneUpperAngle =  Rotation2d.fromDegrees(75);

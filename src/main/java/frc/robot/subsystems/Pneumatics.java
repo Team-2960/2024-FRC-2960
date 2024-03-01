@@ -1,8 +1,10 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 
 
 public class Pneumatics extends SubsystemBase {
@@ -19,8 +21,8 @@ public class Pneumatics extends SubsystemBase {
         compressor.enableAnalog(80, 120);
 
         var layout = Shuffleboard.getTab("Status").getLayout("Pneumatics");
-        sb_pressure = layout.add("Pressure");
-        sb_current = layout.add("Current");
+        sb_pressure = layout.add("Pressure", 0).getEntry();
+        sb_current = layout.add("Current", 0).getEntry();
     }
 
     @Override

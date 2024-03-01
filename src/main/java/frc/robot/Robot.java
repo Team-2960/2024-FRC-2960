@@ -4,9 +4,7 @@
 
 package frc.robot;
 
-import java.io.IOException;
-
-import com.ctre.phoenix6.Orchestra;
+import java.util.Optional;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -43,13 +41,13 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         drive = Drive.getInstance();
         oi = OperatorInterface.getInstance();
-        camera = Camera.getInstance();
-        arm = Arm.getInstance();
-        climber = Climber.getInstance();
-        intake = IntakePizzaBox.getInstance();
-        pneumatics = Pneumatics.getInstance();
+        //camera = Camera.getInstance();
+        //arm = Arm.getInstance();
+        //climber = Climber.getInstance();
+        //intake = IntakePizzaBox.getInstance();
+        //pneumatics = Pneumatics.getInstance();
 
-        autonCommand = AutonList.getDefaultCommand();
+        autonCommand = AutonList.getDefaultCommands();
 
     }
 

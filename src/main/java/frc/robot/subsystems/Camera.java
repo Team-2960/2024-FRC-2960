@@ -1,29 +1,16 @@
 package frc.robot.subsystems;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-import org.photonvision.PhotonUtils;
-import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
-import org.photonvision.targeting.TargetCorner;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import frc.robot.Constants; 
 
 public class Camera extends SubsystemBase {
@@ -32,8 +19,6 @@ public class Camera extends SubsystemBase {
     private PhotonCamera camera;
 
     private AprilTagFieldLayout aprilTagFieldLayout;
-
-    private Transform3d robotToCamera;
 
     private PhotonPoseEstimator photonPoseEstimator;
     
@@ -66,11 +51,11 @@ public class Camera extends SubsystemBase {
 
         // Setup Shuffleboard
         var layout = Shuffleboard.getTab("Status").getLayout("Camera");
-        sb_PoseX = layout.add("Pose X", 0);
-        sb_PoseY = layout.add("Pose Y", 0);
-        sb_PoseR = layout.add("Pose R", 0);
-        sb_lastTimestamp = layout.add("Last Timestamp", lastTimeStamp);
-        sb_lastUpdatePeriod = layout.add("Time Since Last Update", 0);
+        sb_PoseX = layout.add("Pose X", 0).getEntry();
+        sb_PoseY = layout.add("Pose Y", 0).getEntry();
+        sb_PoseR = layout.add("Pose R", 0).getEntry();
+        sb_lastTimestamp = layout.add("Last Timestamp", lastTimeStamp).getEntry();
+        sb_lastUpdatePeriod = layout.add("Time Since Last Update", 0).getEntry();
     }
 
     /**

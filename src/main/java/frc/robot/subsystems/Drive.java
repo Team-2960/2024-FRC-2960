@@ -3,8 +3,6 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-import com.ctre.phoenix6.mechanisms.swerve.SwerveModule;
-
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -12,17 +10,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.kauailabs.navx.frc.AHRS;
-
-import java.util.Map;
 
 public class Drive extends SubsystemBase {
     public enum AngleControlMode {
@@ -77,10 +71,10 @@ public class Drive extends SubsystemBase {
                 frontLeftLocation, frontRightLocation, backLeftLocation, backRightLocation);
 
         // Create swerve drive module objects
-        frontLeft = new Swerve(Constants.frontLeftDriveM, Constants.frontLeftAngleM, Constants.frontLeftAngleENC, "FrontLeft");
-        frontRight = new Swerve(Constants.frontRightDriveM, Constants.frontRightAngleM, Constants.frontRightAngleENC, "FrontRight");
-        backLeft = new Swerve(Constants.backLeftDriveM, Constants.backLeftAngleM, Constants.backLeftAngleENC, "BackLeft");
-        backRight = new Swerve(Constants.backRightDriveM, Constants.backRightAngleM, Constants.backRightAngleENC, "BackRight");
+        frontLeft = new Swerve(Constants.frontLeftDriveM, Constants.frontLeftAngleM, "FrontLeft");
+        frontRight = new Swerve(Constants.frontRightDriveM, Constants.frontRightAngleM, "FrontRight");
+        backLeft = new Swerve(Constants.backLeftDriveM, Constants.backLeftAngleM, "BackLeft");
+        backRight = new Swerve(Constants.backRightDriveM, Constants.backRightAngleM, "BackRight");
 
         // Initialize NavX
         navx = new AHRS(SPI.Port.kMXP);
@@ -196,6 +190,7 @@ public class Drive extends SubsystemBase {
     public void periodic() {
         update_kinematics();
         update_odometry();
+        updateUI();
     }
 
     /**
@@ -216,7 +211,7 @@ public class Drive extends SubsystemBase {
 
         var swerveModuleStates = kinematics.toSwerveModuleStates(speeds);
 
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.kMaxSpeed);
+        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.maxSpeed);
 
         frontLeft.setDesiredState(swerveModuleStates[0]);
         frontRight.setDesiredState(swerveModuleStates[1]);
@@ -279,7 +274,7 @@ public class Drive extends SubsystemBase {
         double minError = Math.min(Math.abs(error), Math.abs(compError));
 
         // Calculate ramp down speed
-        double speed = Math.min(minError * Constants.driveAngleRampDistance.getRadians(), Constants.kMaxAngularSpeed);
+        double speed = Math.min(minError * Constants.driveAngleRampDistance.getRadians(), Constants.maxAngularSpeed);
         
         // Set direction
         double direction = error > 0 ? 1 : -1;

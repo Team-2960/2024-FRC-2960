@@ -3,22 +3,23 @@ package frc.robot.Auton.Commands.Pizzabox;
 import edu.wpi.first.math.geometry.*;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants;
-import frc.robot.subsystems.IntakePizzabox;
+import frc.robot.subsystems.IntakePizzaBox;
 
-public class shootNote extends Commands {
+public class shootNote extends Command {
     @Override
     public void initialize() {
-        IntakePizzabox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT);
+        IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT);
     }
 
     @Override
     public boolean isFinished() {
-        return !IntakePizzabox.getInstance().isNotePresent;
+        return !IntakePizzaBox.getInstance().isNotePresent();
     }
 
     @Override
     public void end(boolean interrupt) {
-        IntakePizzabox.getInstance().setState(IntakePizzaBox.PizzaboxState.IDLE);
+        IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.IDLE);
     }
 }

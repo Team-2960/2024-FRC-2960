@@ -1,13 +1,14 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.hal.CANAPITypes.CANDeviceType;
-import edu.wpi.first.units.Time;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkAbsoluteEncoder;
 import com.revrobotics.SparkLimitSwitch;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
@@ -16,7 +17,8 @@ public class Climber extends SubsystemBase {
     public enum ClimberStates {
         MatchStart,
         ClimbStart,
-        Climb
+        Climb,
+        Idle
     }
 
     private static Climber climber = null;
@@ -61,11 +63,11 @@ public class Climber extends SubsystemBase {
         // Setup Shuffleboard
         var layout = Shuffleboard.getTab("Status").getLayout("Climber");
 
-        sb_state = layout.add("State", climbState.name());
-        sb_isDown = layout.add("Is Down", false);
-        sb_isClearOfArm = layout.add("Is Clear of Arm", false);
-        sb_mLVoltage = layout.add("Left Motor Voltage", 0);
-        sb_mRVoltage = layout.add("Right Motor Voltage", 0);
+        sb_state = layout.add("State", climbState.name()).getEntry();
+        sb_isDown = layout.add("Is Down", false).getEntry();
+        sb_isClearOfArm = layout.add("Is Clear of Arm", false).getEntry();
+        sb_mLVoltage = layout.add("Left Motor Voltage", 0).getEntry();
+        sb_mRVoltage = layout.add("Right Motor Voltage", 0).getEntry();
     }
 
     /**
@@ -136,11 +138,17 @@ public class Climber extends SubsystemBase {
             case ClimbStart:
                 extendClimber();
                 break;
+            case Idle:
+            default:
+                winchL.set(0);
+                ratchetRelease.set(DoubleSolenoid.Value.kForward);
         }
 
         // Reset the climber encoder if the limit switch is set
         if (isDown())
             resetClimber();
+
+        updateUI();
     }
 
     /**
@@ -153,6 +161,7 @@ public class Climber extends SubsystemBase {
             winchL.set(winchSpeed);
         }else {
             winchL.set(0);
+            ratchetRelease.set(DoubleSolenoid.Value.kForward);
             resetClimber();
         }
     }
@@ -164,7 +173,7 @@ public class Climber extends SubsystemBase {
         // Check if the arm is clear of the climber
         if(!Arm.getInstance().isInClimberZone()) {
             // Check if the climber is at its max extention
-            if(getExtension() < Constatns.winchMaxExtension) { 
+            if(getExtension() < Constants.winchMaxExtension) { 
                 // Disengage ratchet
                 if(ratchetRelease.get() != DoubleSolenoid.Value.kForward) ratchetTimer.restart();
                 ratchetRelease.set(DoubleSolenoid.Value.kForward);

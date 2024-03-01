@@ -5,21 +5,17 @@ import frc.robot.Constants;
 import java.util.Map;
 
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.revrobotics.AbsoluteEncoder;
-import com.revrobotics.CANSparkBase;
-import com.revrobotics.SparkAbsoluteEncoder;
+
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.DutyCycle;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.motorcontrol.Talon;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import java.util.*;
 
 public class Arm extends SubsystemBase {
     private static Arm arm;
@@ -65,7 +61,7 @@ public class Arm extends SubsystemBase {
     private DutyCycleEncoder absoluteArmEncoder;
 
     private PIDController armPID;
-    private ArmFeedForward armFF;
+    private ArmFeedforward armFF;
 
     private final ArmStateValues defaultState = new ArmStateValues(Rotation2d.fromDegrees(10), ExtensionState.STAGE0);
 
@@ -113,10 +109,10 @@ public class Arm extends SubsystemBase {
         absoluteArmEncoder = new DutyCycleEncoder(0);
 
         armPID = new PIDController(Constants.armPID.kP, Constants.armPID.kP, Constants.armPID.kP);
-        armFF = new ArmFeedForward(Constants.armFF.kS, Constants.armFF.kV, Constants.armFF.kG);
+        armFF = new ArmFeedforward(Constants.armFF.kS, Constants.armFF.kV, Constants.armFF.kG);
         
         quadArmEncoder.setDistancePerPulse(2 * Math.PI / 4960);
-        absoluteArmEncoder.setDistancePerRotation(2 * PI);
+        absoluteArmEncoder.setDistancePerRotation(2 * Math.PI);
         // TODO Set abs encoder offset
 
         // Set control mode
@@ -130,14 +126,14 @@ public class Arm extends SubsystemBase {
         // Setup Shuffleboard
         var layout = Shuffleboard.getTab("Status").getLayout("Arm");
 
-        sb_anglePosCurrent = layout.add("Angle Position Current", 0);
-        sb_anglePosSetPoint = layout.add("Angle Position Set Point", 0);
-        sb_angleRateCurrent = layout.add("Angle Rate Current", 0);
-        sb_angleRateSetPoint = layout.add("Angle Rate Set Point", 0);
-        sb_angleM1Volt = layout.add("Angle Motor 1 Voltage", 0);
-        sb_angleM2Volt = layout.add("Angle Motor 2 Voltage", 0);
-        sb_extStage1 = layout.add("Ext Stage 1 State", armExtender1.get().name());
-        sb_extStage2 = layout.add("Ext State 2 State", armExtender2.get().name());
+        sb_anglePosCurrent = layout.add("Angle Position Current", 0.).getEntry();
+        sb_anglePosSetPoint = layout.add("Angle Position Set Point", 0).getEntry();
+        sb_angleRateCurrent = layout.add("Angle Rate Current", 0).getEntry();
+        sb_angleRateSetPoint = layout.add("Angle Rate Set Point", 0).getEntry();
+        sb_angleM1Volt = layout.add("Angle Motor 1 Voltage", 0).getEntry();
+        sb_angleM2Volt = layout.add("Angle Motor 2 Voltage", 0).getEntry();
+        sb_extStage1 = layout.add("Ext Stage 1 State", armExtender1.get().name()).getEntry();
+        sb_extStage2 = layout.add("Ext State 2 State", armExtender2.get().name()).getEntry();
     }
 
     /**
@@ -264,9 +260,10 @@ public class Arm extends SubsystemBase {
      */
     @Override
     public void periodic(){
-        updateAngleControl(getTargetArmRate());
+        double targetArmRate = getTargetArmRate();
+        updateAngleControl(targetArmRate);
         updateExtension();
-        updateUI();
+        updateUI(targetArmRate);
     }
 
     /**
@@ -366,7 +363,7 @@ public class Arm extends SubsystemBase {
                 break;
         }
 
-        boolean aboveState2Angle = getArmAngle().getDegrees() > armMinState2Angle.getDegrees();
+        boolean aboveState2Angle = getArmAngle().getDegrees() > Constants.armMinState2Angle.getDegrees();
 
         // Set target extension valve state
         if(targetState == ExtensionState.STAGE2 && aboveState2Angle) {
@@ -389,11 +386,11 @@ public class Arm extends SubsystemBase {
      */
     private void updateUI(double targetRate) {
         sb_anglePosCurrent.setDouble(absoluteArmEncoder.get());
-        sb_anglePosSetPoint.setDouble(targetState.targetAngle);
-        sb_angleRateCurrent.setDouble(encoder.getVelocity());
+        sb_anglePosSetPoint.setDouble(targetState.targetAngle.getDegrees());
+        sb_angleRateCurrent.setDouble(quadArmEncoder.getRate());
         sb_angleRateSetPoint.setDouble(targetRate);
-        sb_angleM1Volt.setDouble(armMotor1.getMotorVoltage());
-        sb_angleM2Volt.setDouble(armMotor2.getMotorVoltage());
+        sb_angleM1Volt.setDouble(armMotor1.getMotorVoltage().getValueAsDouble());
+        sb_angleM2Volt.setDouble(armMotor2.getMotorVoltage().getValueAsDouble());
         sb_extStage1.setString(armExtender1.get().name());
         sb_extStage2.setString(armExtender2.get().name());
     }

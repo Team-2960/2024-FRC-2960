@@ -1,6 +1,9 @@
 package frc.robot.Auton;
 
 import java.io.IOException;
+import java.sql.Driver;
+import java.util.Map;
+import java.util.Optional;
 
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj2.command.*;
@@ -13,7 +16,7 @@ import frc.robot.Auton.Commands.Pizzabox.*;
 import frc.robot.Util.FieldLayout;
 
 public class AutonList {
-    public static final Commands shootAndDrive = new SequentialCommandGroup(
+    public static final Command shootAndDrive = new SequentialCommandGroup(
         new setFieldRelative(true),
         new ParallelCommandGroup(
             new armToPreset("Speaker"),
@@ -22,30 +25,30 @@ public class AutonList {
         new shootNote(),
         new ParallelCommandGroup(
             new goToPosition(FieldLayout.getAutoClearX(), -2, 3, .1),
-            new goToAngle(FieldLayout.getForwardAngle()),
+            new goToAngle(FieldLayout.getForwardAngle(), Rotation2d.fromDegrees(2)),
             new armToPreset("Home")
         )
     );
 
-
-    public static final Map<String, Map<Alliance, Commands>> auton_list = Map.of(
+    
+    public static final Map<String, Map<Alliance, Command>> auton_list = Map.of(
         "Shoot and Drive", Map.of(
             Alliance.Red, shootAndDrive, 
             Alliance.Blue, shootAndDrive
         )
     );
 
-    public static Optional<Comamnds> getCommands(String name) {
-        Map<Alliance, Commands> named_auton = auton_list.get(name);
-        Comamnds auton = null;
+    public static Optional<Command> getCommands(String name) {
+        Map<Alliance, Command> named_auton = auton_list.get(name);
+        Command auton = null;
+        var alliance = DriverStation.getAlliance();
 
-        if(named_auton != null) auton = named_auton.get(DriverStation.getAlliance());
+        if(named_auton != null && alliance.isPresent()) auton = named_auton.get(alliance.get());
 
-
-        return Optional<Comamnds>.ofNullable(auton);
+        return Optional.ofNullable(auton);
     }
-
-    public static Optional<Comamnds> getDefaultCommands() {
-        return getCommands("Shoot and Drive");
+    
+    public static Optional<Command> getDefaultCommands() {
+        return Optional.ofNullable(shootAndDrive);
     }
 }
