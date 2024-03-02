@@ -14,6 +14,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 
 import com.kauailabs.navx.frc.AHRS;
@@ -69,13 +70,11 @@ public class Drive extends SubsystemBase {
         // Initialize Swerve Kinematics
         kinematics = new SwerveDriveKinematics(
                 frontLeftLocation, frontRightLocation, backLeftLocation, backRightLocation);
-
         // Create swerve drive module objects
-        frontLeft = new Swerve(Constants.frontLeftDriveM, Constants.frontLeftAngleM, "FrontLeft");
-        frontRight = new Swerve(Constants.frontRightDriveM, Constants.frontRightAngleM, "FrontRight");
-        backLeft = new Swerve(Constants.backLeftDriveM, Constants.backLeftAngleM, "BackLeft");
-        backRight = new Swerve(Constants.backRightDriveM, Constants.backRightAngleM, "BackRight");
-
+        frontLeft = new Swerve(Constants.frontLeftDriveM, Constants.frontLeftAngleM, "FrontLeft", Rotation2d.fromDegrees(0), false);
+        frontRight = new Swerve(Constants.frontRightDriveM, Constants.frontRightAngleM, "FrontRight", Rotation2d.fromDegrees(0), true);
+        backLeft = new Swerve(Constants.backLeftDriveM, Constants.backLeftAngleM, "BackLeft", Rotation2d.fromDegrees(0), false);
+        backRight = new Swerve(Constants.backRightDriveM, Constants.backRightAngleM, "BackRight", Rotation2d.fromDegrees(0), true);
         // Initialize NavX
         navx = new AHRS(SPI.Port.kMXP);
         navx.reset();
@@ -95,7 +94,9 @@ public class Drive extends SubsystemBase {
                 VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
 
         // Setup Shuffleboard
-        var pose_layout = Shuffleboard.getTab("Status").getLayout("Pose");
+        var pose_layout = Shuffleboard.getTab("Drive")
+            .getLayout("Drive Pose", BuiltInLayouts.kList)
+            .withSize(2,2);
         sb_posEstX = pose_layout.add("Pose X", 0).getEntry();
         sb_posEstY = pose_layout.add("Pose Y", 0).getEntry();
         sb_posEstR = pose_layout.add("Pose R", 0).getEntry();

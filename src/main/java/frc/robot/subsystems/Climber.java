@@ -46,8 +46,8 @@ public class Climber extends SubsystemBase {
      */
     private Climber() {
         // Initialize Motors
-        winchL = new CANSparkMax(10,MotorType.kBrushless);
-        winchR = new CANSparkMax(9,MotorType.kBrushless);
+        winchL = new CANSparkMax(Constants.winchMotorL,MotorType.kBrushless);
+        winchR = new CANSparkMax(Constants.winchMotorR,MotorType.kBrushless);
         winchR.follow(winchL, true);
 
         // Initialize Encoder

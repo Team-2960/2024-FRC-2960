@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -25,7 +26,7 @@ public class Swerve extends SubsystemBase {
 
     private final PIDController drivePIDcontroller;
     private final SimpleMotorFeedforward driveFeedforward;
-    
+
     private final PIDController anglePIDController;
     private final SimpleMotorFeedforward angleFeedforward;
 
@@ -34,38 +35,48 @@ public class Swerve extends SubsystemBase {
     private GenericEntry sb_angleSetPoint;
     private GenericEntry sb_angleCurrent;
     private GenericEntry sb_angleVolt;
+    private GenericEntry sb_angleRate;
+    private GenericEntry sb_angleError;
     private GenericEntry sb_driveSetPoint;
     private GenericEntry sb_driveCurrent;
     private GenericEntry sb_driveVolt;
 
+    private Rotation2d swerveAngleOffset;
 
-    public Swerve(int driveMotorID, int angleMotorID, String swerveName) {
+    public Swerve(int driveMotorID, int angleMotorID, String swerveName, Rotation2d swerveOffset, boolean invertDrive) {
         // Initialize Motors
         mDrive = new TalonFX(driveMotorID);
+        mDrive.setInverted(invertDrive);
+        swerveAngleOffset = swerveOffset;
         mAngle = new CANSparkMax(angleMotorID, MotorType.kBrushless);
 
         // Initialize Angle Sensor
         encAngle = mAngle.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
 
-        // Initialize Drive rate controllers 
+        // Initialize Drive rate controllers
         drivePIDcontroller = new PIDController(Constants.drivePID.kP, Constants.drivePID.kI,
                 Constants.drivePID.kD);
         driveFeedforward = new SimpleMotorFeedforward(Constants.driveFF.kS, Constants.driveFF.kV,
                 Constants.driveFF.kA);
 
         // Initialize angle position controllers
-        anglePIDController = new PIDController(Constants.driveAngPID.kP, Constants.driveAngPID.kI, Constants.driveAngPID.kD);
+        anglePIDController = new PIDController(Constants.driveAngPID.kP, Constants.driveAngPID.kI,
+                Constants.driveAngPID.kD);
         angleFeedforward = new SimpleMotorFeedforward(Constants.driveAngFF.kS, Constants.driveAngFF.kV,
                 Constants.driveAngFF.kA);
-        
-        //Initialize desired state
+
+        // Initialize desired state
         desiredState = new SwerveModuleState();
 
         // Setup Shuffleboard
-        var layout = Shuffleboard.getTab("Status").getLayout(swerveName + " Swerve");
+        var layout = Shuffleboard.getTab("Drive")
+                .getLayout(swerveName + " Swerve", BuiltInLayouts.kList)
+                .withSize(2, 4);
         sb_angleSetPoint = layout.add("Angle Desired", 0).getEntry();
         sb_angleCurrent = layout.add("Angle Current", 0).getEntry();
         sb_angleVolt = layout.add("Angle Voltage", 0).getEntry();
+        sb_angleRate = layout.add("Angle Rate", 0).getEntry();
+        sb_angleError = layout.add("Angle Error", 0).getEntry();
 
         sb_driveSetPoint = layout.add("Drive Desired", 0).getEntry();
         sb_driveCurrent = layout.add("Drive Current", 0).getEntry();
@@ -74,9 +85,24 @@ public class Swerve extends SubsystemBase {
 
     /**
      * Gets the current swerve module angle
-     * @return  current swerve module angle
+     * 
+     * @return current swerve module angle
      */
     public Rotation2d getAnglePos() {
+        
+        //double anglePos = Rotation2d.fromRotations(encAngle.getPosition()).plus(swerveAngleOffset).getDegrees();
+        /*double anglePos = Rotation2d.fromRotations(encAngle.getPosition()).getDegrees() + swerveAngleOffset.getDegrees();
+        if(anglePos > 360){
+            anglePos = anglePos-360;
+        }
+  
+        if(anglePos < 0){
+            anglePos = anglePos+360;
+        }
+
+
+        return Rotation2d.fromDegrees(anglePos);
+        */
         return Rotation2d.fromRotations(encAngle.getPosition());
     }
 
@@ -89,7 +115,8 @@ public class Swerve extends SubsystemBase {
 
     /**
      * Gets the current swerve module drive distance
-     * @return  current swerve module drive distance
+     * 
+     * @return current swerve module drive distance
      */
     public double getDrivePos() {
         return mDrive.getPosition().getValueAsDouble() * Constants.driveRatio;
@@ -97,7 +124,8 @@ public class Swerve extends SubsystemBase {
 
     /**
      * Gets the current swerve module drive speed
-     * @return  current swerve module drive speed
+     * 
+     * @return current swerve module drive speed
      */
     public double getDriveVelocity() {
         return mDrive.getVelocity().getValueAsDouble() * Constants.driveRatio;
@@ -105,15 +133,17 @@ public class Swerve extends SubsystemBase {
 
     /**
      * Gets the current swerve module positions
-     * @return  current swerve module positions 
+     * 
+     * @return current swerve module positions
      */
     public SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(getDrivePos(),getAnglePos());
+        return new SwerveModulePosition(getDrivePos(), getAnglePos());
     }
 
     /**
      * Gets the current swerve module state
-     * @return  current swerve module state
+     * 
+     * @return current swerve module state
      */
     public SwerveModuleState getState() {
         return new SwerveModuleState(getDriveVelocity(),
@@ -122,7 +152,8 @@ public class Swerve extends SubsystemBase {
 
     /**
      * Sets the desired module state
-     * @param   desiredState    desired state of the swerve module
+     * 
+     * @param desiredState desired state of the swerve module
      */
     public void setDesiredState(SwerveModuleState desiredState) {
         this.desiredState = desiredState;
@@ -133,7 +164,18 @@ public class Swerve extends SubsystemBase {
      */
     @Override
     public void periodic() {
-        //Optimize desired state
+        // Optimize desired state
+       /*  double anglePos = desiredState.angle.getDegrees() + swerveAngleOffset.getDegrees();
+        if(anglePos > 360){
+            anglePos = anglePos-360;
+        }
+  
+        if(anglePos < 0){
+            anglePos = anglePos+360;
+        }
+
+        desiredState.angle =  Rotation2d.fromDegrees(anglePos);*/
+
         SwerveModuleState state = SwerveModuleState.optimize(desiredState, getAnglePos());
 
         updateDrive(state);
@@ -152,6 +194,7 @@ public class Swerve extends SubsystemBase {
         double ffOutput = driveFeedforward.calculate(state.speedMetersPerSecond);
 
         mDrive.setVoltage(pidOutput + ffOutput);
+        
     }
 
     /**
@@ -160,25 +203,30 @@ public class Swerve extends SubsystemBase {
     private void updateAngle(SwerveModuleState state) {
         // Get current module angle
         Rotation2d encoderRotation = getAnglePos();
-        
+
         // Calculate target rate
         double error = encoderRotation.getRadians() - state.angle.getRadians();
         double compError = 2 * Math.PI - (Math.abs(error));
         double compareError = Math.min(Math.abs(error), compError);
         double direction = error > 0 ? 1 : -1;
-        
-        if(compareError == compError) direction *= -1;
-            
-        double finalError = compareError * direction;
-        double angleVelocity = finalError * Constants.swerveAngleRampRate;
-        
+
+        if (compareError == compError)
+            direction *= -1;
+
+        double targetRate = Math.min(1.0, compareError / Constants.swerveAngleRampDist.getRadians()) * Constants.maxSwerveAngularSpeed;
+        double angleVelocity = targetRate * direction;
+
         // Calculate motor output
         double pidOutput = anglePIDController.calculate(getAngleRate(), angleVelocity);
-                
+
         double ffOutput = angleFeedforward.calculate(angleVelocity);
 
         // Set Motor Output
         mAngle.setVoltage(pidOutput + ffOutput);
+
+        sb_angleRate.setDouble(angleVelocity);
+        sb_angleError.setDouble(Constants.swerveAngleRampDist.getRadians());
+
     }
 
     /**

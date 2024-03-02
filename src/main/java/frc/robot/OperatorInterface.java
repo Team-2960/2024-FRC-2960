@@ -6,6 +6,7 @@ import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -32,7 +33,9 @@ public class OperatorInterface extends SubsystemBase {
         operatorController = new Joystick(1);
 
         // Setup Shuffleboard
-        var drive_layout = Shuffleboard.getTab("OI").getLayout("Drive");
+        var drive_layout = Shuffleboard.getTab("OI")
+            .getLayout("Drive", BuiltInLayouts.kList)
+            .withSize(2,4);
         sb_driveX = drive_layout.add("X Speed", 0).getEntry();
         sb_driveY = drive_layout.add("Y Speed", 0).getEntry();
         sb_driveR = drive_layout.add("R Speed", 0).getEntry();
@@ -56,13 +59,13 @@ public class OperatorInterface extends SubsystemBase {
      * Updates the controls for the drivetrain
      */
     private void updateDrive() {
-        boolean fieldRelative = !driverController.getRawButton(1);
+        boolean fieldRelative = false;//!driverController.getRawButton(1);
         var alliance = DriverStation.getAlliance();
         double alliance_dir = alliance.isPresent() && alliance.get()== Alliance.Red ? 1 : -1;
 
-        double xSpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.1) * Constants.maxSpeed * alliance_dir;
-        double ySpeed = -MathUtil.applyDeadband(driverController.getRawAxis(1), 0.1) * Constants.maxSpeed * alliance_dir;
-        double rSpeed =  MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1) * Constants.maxAngularSpeed;
+        double xSpeed = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.1) * Constants.maxSpeed;
+        double ySpeed = -MathUtil.applyDeadband(driverController.getRawAxis(0), 0.1) * Constants.maxSpeed;
+        double rSpeed = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1) * Constants.maxAngularSpeed;
 
         Drive drive = Drive.getInstance();
         

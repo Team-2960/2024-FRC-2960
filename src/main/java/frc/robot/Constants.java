@@ -1,5 +1,7 @@
 package frc.robot;
 
+import javax.swing.text.rtf.RTFEditorKit;
+
 import edu.wpi.first.math.geometry.*;
 import frc.robot.Util.*;
 
@@ -29,8 +31,16 @@ public class Constants {
     public static final double winchCircum = Math.PI * winchDiam; // in.
 
     // Motor IDs
-    public final static int armMotor1 = 1;
-    public final static int armMotor2 = 2;
+    public final static int shooterTop = 14;
+    public final static int shooterBot = 13;
+
+    public final static int intakeRollers = 15;
+
+    public final static int winchMotorL = 10;
+    public final static int winchMotorR = 9;
+    
+    public final static int armMotor1 =11;
+    public final static int armMotor2 = 12;
 
     public final static int frontLeftDriveM = 3;
     public final static int frontLeftAngleM = 4;
@@ -38,29 +48,31 @@ public class Constants {
     public final static int frontRightAngleM = 2;
 
     public final static int backLeftDriveM = 5;
-    public final static int backLeftAngleM = 8;
+    public final static int backLeftAngleM = 6;
     public final static int backRightDriveM = 7;
-    public final static int backRightAngleM = 6;
+    public final static int backRightAngleM = 8;
 
     // PID & Feed Forward values
     public static PIDParam armPID = new PIDParam(0.0, 0.0, 0.0);
     public static FFParam armFF = FFParam.arm(0.0, 0.0, 0.0, 0.0);
 
-    public static PIDParam drivePID = new PIDParam(0.1, 0.0, 0.0);
-    public static FFParam driveFF = FFParam.simpleMotor(0.0, 0.5, 0.0);
+    public static PIDParam drivePID = new PIDParam(.1, 0.0, 0.0);
+    public static FFParam driveFF = FFParam.simpleMotor(0.0, 0.05, 0.0);
 
-    public static PIDParam driveAngPID = new PIDParam(.095, 0.0, 0.0);
+    public static PIDParam driveAngPID = new PIDParam(0.0, 0.0, 0.0);
     public static FFParam driveAngFF = FFParam.simpleMotor(0.0, 0.195, 0.9);
 
     // Robot Limits
     public static final double swerveAngleRampRate = 20;
+    public static final Rotation2d swerveAngleRampDist = Rotation2d.fromDegrees(30);
 
-    public static final double maxSwerveAngularSpeed = Math.PI * 5;     //Rad per second
+    public static final double maxSwerveAngularSpeed = Math.PI * 4;     //Rad per second
     public static final double maxSwerveAngularAccel = Math.PI * 10;    //Rad per second ^ 2
 
+    //public static final Rotation2d swerveAngleOffset = Rotation2d.fromDegrees(180);
     public static final double maxSpeed = 15;
     public static final double maxAngularSpeed = 12 * 2 * Math.PI;
-    public static final Rotation2d driveAngleRampDistance = Rotation2d.fromRadians(0.5);
+    public static final Rotation2d driveAngleRampDistance = Rotation2d.fromRadians(0.7);
 
     public static final Rotation2d armRampDownDist = Rotation2d.fromDegrees(10);
     public static final Rotation2d armMinState2Angle = Rotation2d.fromDegrees(30);

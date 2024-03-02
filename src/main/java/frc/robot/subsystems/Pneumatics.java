@@ -17,7 +17,7 @@ public class Pneumatics extends SubsystemBase {
     private GenericEntry sb_current;
 
     private Pneumatics() {
-        compressor = new Compressor(20,PneumaticsModuleType.REVPH);
+        compressor = new Compressor(2,PneumaticsModuleType.REVPH);
         compressor.enableAnalog(80, 120);
 
         var layout = Shuffleboard.getTab("Status").getLayout("Pneumatics");
