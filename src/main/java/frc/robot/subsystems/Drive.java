@@ -26,7 +26,6 @@ public class Drive extends SubsystemBase {
         LookAtPoint
     }
 
-
     private static Drive drive = null; // Statically initialized instance
 
     private final Translation2d frontLeftLocation;
@@ -62,19 +61,20 @@ public class Drive extends SubsystemBase {
      */
     private Drive() {
         // Set swerve drive positions
-        frontLeftLocation = new Translation2d(-0.3302, 0.3302);
-        frontRightLocation = new Translation2d(0.3302, 0.3302);
-        backLeftLocation = new Translation2d(-0.3302, -0.3302);
-        backRightLocation = new Translation2d(0.3302, -0.3302);
+        frontLeftLocation = new Translation2d((Constants.robotLength/2 - Constants.wheelInset), -(Constants.robotWidth/2 - Constants.wheelInset));
+        frontRightLocation = new Translation2d((Constants.robotLength/2 - Constants.wheelInset), (Constants.robotWidth/2 - Constants.wheelInset));
+        backLeftLocation = new Translation2d(-(Constants.robotLength/2 - Constants.wheelInset), -(Constants.robotWidth/2 - Constants.wheelInset));
+        backRightLocation = new Translation2d(-(Constants.robotLength/2 - Constants.wheelInset), (Constants.robotWidth/2 - Constants.wheelInset));
 
         // Initialize Swerve Kinematics
         kinematics = new SwerveDriveKinematics(
                 frontLeftLocation, frontRightLocation, backLeftLocation, backRightLocation);
         // Create swerve drive module objects
-        frontLeft = new Swerve(Constants.frontLeftDriveM, Constants.frontLeftAngleM, "FrontLeft", Rotation2d.fromDegrees(0), false);
-        frontRight = new Swerve(Constants.frontRightDriveM, Constants.frontRightAngleM, "FrontRight", Rotation2d.fromDegrees(0), true);
-        backLeft = new Swerve(Constants.backLeftDriveM, Constants.backLeftAngleM, "BackLeft", Rotation2d.fromDegrees(0), false);
-        backRight = new Swerve(Constants.backRightDriveM, Constants.backRightAngleM, "BackRight", Rotation2d.fromDegrees(0), true);
+        frontLeft = new Swerve(Constants.frontLeftDriveM, Constants.frontLeftAngleM, "FrontLeft", Rotation2d.fromDegrees(0), true);
+        frontRight = new Swerve(Constants.frontRightDriveM, Constants.frontRightAngleM, "FrontRight", Rotation2d.fromDegrees(0), false);
+        backLeft = new Swerve(Constants.backLeftDriveM, Constants.backLeftAngleM, "BackLeft", Rotation2d.fromDegrees(0), true);
+        backRight = new Swerve(Constants.backRightDriveM, Constants.backRightAngleM, "BackRight", Rotation2d.fromDegrees(0), false);
+        
         // Initialize NavX
         navx = new AHRS(SPI.Port.kMXP);
         navx.reset();
@@ -104,17 +104,20 @@ public class Drive extends SubsystemBase {
 
     /**
      * Sets field relative mode
-     * @param   enable  true to enable field relative mode, false to disable. (Default: true)
+     * 
+     * @param enable true to enable field relative mode, false to disable. (Default:
+     *               true)
      */
     public void setfieldRelative(boolean enable) {
         this.fieldRelative = enable;
     }
 
     /**
-     * Sets the drivetrain linear speeds in x and y parameters. Direction of 
-     *  the axis used determine by field relative setting.
-     * @param   xSpeed  speed of along the x-axis
-     * @param   ySpeed  speed of along the y-axis
+     * Sets the drivetrain linear speeds in x and y parameters. Direction of
+     * the axis used determine by field relative setting.
+     * 
+     * @param xSpeed speed of along the x-axis
+     * @param ySpeed speed of along the y-axis
      */
     public void setSpeed(double xSpeed, double ySpeed) {
         this.xSpeed = xSpeed;
@@ -123,21 +126,23 @@ public class Drive extends SubsystemBase {
 
     /**
      * Sets the drivetrain linear speeds by setting speed and a heading. Direction
-     *  of the axis used determine by field relative setting.
-     * @param   speed   linear speed of the robot
-     * @param   heading heading of the robot
+     * of the axis used determine by field relative setting.
+     * 
+     * @param speed   linear speed of the robot
+     * @param heading heading of the robot
      */
     public void setVector(double speed, Rotation2d heading) {
         double xSpeed = Math.cos(heading.getRadians()) * speed;
         double ySpeed = Math.sin(heading.getRadians()) * speed;
-        
+
         setSpeed(xSpeed, ySpeed);
     }
 
     /**
-     * Sets the angular rate of the robot and sets the robot to AngleRate 
-     *  angle control mode.
-     * @param   rSpeed  angle rate for the robot
+     * Sets the angular rate of the robot and sets the robot to AngleRate
+     * angle control mode.
+     * 
+     * @param rSpeed angle rate for the robot
      */
     public void setAngleRate(double rSpeed) {
         this.rSpeed = rSpeed;
@@ -145,9 +150,10 @@ public class Drive extends SubsystemBase {
     }
 
     /**
-     * Sets the target angle of the robot and sets the robot to Angle angle 
-     *  control mode.
-     * @param   angle   target angle for the robot.
+     * Sets the target angle of the robot and sets the robot to Angle angle
+     * control mode.
+     * 
+     * @param angle target angle for the robot.
      */
     public void setTargetAngle(Rotation2d angle) {
         this.targetAngle = angle;
@@ -155,10 +161,11 @@ public class Drive extends SubsystemBase {
     }
 
     /**
-     * Sets the target point of the robot and sets the robot to LookAtPoint 
-     *  angle control mode.
-     * @param   point   point to look at
-     * @param   offset  offset angle for the robot orientation
+     * Sets the target point of the robot and sets the robot to LookAtPoint
+     * angle control mode.
+     * 
+     * @param point  point to look at
+     * @param offset offset angle for the robot orientation
      */
     public void setTargetPoint(Translation2d point, Rotation2d offset) {
         this.targetPoint = point;
@@ -168,7 +175,8 @@ public class Drive extends SubsystemBase {
 
     /**
      * Gets the robots estimiated pose
-     * @return  estimated robot pose
+     * 
+     * @return estimated robot pose
      */
     public Pose2d getEstimatedPos() {
         return swerveDrivePoseEstimator.getEstimatedPosition();
@@ -176,8 +184,9 @@ public class Drive extends SubsystemBase {
 
     /**
      * Sets a new vision pose update
-     * @param   pose        estimated pose from the vision
-     * @param   timestamp   timestamp of when the pose was captured
+     * 
+     * @param pose      estimated pose from the vision
+     * @param timestamp timestamp of when the pose was captured
      */
     public void setVisionPose(Pose2d pose, double timeStamp) {
         // TODO Adjust standard deviations based on distance from target
@@ -203,7 +212,8 @@ public class Drive extends SubsystemBase {
         rSpeed = getAngleRate();
 
         if (fieldRelative) {
-            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rSpeed, navx.getRotation2d());
+            Rotation2d fieldAngle = Rotation2d.fromDegrees(360).minus(navx.getRotation2d());
+            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rSpeed, fieldAngle);
         } else {
             speeds = new ChassisSpeeds(xSpeed, ySpeed, rSpeed);
         }
@@ -235,8 +245,9 @@ public class Drive extends SubsystemBase {
 
     /**
      * Calculates the target angular rate for the robot
-     * @return  target angular rate for the robot based on current angle 
-     *              control mode and settings 
+     * 
+     * @return target angular rate for the robot based on current angle
+     *         control mode and settings
      */
     private double getAngleRate() {
         switch (angleMode) {
@@ -246,15 +257,16 @@ public class Drive extends SubsystemBase {
                 return calcRateToAngle(targetAngle);
             case AngleRate:
             default:
-                return rSpeed;    
+                return rSpeed;
         }
     }
 
     /**
      * Calculates the angle rate to reach a target angle
-     * @param   targetAngle     target robot angle
+     * 
+     * @param targetAngle target robot angle
      */
-    private double calcRateToAngle(Rotation2d targetAngle) { 
+    private double calcRateToAngle(Rotation2d targetAngle) {
         // Get current angle position
         Pose2d pose = getEstimatedPos();
         Rotation2d currentAngle = pose.getRotation();
@@ -264,8 +276,9 @@ public class Drive extends SubsystemBase {
 
     /**
      * Calculates the angle rate to reach a target angle
-     * @param   targetAngle     target robot angle
-     * @param   currentAngle    current robot angle
+     * 
+     * @param targetAngle  target robot angle
+     * @param currentAngle current robot angle
      */
     private double calcRateToAngle(Rotation2d targetAngle, Rotation2d currentAngle) {
 
@@ -276,10 +289,11 @@ public class Drive extends SubsystemBase {
 
         // Calculate ramp down speed
         double speed = Math.min(minError * Constants.driveAngleRampDistance.getRadians(), Constants.maxAngularSpeed);
-        
+
         // Set direction
         double direction = error > 0 ? 1 : -1;
-        if (minError == compError)  direction *= -1;
+        if (minError == compError)
+            direction *= -1;
         speed *= direction;
 
         return speed;
@@ -287,8 +301,9 @@ public class Drive extends SubsystemBase {
 
     /**
      * Calculates the angle rate to look at a target point
-     * @param   point   target point
-     * @param   offset  target orientation offset
+     * 
+     * @param point  target point
+     * @param offset target orientation offset
      */
     private double calcRateToPoint(Translation2d point, Rotation2d offset) {
         Pose2d pose = getEstimatedPos();

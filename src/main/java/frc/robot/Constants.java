@@ -13,6 +13,7 @@ public class Constants {
     
     public final static double robotWidth = 29.5 * .0254;   // Meters 
     public final static double robotLength = 29.5 * .0254;  // Meters 
+    public final static double wheelInset = 1.75 * .0254;   // Meters
     public final static double robotDiag = Math.sqrt(Math.pow(robotWidth, 2) + Math.pow(robotLength, 2)); // Meters
 
     public static final double autoClearance = .25; // Meters
@@ -57,7 +58,7 @@ public class Constants {
     public static FFParam armFF = FFParam.arm(0.0, 0.0, 0.0, 0.0);
 
     public static PIDParam drivePID = new PIDParam(.1, 0.0, 0.0);
-    public static FFParam driveFF = FFParam.simpleMotor(0.0, 0.05, 0.0);
+    public static FFParam driveFF = FFParam.simpleMotor(0.0, 0.75, 0.0);
 
     public static PIDParam driveAngPID = new PIDParam(0.0, 0.0, 0.0);
     public static FFParam driveAngFF = FFParam.simpleMotor(0.0, 0.195, 0.9);
