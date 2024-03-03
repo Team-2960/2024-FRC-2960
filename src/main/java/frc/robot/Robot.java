@@ -45,7 +45,7 @@ public class Robot extends TimedRobot {
         //arm = Arm.getInstance();
         //climber = Climber.getInstance();
         //intake = IntakePizzaBox.getInstance();
-        //pneumatics = Pneumatics.getInstance();
+        pneumatics = Pneumatics.getInstance();
 
         autonCommand = AutonList.getDefaultCommands();
 

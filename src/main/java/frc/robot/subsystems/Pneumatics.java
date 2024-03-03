@@ -4,8 +4,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-
 
 public class Pneumatics extends SubsystemBase {
 
@@ -17,10 +17,12 @@ public class Pneumatics extends SubsystemBase {
     private GenericEntry sb_current;
 
     private Pneumatics() {
-        compressor = new Compressor(2,PneumaticsModuleType.REVPH);
+        compressor = new Compressor(20, PneumaticsModuleType.REVPH);
         compressor.enableAnalog(80, 120);
 
-        var layout = Shuffleboard.getTab("Status").getLayout("Pneumatics");
+        var layout = Shuffleboard.getTab("Status")
+                .getLayout("Pneumatics", BuiltInLayouts.kList)
+                .withSize(1, 2);
         sb_pressure = layout.add("Pressure", 0).getEntry();
         sb_current = layout.add("Current", 0).getEntry();
     }
@@ -36,10 +38,10 @@ public class Pneumatics extends SubsystemBase {
     }
 
     public static Pneumatics getInstance() {
-        if(instance == null) instance = new Pneumatics();
+        if (instance == null)
+            instance = new Pneumatics();
 
         return instance;
     }
 
 }
-    
