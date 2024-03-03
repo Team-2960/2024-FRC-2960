@@ -1,6 +1,7 @@
 package frc.robot;
 
 import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.IntakePizzaBox;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -91,7 +92,17 @@ public class OperatorInterface extends SubsystemBase {
      * Updates the controls for the Pizzabox
      */
     private void updatePizzabox() {
-        // TODO implement pizzabox controls
+        if(driverController.getRawButton(1)){
+            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.INTAKE);
+        }else if(driverController.getRawButton(2)){
+            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT);
+        }else if(driverController.getRawButton(3)){
+            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT_PREP);
+        }else if(driverController.getRawButton(4)){
+            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.REVERSE);
+        }else{
+            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.IDLE);
+        }
     }
 
     /**
