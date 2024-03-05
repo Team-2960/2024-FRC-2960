@@ -13,7 +13,9 @@ import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -102,8 +104,8 @@ public class Arm extends SubsystemBase {
         armMotor1 = new TalonFX(Constants.armMotor1);
         armMotor2 = new TalonFX(Constants.armMotor2);
 
-        armExtender1 = new DoubleSolenoid(null, 0, 0);
-        armExtender2 = new DoubleSolenoid(null, 0, 0);
+        armExtender1 = new DoubleSolenoid(20, PneumaticsModuleType.REVPH, 9, 8);
+        armExtender2 = new DoubleSolenoid(20, PneumaticsModuleType.REVPH, 7, 6);
 
         quadArmEncoder = new Encoder(1, 2);
 
@@ -125,7 +127,9 @@ public class Arm extends SubsystemBase {
         targetState = new ArmStateValues(getArmAngle(), getArmExtension());
 
         // Setup Shuffleboard
-        var layout = Shuffleboard.getTab("Status").getLayout("Arm");
+        var layout = Shuffleboard.getTab("Status")
+            .getLayout("Arm", BuiltInLayouts.kList)
+            .withSize(2,4);
 
         sb_anglePosCurrent = layout.add("Angle Position Current", 0.).getEntry();
         sb_anglePosSetPoint = layout.add("Angle Position Set Point", 0).getEntry();
@@ -142,7 +146,8 @@ public class Arm extends SubsystemBase {
      * @return current arm angle
      */
     public Rotation2d getArmAngle() {
-        return Rotation2d.fromRadians(absoluteArmEncoder.getAbsolutePosition());
+        double angle = 107-Rotation2d.fromRotations(absoluteArmEncoder.get()).getDegrees();
+        return Rotation2d.fromDegrees(angle);
     }
 
     /**
@@ -387,7 +392,7 @@ public class Arm extends SubsystemBase {
      * Updates shuffleboard
      */
     private void updateUI(double targetRate) {
-        sb_anglePosCurrent.setDouble(absoluteArmEncoder.get());
+        sb_anglePosCurrent.setDouble(getArmAngle().getDegrees());
         sb_anglePosSetPoint.setDouble(targetState.targetAngle.getDegrees());
         sb_angleRateCurrent.setDouble(quadArmEncoder.getRate());
         sb_angleRateSetPoint.setDouble(targetRate);
