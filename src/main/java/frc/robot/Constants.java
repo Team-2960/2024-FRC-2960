@@ -2,6 +2,7 @@ package frc.robot;
 
 import javax.swing.text.rtf.RTFEditorKit;
 
+import edu.wpi.first.units.*;
 import edu.wpi.first.math.geometry.*;
 import frc.robot.Util.*;
 
@@ -9,6 +10,7 @@ public class Constants {
     public static final Transform2d fieldCenterOffset = new Transform2d(-8.270875, -4.105275, new Rotation2d(0.0));
 
     // Robot constants
+    // TODO Convert constants to units library for clarity
     public static final double updatePeriod = 0.02;//seconds
     
     public static final double robotWidth = 29.5 * .0254;   // Meters 
