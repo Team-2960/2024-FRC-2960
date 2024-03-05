@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -34,14 +35,14 @@ public class Climber extends SubsystemBase {
     private DoubleSolenoid ratchetRelease;
     private Timer ratchetTimer;
 
-    private ClimberStates climbState;
-    /*
+    private ClimberStates climbState = ClimberStates.Idle;
+    
     private GenericEntry sb_state;
     private GenericEntry sb_isDown;
     private GenericEntry sb_isClearOfArm;
     private GenericEntry sb_mLVoltage;
     private GenericEntry sb_mRVoltage;
-    */
+    
 
     /**
      * Constructor
@@ -62,8 +63,11 @@ public class Climber extends SubsystemBase {
         // Initialize climber state
         climbState = ClimberStates.MatchStart;
 
+        // Initialize Ratchet Release
+        ratchetRelease = new DoubleSolenoid(20, PneumaticsModuleType.REVPH, 5,4);
+
         // Setup Shuffleboard
-        /*
+        
         var layout = Shuffleboard.getTab("Status")
             .getLayout("Climber", BuiltInLayouts.kList)
             .withSize(2,4);
@@ -73,7 +77,6 @@ public class Climber extends SubsystemBase {
         sb_isClearOfArm = layout.add("Is Clear of Arm", false).getEntry();
         sb_mLVoltage = layout.add("Left Motor Voltage", 0).getEntry();
         sb_mRVoltage = layout.add("Right Motor Voltage", 0).getEntry();
-        */
     }
 
     /**
