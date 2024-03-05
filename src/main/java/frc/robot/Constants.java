@@ -65,8 +65,8 @@ public class Constants {
     // PH Solenoid Port
     public static final int armExt1Rev = 9;
     public static final int armExt1For = 8;
-    public static final int armExt2Rev = 7;
-    public static final int armExt2For = 6;
+    public static final int armExt2Rev = 6;
+    public static final int armExt2For = 7;
     public static final int climbRatchetRev = 5;
     public static final int climbRatchetFor = 4;
 
@@ -97,7 +97,8 @@ public class Constants {
     public static PIDParam armPID = new PIDParam(0, 0.0, 0.0);
     public static FFParam armFF = FFParam.arm(0.0, 3.197, 1.6, 0.0);
 
-    public static final Rotation2d minArmPos = Rotation2d.fromDegrees(10); //Rotation2d.fromDegrees(-0.5);
+    public static final Rotation2d minArmS0Pos = Rotation2d.fromDegrees(30); //Rotation2d.fromDegrees(20);
+    public static final Rotation2d minArmS1Pos = Rotation2d.fromDegrees(20); //Rotation2d.fromDegrees(-0.5);
     public static final Rotation2d maxArmPos = Rotation2d.fromDegrees(90); //Rotation2d.fromDegrees(96.5);
 
     public static final Rotation2d armMinState2Angle = Rotation2d.fromDegrees(30);
@@ -111,7 +112,7 @@ public class Constants {
     public static final double maxArmSpeed = Math.PI;   // radians / s
 
     public static final Rotation2d armEncAnglePerRot = Rotation2d.fromDegrees(360);
-    public static final Rotation2d armEncAngleOffset = Rotation2d.fromDegrees(107);
+    public static final Rotation2d armEncAngleOffset = Rotation2d.fromDegrees(104.4);
 
     // Pizzabox
     public static final double intakeInPower = .5;

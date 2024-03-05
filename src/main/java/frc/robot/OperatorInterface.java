@@ -98,12 +98,11 @@ public class OperatorInterface extends SubsystemBase {
 
         // Arm Angle Control
         double armManual = -operatorController.getRawAxis(1);
+        double armManualRate = armManual * 3;
         
-        if(Math.abs(armManual) > .05){
-            double armManualRate = armManual * 3;
-            arm.setArmVolt(armManualRate);
-            sb_armRate.setDouble(armManualRate);
-        }
+        if(Math.abs(armManual) > .05) arm.setArmVolt(armManualRate);
+
+        sb_armRate.setDouble(armManualRate);
 
         // Arm Extension control
         int opPOVAngle = operatorController.getPOV();

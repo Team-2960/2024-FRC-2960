@@ -102,12 +102,10 @@ public class Arm extends SubsystemBase {
         armMotor1 = new TalonFX(Constants.armMotor1);
         armMotor2 = new TalonFX(Constants.armMotor2);
 
-        armExtender1 = new DoubleSolenoid(Constants.phCANID, PneumaticsModuleType.REVPH, Constants.armExt1Rev, Constants.armExt2For);
+        armExtender1 = new DoubleSolenoid(Constants.phCANID, PneumaticsModuleType.REVPH, Constants.armExt1Rev, Constants.armExt1For);
         armExtender2 = new DoubleSolenoid(Constants.phCANID, PneumaticsModuleType.REVPH, Constants.armExt2Rev, Constants.armExt2For);
         
         absoluteArmEncoder = new DutyCycleEncoder(Constants.armDCEncoderPort);
-        absoluteArmEncoder.setDistancePerRotation(Constants.armEncAnglePerRot.getRadians());
-        absoluteArmEncoder.setPositionOffset(Constants.armEncAngleOffset.getRotations());
 
         quadArmEncoder = new Encoder(Constants.armQuadEncoderAPort, Constants.armQuadEncoderBPort);
         quadArmEncoder.setDistancePerPulse(Constants.armEncAnglePerRot.getRadians() / Constants.revTBEncCountPerRev);
@@ -152,8 +150,8 @@ public class Arm extends SubsystemBase {
      * @return current arm angle
      */
     public Rotation2d getArmAngle() {
-        Rotation2d angle = Rotation2d.fromRadians(absoluteArmEncoder.getAbsolutePosition());
-        return angle.unaryMinus();
+        double angle = Constants.armEncAngleOffset.getDegrees() - Rotation2d.fromRotations(absoluteArmEncoder.get()).getDegrees();
+        return Rotation2d.fromDegrees(angle);
     }
 
     /**
@@ -191,7 +189,11 @@ public class Arm extends SubsystemBase {
      * @param   voltage     voltage to set to the motor
      */
     public void setArmVolt(double voltage) {
+        manual_volt = voltage;
+
         if (control_mode == ArmControlMode.AUTOMATIC) manual_ext = getArmExtension();
+
+        control_mode = ArmControlMode.MANUAL_VOLT;
     }
 
     /**
@@ -371,14 +373,20 @@ public class Arm extends SubsystemBase {
      * @param   targetSpeed     target
      */
     private double getAngleControlVolt(double targetSpeed) {
-        Rotation2d currentAngle = getArmAngle();
-        double angleRate = getArmVelocity();
+        double result = this.manual_volt;
+        if (this.control_mode != ArmControlMode.MANUAL_VOLT) {
+            Rotation2d currentAngle = getArmAngle();
+            double angleRate = getArmVelocity();
 
 
-        // Calculate motor voltage output
-        double calcPID = armPID.calculate(angleRate, targetSpeed);
-        double calcFF = armFF.calculate(currentAngle.getRadians(), targetSpeed);
-        return calcPID + calcFF;
+            // Calculate motor voltage output
+            double calcPID = armPID.calculate(angleRate, targetSpeed);
+            double calcFF = armFF.calculate(currentAngle.getRadians(), targetSpeed);
+
+            result = calcPID + calcFF;
+        }
+
+        return result;
     }
 
     /**
@@ -389,7 +397,7 @@ public class Arm extends SubsystemBase {
         Rotation2d currentAngle = getArmAngle();
 
         // Set soft limits
-        if(currentAngle.getDegrees() <= Constants.minArmPos.getDegrees()) voltage = Math.max(0, voltage);
+        if(currentAngle.getDegrees() <= Constants.minArmS0Pos.getDegrees()) voltage = Math.max(0, voltage);
         if(currentAngle.getDegrees() >= Constants.maxArmPos.getDegrees()) voltage = Math.min(0, voltage);
 
         // Set Motors
