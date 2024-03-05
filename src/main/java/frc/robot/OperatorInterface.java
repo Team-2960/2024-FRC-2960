@@ -100,8 +100,8 @@ public class OperatorInterface extends SubsystemBase {
         double armManual = -operatorController.getRawAxis(1);
         
         if(Math.abs(armManual) > .05){
-            double armManualRate = armManual * PowerDistribution.getVoltage();
-            arm.setArmVoltage(armManualRate);
+            double armManualRate = armManual * 3;
+            arm.setArmVolt(armManualRate);
             sb_armRate.setDouble(armManualRate);
         }
 

@@ -30,7 +30,7 @@ public class Constants {
     public static final double winchDiam = 1.5; // in.
     public static final double winchCircum = Math.PI * winchDiam; // in.
 
-    public static final int revTBEncCountPerRev = 4096
+    public static final int revTBEncCountPerRev = 4096;
 
     // CAN IDs
     public static final int shooterTop = 14;
@@ -54,13 +54,13 @@ public class Constants {
     public static final int backRightDriveM = 7;
     public static final int backRightAngleM = 8;
 
-    public static final int phCANID = 20
+    public static final int phCANID = 20;
 
     // Digital Input Ports
     public static final int armDCEncoderPort = 0;
     public static final int armQuadEncoderAPort = 1;
     public static final int armQuadEncoderBPort = 2;
-    public static final int pbPhotoeyePort = 3
+    public static final int pbPhotoeyePort = 3;
 
     // PH Solenoid Port
     public static final int armExt1Rev = 9;

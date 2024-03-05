@@ -44,7 +44,7 @@ public class Arm extends SubsystemBase {
         public ArmStateValues(Rotation2d targetAngle, Rotation2d angleTol, int extState){
             this.targetAngle = targetAngle;
             this.angleTol = angleTol;
-            this.extState = max(0, min(2, extState);
+            this.extState = Math.max(0, Math.min(2, extState));
         }
     }
 
@@ -61,7 +61,7 @@ public class Arm extends SubsystemBase {
     private PIDController armPID;
     private ArmFeedforward armFF;
 
-    private final ArmStateValues defaultState = new ArmStateValues(Rotation2d.fromDegrees(10), ExtensionState.STAGE0);
+    private final ArmStateValues defaultState = new ArmStateValues(Rotation2d.fromDegrees(10), 0);
 
     private ArmControlMode control_mode;
 
@@ -106,11 +106,11 @@ public class Arm extends SubsystemBase {
         armExtender2 = new DoubleSolenoid(Constants.phCANID, PneumaticsModuleType.REVPH, Constants.armExt2Rev, Constants.armExt2For);
         
         absoluteArmEncoder = new DutyCycleEncoder(Constants.armDCEncoderPort);
-        absoluteArmEncoder.setDistancePerRotation(Constants.armEncAnglePerRot.fromRadians());
-        absoluteArmEncoder.setPositionOffset(Constantsarm.EncAngleOffset.getRotations());
+        absoluteArmEncoder.setDistancePerRotation(Constants.armEncAnglePerRot.getRadians());
+        absoluteArmEncoder.setPositionOffset(Constants.armEncAngleOffset.getRotations());
 
         quadArmEncoder = new Encoder(Constants.armQuadEncoderAPort, Constants.armQuadEncoderBPort);
-        quadArmEncoder.setDistancePerPulse(Constants.armEncAnglePerRot.fromRadians() / Constants.revTBEncCountPerRev);
+        quadArmEncoder.setDistancePerPulse(Constants.armEncAnglePerRot.getRadians() / Constants.revTBEncCountPerRev);
 
         armPID = new PIDController(Constants.armPID.kP, Constants.armPID.kP, Constants.armPID.kP);
         armFF = new ArmFeedforward(Constants.armFF.kS, Constants.armFF.kG, Constants.armFF.kV);
@@ -135,7 +135,7 @@ public class Arm extends SubsystemBase {
             .getLayout("Arm", BuiltInLayouts.kList)
             .withSize(2,4);
 
-        sb_armMove = layout.add("Arm Control Mode", control_name.name()).getEntry();
+        sb_armMode = layout.add("Arm Control Mode", control_mode.name()).getEntry();
         sb_anglePosCurrent = layout.add("Angle Position Current", 0).getEntry();
         sb_anglePosSetPoint = layout.add("Angle Position Set Point", 0).getEntry();
         sb_angleRateCurrent = layout.add("Angle Rate Current", 0).getEntry();
@@ -153,7 +153,7 @@ public class Arm extends SubsystemBase {
      */
     public Rotation2d getArmAngle() {
         Rotation2d angle = Rotation2d.fromRadians(absoluteArmEncoder.getAbsolutePosition());
-        return angle.UniaryMinus();
+        return angle.unaryMinus();
     }
 
     /**
@@ -191,7 +191,7 @@ public class Arm extends SubsystemBase {
      * @param   voltage     voltage to set to the motor
      */
     public void setArmVolt(double voltage) {
-        if (control_mode == ArmControlMode.Automatic) manual_ext = getArmExtension();
+        if (control_mode == ArmControlMode.AUTOMATIC) manual_ext = getArmExtension();
     }
 
     /**
@@ -203,7 +203,7 @@ public class Arm extends SubsystemBase {
     public void setArmRate(double rate) {
         manual_rate = rate;
 
-        if (control_mode == ArmControlMode.Automatic) manual_ext = getArmExtension();
+        if (control_mode == ArmControlMode.AUTOMATIC) manual_ext = getArmExtension();
         
         control_mode = ArmControlMode.MANUAL_RATE;
     }
@@ -214,7 +214,7 @@ public class Arm extends SubsystemBase {
      * @param   state   extension state
      */
     public void setExtState(int state) {
-        manual_ext = max(0, min(2, state);
+        manual_ext = Math.max(0, Math.min(2, state));
 
         if (control_mode == ArmControlMode.AUTOMATIC) {
             manual_rate = 0;
@@ -302,7 +302,7 @@ public class Arm extends SubsystemBase {
 
         setMotorVolt(voltage);
         updateExtension();
-        updateUI(targetArmRate);
+        updateUI(targetArmRate, voltage);
     }
 
     /**
@@ -324,7 +324,6 @@ public class Arm extends SubsystemBase {
         Rotation2d minS2Angle = Rotation2d.fromDegrees(30);
         Rotation2d currentAngle = getArmAngle();
         double targetSpeed = 0;
-        double targetVolt = 0;
 
         switch(control_mode) {
             case AUTOMATIC:
@@ -342,7 +341,7 @@ public class Arm extends SubsystemBase {
         if(!Climber.getInstance().isClearOfArm() && isInClimberZone()) targetSpeed = 0; // TODO Improve Collision Avoidance to eliminate deadlock possiblity
 
         // Keep arm in package
-        if(getArmExtension() == ExtensionState.STAGE2 && currentAngle.getDegrees() <= minS2Angle.getDegrees()) targetSpeed = 0;
+        if(getArmExtension() == 2 && currentAngle.getDegrees() <= minS2Angle.getDegrees()) targetSpeed = 0;
 
         return targetSpeed;
     }
@@ -371,7 +370,7 @@ public class Arm extends SubsystemBase {
      * Updates the control of the arm rate
      * @param   targetSpeed     target
      */
-    private void getAngleControlVolt(double targetSpeed) {
+    private double getAngleControlVolt(double targetSpeed) {
         Rotation2d currentAngle = getArmAngle();
         double angleRate = getArmVelocity();
 
@@ -387,9 +386,11 @@ public class Arm extends SubsystemBase {
      * @param   voltage     desired motor voltage
      */
     private void setMotorVolt(double voltage) {
+        Rotation2d currentAngle = getArmAngle();
+
         // Set soft limits
-        if(currentAngle.getDegrees() <= Constants.minArmPos.getDegrees()) voltage = max(0, voltage);
-        if(currentAngle.getDegrees() >= Constants.maxArmPos.getDegrees()) voltage = min(0, voltage);
+        if(currentAngle.getDegrees() <= Constants.minArmPos.getDegrees()) voltage = Math.max(0, voltage);
+        if(currentAngle.getDegrees() >= Constants.maxArmPos.getDegrees()) voltage = Math.min(0, voltage);
 
         // Set Motors
         armMotor1.setVoltage(voltage);
@@ -415,10 +416,10 @@ public class Arm extends SubsystemBase {
         boolean aboveState2Angle = getArmAngle().getDegrees() > Constants.armMinState2Angle.getDegrees();
 
         // Set target extension valve state
-        if(targetState == ExtensionState.STAGE2 && aboveState2Angle) {
+        if(targetState == 2 && aboveState2Angle) {
                 armExtender1.set(DoubleSolenoid.Value.kForward);
                 armExtender2.set(DoubleSolenoid.Value.kForward);
-        } else if (targetState == ExtensionState.STAGE1 || targetState == ExtensionState.STAGE2 && !aboveState2Angle) {
+        } else if (targetState == 1 || targetState == 2 && !aboveState2Angle) {
                 armExtender1.set(DoubleSolenoid.Value.kForward);
                 armExtender2.set(DoubleSolenoid.Value.kForward);
         } else {
@@ -434,7 +435,7 @@ public class Arm extends SubsystemBase {
      * Updates shuffleboard
      */
     private void updateUI(double targetRate, double targetVolt) {
-        sb_armMode.setString(control_mode.name())
+        sb_armMode.setString(control_mode.name());
         sb_anglePosCurrent.setDouble(getArmAngle().getDegrees());
         sb_anglePosSetPoint.setDouble(targetState.targetAngle.getDegrees());
         sb_angleRateCurrent.setDouble(getArmVelocity());

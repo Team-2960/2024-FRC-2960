@@ -35,7 +35,7 @@ public class Climber extends SubsystemBase {
     private DoubleSolenoid ratchetRelease;
     private Timer ratchetTimer;
 
-    private ClimberStates climbState = ClimberStates.Idle;
+    private ClimberStates climbState = ClimberStates.IDLE;
     
     private GenericEntry sb_state;
     private GenericEntry sb_isDown;
@@ -65,7 +65,7 @@ public class Climber extends SubsystemBase {
 
         // Initialize Ratchet Release
         ratchetRelease = new DoubleSolenoid(Constants.phCANID, PneumaticsModuleType.REVPH, 
-            Constants.climbRatchetRev,Constants.climberRatchetFor);
+            Constants.climbRatchetRev,Constants.climbRatchetFor);
 
         // Setup Shuffleboard
         
@@ -141,7 +141,7 @@ public class Climber extends SubsystemBase {
         switch (climbState) {
             case MATCH_START:
                 retractClimber(.2);
-                if (isDown()) setClimbState(IDLE);
+                if (isDown()) setClimbState(ClimberStates.IDLE);
                 break;
             case CLIMB:
                 retractClimber(1);
