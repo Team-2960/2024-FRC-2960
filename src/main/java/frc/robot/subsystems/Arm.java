@@ -93,6 +93,7 @@ public class Arm extends SubsystemBase {
     private GenericEntry sb_angleTargetVolt;
     private GenericEntry sb_extStage1;
     private GenericEntry sb_extStage2;
+    private GenericEntry sb_armClearOfClimber;
 
     /**
      * Constructor
@@ -143,6 +144,7 @@ public class Arm extends SubsystemBase {
         sb_angleTargetVolt = layout.add("Angle Target Voltage", 0).getEntry();
         sb_extStage1 = layout.add("Ext Stage 1 State", armExtender1.get().name()).getEntry();
         sb_extStage2 = layout.add("Ext State 2 State", armExtender2.get().name()).getEntry();
+        sb_armClearOfClimber = layout.add("Arm clear of climber", false).getEntry();
     }
 
     /**
@@ -453,6 +455,7 @@ public class Arm extends SubsystemBase {
         sb_angleTargetVolt.setDouble(targetVolt);
         sb_extStage1.setString(armExtender1.get().name());
         sb_extStage2.setString(armExtender2.get().name());
+        sb_armClearOfClimber.setBoolean(!isInClimberZone());
     }
 
     /**
