@@ -95,9 +95,6 @@ public class Constants {
     public static final double winchMaxExtension = 20;   // in.
     public static final double winchRatchedDelay = .25;  // seconds
 
-    public static final double minShootSpeed = 500;     // rev / s
-    public static final double shootPrepPower = .2;     
-
     //Auton
     public static double autonRampDownSpeed = 0.5;  
     public static double minSpeed = 2;              // m/s
@@ -127,4 +124,15 @@ public class Constants {
 
     public static final Rotation2d armEncAnglePerRot = Rotation2d.fromDegrees(360);
     public static final Rotation2d armEncAngleOffset = Rotation2d.fromDegrees(107);
+
+    // Pizzabox
+    public static final double intakeInPower = .5;
+    public static final double intakeShootPower = 1;
+    public static final double intakeOutPower = 1;
+
+
+    public static final double shooterPrepPower = .2;    
+    public static final double shooterShootPower = 1;
+    public static final double shooterRevPower = 1;
+    public static final double shooterMinShootSpeed = 500;     // rev / s
 }

@@ -120,25 +120,25 @@ public class IntakePizzaBox extends SubsystemBase {
             if (isNotePresent()) {
                 intakeRollers.set(0); // Stop intake if a gamepiece is present
             } else {
-                intakeRollers.set(.75); // Run motor if no intake is present
+                intakeRollers.set(Constants.intakeInPower); // Run motor if no intake is present
             }
         } else if (state == PizzaboxState.SHOOT_PREP) {
-            shooterTop.set(Constants.shootPrepPower); // Turn shooter to idle speed
+            shooterTop.set(Constants.shooterPrepPower); // Turn shooter to idle speed
         } else if (state == PizzaboxState.SHOOT) {
-            shooterTop.set(1); // Turn shooter to max power
+            shooterTop.set(Constants.shooterShootPower); // Turn shooter to max power
 
             // Check if shooter is ready to shoot
-            if (shootEncoder1.getVelocity() > Constants.minShootSpeed
-                    && shootEncoder2.getVelocity() > Constants.minShootSpeed) {
-                intakeRollers.set(1); // Run intake
+            if (shootEncoder1.getVelocity() > Constants.shooterMinShootSpeed
+                    && shootEncoder2.getVelocity() > Constants.shooterMinShootSpeed) {
+                intakeRollers.set(Constants.intakeShootPower); // Run intake
             } else {
                 intakeRollers.set(0); // Turn Intake Off
             }
 
         } else if (state == PizzaboxState.REVERSE) {
             // Reverse shooter and intake
-            shooterTop.set(-1);
-            intakeRollers.set(-1);
+            shooterTop.set(-Constants.shooterRevPower);
+            intakeRollers.set(-Constants.intakeOutPower);
         } else {
             // Turn shooter and intake off
             shooterTop.set(0);
