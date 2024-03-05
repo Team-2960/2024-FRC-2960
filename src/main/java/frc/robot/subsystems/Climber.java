@@ -3,6 +3,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -34,12 +35,13 @@ public class Climber extends SubsystemBase {
     private Timer ratchetTimer;
 
     private ClimberStates climbState;
-
+    /*
     private GenericEntry sb_state;
     private GenericEntry sb_isDown;
     private GenericEntry sb_isClearOfArm;
     private GenericEntry sb_mLVoltage;
     private GenericEntry sb_mRVoltage;
+    */
 
     /**
      * Constructor
@@ -61,13 +63,17 @@ public class Climber extends SubsystemBase {
         climbState = ClimberStates.MatchStart;
 
         // Setup Shuffleboard
-        var layout = Shuffleboard.getTab("Status").getLayout("Climber");
+        /*
+        var layout = Shuffleboard.getTab("Status")
+            .getLayout("Climber", BuiltInLayouts.kList)
+            .withSize(2,4);
 
         sb_state = layout.add("State", climbState.name()).getEntry();
         sb_isDown = layout.add("Is Down", false).getEntry();
         sb_isClearOfArm = layout.add("Is Clear of Arm", false).getEntry();
         sb_mLVoltage = layout.add("Left Motor Voltage", 0).getEntry();
         sb_mRVoltage = layout.add("Right Motor Voltage", 0).getEntry();
+        */
     }
 
     /**
@@ -192,11 +198,13 @@ public class Climber extends SubsystemBase {
      * Updates Shuffleboard
      */
     private void updateUI() {
+        /*
         sb_state.setString(climbState.name());
         sb_isDown.setBoolean(isDown());
         sb_isClearOfArm.setBoolean(isClearOfArm());
         sb_mLVoltage.setDouble(winchL.getBusVoltage() * winchL.getAppliedOutput());
         sb_mRVoltage.setDouble(winchR.getBusVoltage() * winchR.getAppliedOutput());
+        */
     }
 
     /**
