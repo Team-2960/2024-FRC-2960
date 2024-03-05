@@ -64,7 +64,8 @@ public class Climber extends SubsystemBase {
         climbState = ClimberStates.MATCH_START;
 
         // Initialize Ratchet Release
-        ratchetRelease = new DoubleSolenoid(20, PneumaticsModuleType.REVPH, 5,4);
+        ratchetRelease = new DoubleSolenoid(Constants.phCANID, PneumaticsModuleType.REVPH, 
+            Constants.climbRatchetRev,Constants.climberRatchetFor);
 
         // Setup Shuffleboard
         

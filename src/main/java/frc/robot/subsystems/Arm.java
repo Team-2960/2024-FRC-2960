@@ -102,8 +102,8 @@ public class Arm extends SubsystemBase {
         armMotor1 = new TalonFX(Constants.armMotor1);
         armMotor2 = new TalonFX(Constants.armMotor2);
 
-        armExtender1 = new DoubleSolenoid(20, PneumaticsModuleType.REVPH, Constants.armExt1Rev, Constants.armExt2For);
-        armExtender2 = new DoubleSolenoid(20, PneumaticsModuleType.REVPH, Constants.armExt2Rev, Constants.armExt2For);
+        armExtender1 = new DoubleSolenoid(Constants.phCANID, PneumaticsModuleType.REVPH, Constants.armExt1Rev, Constants.armExt2For);
+        armExtender2 = new DoubleSolenoid(Constants.phCANID, PneumaticsModuleType.REVPH, Constants.armExt2Rev, Constants.armExt2For);
         
         absoluteArmEncoder = new DutyCycleEncoder(Constants.armDCEncoderPort);
         absoluteArmEncoder.setDistancePerRotation(Constants.armEncAnglePerRot.fromRadians());
