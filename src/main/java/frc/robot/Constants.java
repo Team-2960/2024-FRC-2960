@@ -27,7 +27,6 @@ public class Constants {
         new Rotation3d(30 * Math.PI / 180, 0, Math.PI)
     );  
 
-    
     public static final double winchDiam = 1.5; // in.
     public static final double winchCircum = Math.PI * winchDiam; // in.
 
@@ -71,44 +70,33 @@ public class Constants {
     public static final int climbRatchetRev = 5;
     public static final int climbRatchetFor = 4;
 
-    // PID & Feed Forward values
-    public static PIDParam armPID = new PIDParam(0, 0.0, 0.0);
-    public static FFParam armFF = FFParam.arm(0.0, 3.197, 1.6, 0.0);
+    // Auton
+    public static double autonRampDownSpeed = 0.5;  
+    public static double minSpeed = 2;              // m/s
 
+
+    // Drive
     public static PIDParam drivePID = new PIDParam(.1, 0.0, 0.0);
     public static FFParam driveFF = FFParam.simpleMotor(0.0, 0.75, 0.0);
 
     public static PIDParam driveAngPID = new PIDParam(0.0, 0.0, 0.0);
     public static FFParam driveAngFF = FFParam.simpleMotor(0.0, 0.195, 0.9);
 
-    // Robot Limits
+    public static final double maxSpeed = 15;
+    public static final double maxAngularSpeed = 12 * 2 * Math.PI;
+
     public static final double swerveAngleRampRate = 20; 
     public static final Rotation2d swerveAngleRampDist = Rotation2d.fromDegrees(30);
 
     public static final double maxSwerveAngularSpeed = Math.PI * 4;     //Rad per second
     public static final double maxSwerveAngularAccel = Math.PI * 10;    //Rad per second ^ 2
 
-    public static final double maxSpeed = 15;
-    public static final double maxAngularSpeed = 12 * 2 * Math.PI;
-    public static final Rotation2d driveAngleRampDistance = Rotation2d.fromRadians(0.7);s
+    public static final Rotation2d driveAngleRampDistance = Rotation2d.fromRadians(0.7);
 
-    public static final double winchMaxExtension = 20;   // in.
-    public static final double winchRatchedDelay = .25;  // seconds
+    // Arm
+    public static PIDParam armPID = new PIDParam(0, 0.0, 0.0);
+    public static FFParam armFF = FFParam.arm(0.0, 3.197, 1.6, 0.0);
 
-    //Auton
-    public static double autonRampDownSpeed = 0.5;  
-    public static double minSpeed = 2;              // m/s
-
-    //Camera
-    public static double cameraToRobotX;
-    public static double cameraToRobotY;
-    public static double cameraToRobotHeight;
-
-    public static double cameraRoll;
-    public static double cameraPitch;
-    public static double cameraYaw;
-
-    //Arm
     public static final Rotation2d minArmPos = Rotation2d.fromDegrees(10); //Rotation2d.fromDegrees(-0.5);
     public static final Rotation2d maxArmPos = Rotation2d.fromDegrees(90); //Rotation2d.fromDegrees(96.5);
 
@@ -134,6 +122,10 @@ public class Constants {
     public static final double shooterShootPower = 1;
     public static final double shooterRevPower = 1;
     public static final double shooterMinShootSpeed = 500;     // rev / s
+
+    // Climber
+    public static final double winchMaxExtension = 20;   // in.
+    public static final double winchRatchedDelay = .25;  // seconds
 
     // Pneumatics
     public static final double minPressure = 80;
