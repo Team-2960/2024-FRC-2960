@@ -303,8 +303,8 @@ public class Arm extends SubsystemBase {
         }
 
         // Set soft limits
-        if(currentAngle.getDegrees() >= Constants.maxArmPos && targetSpeed > 0) targetSpeed = 0;
-        if(currentAngle.getDegrees() <= Constants.minArmPos && targetSpeed > 0) targetSpeed = 0;
+        if(currentAngle.getDegrees() >= Constants.maxArmPos.getDegrees() && targetSpeed > 0) targetSpeed = 0;
+        if(currentAngle.getDegrees() <= Constants.minArmPos.getDegrees() && targetSpeed > 0) targetSpeed = 0;
 
         // Protect against climber collisions
         if(!Climber.getInstance().isClearOfArm() && isInClimberZone()) targetSpeed = 0;

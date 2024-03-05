@@ -101,10 +101,9 @@ public class Constants {
     public static double cameraYaw;
 
     //Arm
-    public static final double maxArmPos = 0;
-    public static final double minArmPos = 0;
-    public static double maxArmSpeed;
-    public static double maxArmAccel;
+    public static final Rotation2d maxArmPos = Rotation2d.fromDegrees(96.5);
+    public static final Rotation2d minArmPos = Rotation2d.fromDegrees(-0.5);
+    public static final double maxArmSpeed = Math.PI;
 
     public static final double homePos = 0;
     public static final double extendedHomePos = 0;
