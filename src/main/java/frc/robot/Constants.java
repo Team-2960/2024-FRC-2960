@@ -9,12 +9,12 @@ public class Constants {
     public static final Transform2d fieldCenterOffset = new Transform2d(-8.270875, -4.105275, new Rotation2d(0.0));
 
     // Robot constants
-    public final static double updatePeriod = 0.02;//seconds
+    public static final double updatePeriod = 0.02;//seconds
     
-    public final static double robotWidth = 29.5 * .0254;   // Meters 
-    public final static double robotLength = 29.5 * .0254;  // Meters 
-    public final static double wheelInset = 1.75 * .0254;   // Meters
-    public final static double robotDiag = Math.sqrt(Math.pow(robotWidth, 2) + Math.pow(robotLength, 2)); // Meters
+    public static final double robotWidth = 29.5 * .0254;   // Meters 
+    public static final double robotLength = 29.5 * .0254;  // Meters 
+    public static final double wheelInset = 1.75 * .0254;   // Meters
+    public static final double robotDiag = Math.sqrt(Math.pow(robotWidth, 2) + Math.pow(robotLength, 2)); // Meters
 
     public static final double autoClearance = .25; // Meters
 
@@ -31,27 +31,45 @@ public class Constants {
     public static final double winchDiam = 1.5; // in.
     public static final double winchCircum = Math.PI * winchDiam; // in.
 
-    // Motor IDs
-    public final static int shooterTop = 14;
-    public final static int shooterBot = 13;
+    public static final int revTBEncCountPerRev = 4096
 
-    public final static int intakeRollers = 15;
+    // CAN IDs
+    public static final int shooterTop = 14;
+    public static final int shooterBot = 13;
 
-    public final static int winchMotorL = 10;
-    public final static int winchMotorR = 9;
+    public static final int intakeRollers = 15;
+
+    public static final int winchMotorL = 10;
+    public static final int winchMotorR = 9;
     
-    public final static int armMotor1 =11;
-    public final static int armMotor2 = 12;
+    public static final int armMotor1 =11;
+    public static final int armMotor2 = 12;
 
-    public final static int frontLeftDriveM = 3;
-    public final static int frontLeftAngleM = 4;
-    public final static int frontRightDriveM = 1;
-    public final static int frontRightAngleM = 2;
+    public static final int frontLeftDriveM = 3;
+    public static final int frontLeftAngleM = 4;
+    public static final int frontRightDriveM = 1;
+    public static final int frontRightAngleM = 2;
 
-    public final static int backLeftDriveM = 5;
-    public final static int backLeftAngleM = 6;
-    public final static int backRightDriveM = 7;
-    public final static int backRightAngleM = 8;
+    public static final int backLeftDriveM = 5;
+    public static final int backLeftAngleM = 6;
+    public static final int backRightDriveM = 7;
+    public static final int backRightAngleM = 8;
+
+    public static final int phCANID = 20
+
+    // Digital Input Ports
+    public static final int armDCEncoderPort = 0;
+    public static final int armQuadEncoderAPort = 1;
+    public static final int armQuadEncoderBPort = 2;
+    public static final int pbPhotoeyePort = 3
+
+    // PH Solenoid Port
+    public static final int armExt1Rev = 9;
+    public static final int armExt1For = 8;
+    public static final int armExt2Rev = 7;
+    public static final int armExt2For = 6;
+    public static final int climbRatchetRev = 5;
+    public static final int climbRatchetFor = 4;
 
     // PID & Feed Forward values
     public static PIDParam armPID = new PIDParam(0, 0.0, 0.0);
@@ -64,22 +82,15 @@ public class Constants {
     public static FFParam driveAngFF = FFParam.simpleMotor(0.0, 0.195, 0.9);
 
     // Robot Limits
-    public static final double swerveAngleRampRate = 20;
+    public static final double swerveAngleRampRate = 20; 
     public static final Rotation2d swerveAngleRampDist = Rotation2d.fromDegrees(30);
 
     public static final double maxSwerveAngularSpeed = Math.PI * 4;     //Rad per second
     public static final double maxSwerveAngularAccel = Math.PI * 10;    //Rad per second ^ 2
 
-    //public static final Rotation2d swerveAngleOffset = Rotation2d.fromDegrees(180);
     public static final double maxSpeed = 15;
     public static final double maxAngularSpeed = 12 * 2 * Math.PI;
-    public static final Rotation2d driveAngleRampDistance = Rotation2d.fromRadians(0.7);
-
-    public static final Rotation2d armRampDownDist = Rotation2d.fromDegrees(10);
-    public static final Rotation2d armMinState2Angle = Rotation2d.fromDegrees(30);
-    public static final Rotation2d climberZoneLowerAngle =  Rotation2d.fromDegrees(60); 
-    public static final Rotation2d climberZoneUpperAngle =  Rotation2d.fromDegrees(75);
-    public static final double armExtDelayTime = .25; // Seconds
+    public static final Rotation2d driveAngleRampDistance = Rotation2d.fromRadians(0.7);s
 
     public static final double winchMaxExtension = 20;   // in.
     public static final double winchRatchedDelay = .25;  // seconds
@@ -88,8 +99,8 @@ public class Constants {
     public static final double shootPrepPower = .2;     
 
     //Auton
-    public static double autonRampDownSpeed = 0.5;
-    public static double minSpeed = 2;
+    public static double autonRampDownSpeed = 0.5;  
+    public static double minSpeed = 2;              // m/s
 
     //Camera
     public static double cameraToRobotX;
@@ -101,18 +112,19 @@ public class Constants {
     public static double cameraYaw;
 
     //Arm
-    public static final Rotation2d maxArmPos = Rotation2d.fromDegrees(96.5);
-    public static final Rotation2d minArmPos = Rotation2d.fromDegrees(-0.5);
-    public static final double maxArmSpeed = Math.PI;
+    public static final Rotation2d minArmPos = Rotation2d.fromDegrees(10); //Rotation2d.fromDegrees(-0.5);
+    public static final Rotation2d maxArmPos = Rotation2d.fromDegrees(90); //Rotation2d.fromDegrees(96.5);
 
-    public static final double homePos = 0;
-    public static final double extendedHomePos = 0;
-    public static final double speakerPos = 0;
-    public static final double ampPos = 0;
-    public static final double climbPrepPos = 0;
-    public static final double trapClimbPos = 0;
-    public static final double trapScorePos = 0;
+    public static final Rotation2d armMinState2Angle = Rotation2d.fromDegrees(30);
 
-    //TODO test and change these values
+    public static final Rotation2d armRampDownDist = Rotation2d.fromDegrees(10);
 
+    public static final Rotation2d climberZoneLowerAngle =  Rotation2d.fromDegrees(60); 
+    public static final Rotation2d climberZoneUpperAngle =  Rotation2d.fromDegrees(75);
+
+    public static final double armExtDelayTime = .25;   // Second
+    public static final double maxArmSpeed = Math.PI;   // radians / s
+
+    public static final Rotation2d armEncAnglePerRot = Rotation2d.fromDegrees(360);
+    public static final Rotation2d armEncAngleOffset = Rotation2d.fromDegrees(107);
 }

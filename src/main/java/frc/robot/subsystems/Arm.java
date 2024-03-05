@@ -102,18 +102,19 @@ public class Arm extends SubsystemBase {
         armMotor1 = new TalonFX(Constants.armMotor1);
         armMotor2 = new TalonFX(Constants.armMotor2);
 
-        armExtender1 = new DoubleSolenoid(20, PneumaticsModuleType.REVPH, 9, 8);
-        armExtender2 = new DoubleSolenoid(20, PneumaticsModuleType.REVPH, 7, 6);
+        armExtender1 = new DoubleSolenoid(20, PneumaticsModuleType.REVPH, Constants.armExt1Rev, Constants.armExt2For);
+        armExtender2 = new DoubleSolenoid(20, PneumaticsModuleType.REVPH, Constants.armExt2Rev, Constants.armExt2For);
+        
+        absoluteArmEncoder = new DutyCycleEncoder(Constants.armDCEncoderPort);
+        absoluteArmEncoder.setDistancePerRotation(Constants.armEncAnglePerRot.fromRadians());
+        absoluteArmEncoder.setPositionOffset(Constantsarm.EncAngleOffset.getRotations());
 
-        quadArmEncoder = new Encoder(1, 2);
-
-        absoluteArmEncoder = new DutyCycleEncoder(0);
+        quadArmEncoder = new Encoder(Constants.armQuadEncoderAPort, Constants.armQuadEncoderBPort);
+        quadArmEncoder.setDistancePerPulse(Constants.armEncAnglePerRot.fromRadians() / Constants.revTBEncCountPerRev);
 
         armPID = new PIDController(Constants.armPID.kP, Constants.armPID.kP, Constants.armPID.kP);
         armFF = new ArmFeedforward(Constants.armFF.kS, Constants.armFF.kG, Constants.armFF.kV);
         
-        quadArmEncoder.setDistancePerPulse(2 * Math.PI / 4960);
-        absoluteArmEncoder.setDistancePerRotation(2 * Math.PI);
         // TODO Set abs encoder offset
 
         // Set control mode
@@ -151,8 +152,8 @@ public class Arm extends SubsystemBase {
      * @return current arm angle
      */
     public Rotation2d getArmAngle() {
-        double angle = 107-Rotation2d.fromRotations(absoluteArmEncoder.get()).getDegrees();
-        return Rotation2d.fromDegrees(angle);
+        Rotation2d angle = Rotation2d.fromRadians(absoluteArmEncoder.getAbsolutePosition());
+        return angle.UniaryMinus();
     }
 
     /**
