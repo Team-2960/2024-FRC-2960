@@ -17,10 +17,10 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 public class Climber extends SubsystemBase {
 
     public enum ClimberStates {
-        MatchStart,
-        ClimbStart,
-        Climb,
-        Idle
+        MATCH_START,
+        CLIMB_START,
+        CLIMB,
+        IDLE
     }
 
     private static Climber climber = null;
@@ -61,7 +61,7 @@ public class Climber extends SubsystemBase {
         winchLimit = winchL.getForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen);
 
         // Initialize climber state
-        climbState = ClimberStates.MatchStart;
+        climbState = ClimberStates.MATCH_START;
 
         // Initialize Ratchet Release
         ratchetRelease = new DoubleSolenoid(20, PneumaticsModuleType.REVPH, 5,4);
@@ -137,27 +137,26 @@ public class Climber extends SubsystemBase {
      */
     @Override
     public void periodic() {
-        /*
         switch (climbState) {
-            case MatchStart:
+            case MATCH_START:
                 retractClimber(.2);
+                if (isDown()) setClimbState(IDLE);
                 break;
-            case Climb:
+            case CLIMB:
                 retractClimber(1);
                 break;
-            case ClimbStart:
+            case CLIMB_START:
                 extendClimber();
                 break;
-            case Idle:
+            case IDLE:
             default:
                 winchL.set(0);
                 ratchetRelease.set(DoubleSolenoid.Value.kForward);
         }
 
         // Reset the climber encoder if the limit switch is set
-        if (isDown())
-            resetClimber();
-        */
+        if (isDown()) resetClimber();
+        
         updateUI();
     }
 
@@ -202,13 +201,11 @@ public class Climber extends SubsystemBase {
      * Updates Shuffleboard
      */
     private void updateUI() {
-        /*
         sb_state.setString(climbState.name());
         sb_isDown.setBoolean(isDown());
         sb_isClearOfArm.setBoolean(isClearOfArm());
         sb_mLVoltage.setDouble(winchL.getBusVoltage() * winchL.getAppliedOutput());
         sb_mRVoltage.setDouble(winchR.getBusVoltage() * winchR.getAppliedOutput());
-        */
     }
 
     /**
