@@ -112,7 +112,7 @@ public class Arm extends SubsystemBase {
         absoluteArmEncoder = new DutyCycleEncoder(0);
 
         armPID = new PIDController(Constants.armPID.kP, Constants.armPID.kP, Constants.armPID.kP);
-        armFF = new ArmFeedforward(Constants.armFF.kS, Constants.armFF.kV, Constants.armFF.kG);
+        armFF = new ArmFeedforward(Constants.armFF.kS, Constants.armFF.kG, Constants.armFF.kV);
         
         quadArmEncoder.setDistancePerPulse(2 * Math.PI / 4960);
         absoluteArmEncoder.setDistancePerRotation(2 * Math.PI);
@@ -125,6 +125,10 @@ public class Arm extends SubsystemBase {
 
         // Set target state to current state
         targetState = new ArmStateValues(getArmAngle(), getArmExtension());
+
+        // Initialize Timer
+        extenderTimer = new Timer();
+
 
         // Setup Shuffleboard
         var layout = Shuffleboard.getTab("Status")

@@ -137,6 +137,7 @@ public class Climber extends SubsystemBase {
      */
     @Override
     public void periodic() {
+        /*
         switch (climbState) {
             case MatchStart:
                 retractClimber(.2);
@@ -156,7 +157,7 @@ public class Climber extends SubsystemBase {
         // Reset the climber encoder if the limit switch is set
         if (isDown())
             resetClimber();
-
+        */
         updateUI();
     }
 

@@ -54,8 +54,8 @@ public class Constants {
     public final static int backRightAngleM = 8;
 
     // PID & Feed Forward values
-    public static PIDParam armPID = new PIDParam(0.0, 0.0, 0.0);
-    public static FFParam armFF = FFParam.arm(0.0, 0.0, 0.0, 0.0);
+    public static PIDParam armPID = new PIDParam(0, 0.0, 0.0);
+    public static FFParam armFF = FFParam.arm(0.0, 3.197, 1.6, 0.0);
 
     public static PIDParam drivePID = new PIDParam(.1, 0.0, 0.0);
     public static FFParam driveFF = FFParam.simpleMotor(0.0, 0.75, 0.0);

@@ -1,5 +1,6 @@
 package frc.robot;
 
+import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.IntakePizzaBox;
 import edu.wpi.first.math.MathUtil;
@@ -25,6 +26,8 @@ public class OperatorInterface extends SubsystemBase {
     private GenericEntry sb_driveR;
     private GenericEntry sb_driveFR;
 
+    private GenericEntry sb_armRate;
+
     /**
      * Constructor
      */
@@ -41,6 +44,11 @@ public class OperatorInterface extends SubsystemBase {
         sb_driveY = drive_layout.add("Y Speed", 0).getEntry();
         sb_driveR = drive_layout.add("R Speed", 0).getEntry();
         sb_driveFR = drive_layout.add("Field Relative", true).getEntry();
+
+        var arm_layout = Shuffleboard.getTab("OI")
+            .getLayout("Arm", BuiltInLayouts.kList)
+            .withSize(2,4);
+        sb_armRate = arm_layout.add("Arm Manual Rate", 0).getEntry();
     }
 
     /**
@@ -85,7 +93,13 @@ public class OperatorInterface extends SubsystemBase {
      * Updates the controls for the arm
      */
     private void updateArm() {
-        // TODO Implement arm controls
+        double armManual = -operatorController.getRawAxis(1);
+
+        if(Math.abs(armManual) > .05){
+            double armManualRate = armManual * Constants.maxArmSpeed;
+            Arm.getInstance().setArmRate(armManualRate);
+            sb_armRate.setDouble(armManualRate);
+        }
     }
 
     /**
