@@ -212,7 +212,8 @@ public class Drive extends SubsystemBase {
         rSpeed = getAngleRate();
 
         if (fieldRelative) {
-            Rotation2d fieldAngle = Rotation2d.fromDegrees(360).minus(navx.getRotation2d());
+            Pose2d robot_pose = getEstimatedPos();
+            Rotation2d fieldAngle = Rotation2d.fromDegrees(360).minus(robot_pose.getRotation());
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rSpeed, fieldAngle);
         } else {
             speeds = new ChassisSpeeds(xSpeed, ySpeed, rSpeed);
