@@ -130,9 +130,12 @@ public class Constants {
     public static final double intakeShootPower = 1;
     public static final double intakeOutPower = 1;
 
-
     public static final double shooterPrepPower = .2;    
     public static final double shooterShootPower = 1;
     public static final double shooterRevPower = 1;
     public static final double shooterMinShootSpeed = 500;     // rev / s
+
+    // Pneumatics
+    public static final double minPressure = 80;
+    public static final double maxPressure = 120;
 }

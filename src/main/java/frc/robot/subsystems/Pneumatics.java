@@ -17,8 +17,8 @@ public class Pneumatics extends SubsystemBase {
     private GenericEntry sb_current;
 
     private Pneumatics() {
-        compressor = new Compressor(20, PneumaticsModuleType.REVPH);
-        compressor.enableAnalog(80, 120);
+        compressor = new Compressor(Constants.phCANID, PneumaticsModuleType.REVPH);
+        compressor.enableAnalog(Constants.minPressure, Constants.maxPressure);
 
         var layout = Shuffleboard.getTab("Status")
                 .getLayout("Pneumatics", BuiltInLayouts.kList)
