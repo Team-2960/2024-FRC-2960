@@ -6,6 +6,7 @@ import frc.robot.subsystems.IntakePizzaBox;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
@@ -68,6 +69,8 @@ public class OperatorInterface extends SubsystemBase {
      * Updates the controls for the drivetrain
      */
     private void updateDrive() {
+        Drive drive = Drive.getInstance();
+
         boolean fieldRelative = !driverController.getRawButton(1);
         var alliance = DriverStation.getAlliance();
         double alliance_dir = alliance.isPresent() && alliance.get()== Alliance.Red ? 1 : -1;
@@ -75,8 +78,6 @@ public class OperatorInterface extends SubsystemBase {
         double xSpeed = -MathUtil.applyDeadband(driverController.getRawAxis(1), 0.1) * Constants.maxSpeed;
         double ySpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.1) * Constants.maxSpeed;
         double rSpeed = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1) * Constants.maxAngularSpeed;
-
-        Drive drive = Drive.getInstance();
         
         drive.setfieldRelative(fieldRelative);
         drive.setSpeed(xSpeed, ySpeed);    
@@ -93,13 +94,21 @@ public class OperatorInterface extends SubsystemBase {
      * Updates the controls for the arm
      */
     private void updateArm() {
-        double armManual = -operatorController.getRawAxis(1);
+        Arm arm = Arm.getInstance();
 
+        // Arm Angle Control
+        double armManual = -operatorController.getRawAxis(1);
+        
         if(Math.abs(armManual) > .05){
-            double armManualRate = armManual * Constants.maxArmSpeed;
-            Arm.getInstance().setArmRate(armManualRate);
+            double armManualRate = armManual * PowerDistribution.getVoltage();
+            arm.setArmVoltage(armManualRate);
             sb_armRate.setDouble(armManualRate);
         }
+
+        // Arm Extension control
+        int opPOVAngle = operatorController.getPOV();
+        if(opPOVAngle == 0) arm.stepExtOut();
+        if(opPOVAngle == 180) arm.stepExtOut(); 
     }
 
     /**
