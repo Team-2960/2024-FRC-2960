@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
@@ -25,8 +26,8 @@ public class IntakePizzaBox extends SubsystemBase {
 
     private TalonFX intakeRollers;
 
-    private CANSparkMax shooterTop;
-    private CANSparkMax shooterBot;
+    private CANSparkFlex shooterTop;
+    private CANSparkFlex shooterBot;
 
     private RelativeEncoder shootEncoder1;
     private RelativeEncoder shootEncoder2;
@@ -53,8 +54,8 @@ public class IntakePizzaBox extends SubsystemBase {
         
 
         // Initialize Shooter Motors
-        shooterTop = new CANSparkMax(Constants.shooterTop, MotorType.kBrushless);
-        shooterBot = new CANSparkMax(Constants.shooterBot, MotorType.kBrushless);
+        shooterTop = new CANSparkFlex(Constants.shooterTop, MotorType.kBrushless);
+        shooterBot = new CANSparkFlex(Constants.shooterBot, MotorType.kBrushless);
         shooterBot.follow(shooterTop, true);
 
         // Initialize Shooter Encoders
