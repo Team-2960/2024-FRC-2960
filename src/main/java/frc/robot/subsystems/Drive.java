@@ -56,6 +56,10 @@ public class Drive extends SubsystemBase {
     private GenericEntry sb_posEstY;
     private GenericEntry sb_posEstR;
 
+    private GenericEntry sb_speedX;
+    private GenericEntry sb_speedY;
+    private GenericEntry sb_speedR;
+
     /**
      * Constructor
      */
@@ -96,10 +100,14 @@ public class Drive extends SubsystemBase {
         // Setup Shuffleboard
         var pose_layout = Shuffleboard.getTab("Drive")
             .getLayout("Drive Pose", BuiltInLayouts.kList)
-            .withSize(2,2);
+            .withSize(1,4);
         sb_posEstX = pose_layout.add("Pose X", 0).getEntry();
         sb_posEstY = pose_layout.add("Pose Y", 0).getEntry();
         sb_posEstR = pose_layout.add("Pose R", 0).getEntry();
+        
+        sb_speedX  = pose_layout.add("Speed X", 0).getEntry();
+        sb_speedY  = pose_layout.add("Speed Y", 0).getEntry();
+        sb_speedR  = pose_layout.add("Speed R", 0).getEntry();
     }
 
     /**
@@ -319,6 +327,10 @@ public class Drive extends SubsystemBase {
         sb_posEstX.setDouble(pose.getX());
         sb_posEstY.setDouble(pose.getY());
         sb_posEstR.setDouble(pose.getRotation().getDegrees());
+
+        sb_speedX.setDouble(xSpeed);
+        sb_speedY.setDouble(ySpeed);
+        sb_speedR.setDouble(rSpeed);
     }
 
     /**

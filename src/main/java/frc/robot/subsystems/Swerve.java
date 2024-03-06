@@ -71,7 +71,7 @@ public class Swerve extends SubsystemBase {
         // Setup Shuffleboard
         var layout = Shuffleboard.getTab("Drive")
                 .getLayout(swerveName + " Swerve", BuiltInLayouts.kList)
-                .withSize(2, 4);
+                .withSize(1, 4);
         sb_angleSetPoint = layout.add("Angle Desired", 0).getEntry();
         sb_angleCurrent = layout.add("Angle Current", 0).getEntry();
         sb_angleVolt = layout.add("Angle Voltage", 0).getEntry();
