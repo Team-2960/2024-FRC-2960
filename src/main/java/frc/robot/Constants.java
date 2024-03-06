@@ -61,6 +61,7 @@ public class Constants {
     public static final int armQuadEncoderAPort = 1;
     public static final int armQuadEncoderBPort = 2;
     public static final int pbPhotoeyePort = 3
+    public static final int armBrakeModeBtn = 4;
 
     // PH Solenoid Port
     public static final int armExt1Rev = 9;

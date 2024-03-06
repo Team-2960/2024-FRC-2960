@@ -5,11 +5,14 @@ import frc.robot.Constants;
 import java.util.Map;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Encoder;
@@ -58,6 +61,8 @@ public class Arm extends SubsystemBase {
 
     private DutyCycleEncoder absoluteArmEncoder;
 
+    private DigitalInput brakeModeDisableBtn;
+
     private PIDController armPID;
     private ArmFeedforward armFF;
 
@@ -93,6 +98,7 @@ public class Arm extends SubsystemBase {
     private GenericEntry sb_angleTargetVolt;
     private GenericEntry sb_extStage1;
     private GenericEntry sb_extStage2;
+    private GenericEntry sb_brakeModeDisabled;
 
     /**
      * Constructor
@@ -111,6 +117,8 @@ public class Arm extends SubsystemBase {
 
         quadArmEncoder = new Encoder(Constants.armQuadEncoderAPort, Constants.armQuadEncoderBPort);
         quadArmEncoder.setDistancePerPulse(Constants.armEncAnglePerRot.fromRadians() / Constants.revTBEncCountPerRev);
+
+        brakeModeDisabledBtn = new DigitalInput(Constants.armBrakeModeBtn);
 
         armPID = new PIDController(Constants.armPID.kP, Constants.armPID.kP, Constants.armPID.kP);
         armFF = new ArmFeedforward(Constants.armFF.kS, Constants.armFF.kG, Constants.armFF.kV);
@@ -145,6 +153,7 @@ public class Arm extends SubsystemBase {
         sb_angleTargetVolt = layout.add("Angle Target Voltage", 0).getEntry();
         sb_extStage1 = layout.add("Ext Stage 1 State", armExtender1.get().name()).getEntry();
         sb_extStage2 = layout.add("Ext State 2 State", armExtender2.get().name()).getEntry();
+        sb_brakeModeDisabled = layout.add("Brake Mode Disabled", brakeModeDisableBtn.get()).getEntry();
     }
 
     /**
@@ -161,7 +170,7 @@ public class Arm extends SubsystemBase {
      * @return current arm angle rate in radians per second
      */
     public double getArmVelocity() {
-        return quadArmEncoder.getRate() ;
+        return quadArmEncoder.getRate();
     }
 
     /**
@@ -302,6 +311,7 @@ public class Arm extends SubsystemBase {
 
         setMotorVolt(voltage);
         updateExtension();
+        updateBrakeMode();
         updateUI(targetArmRate);
     }
 
@@ -431,6 +441,18 @@ public class Arm extends SubsystemBase {
     }
 
     /**
+     * Updates the brake mode control of the 
+     */
+    private void updateBrakeMode() {
+        var motorConfigs = new MotorOutputConfigs();
+        
+        motorConfigs.NeutralMode = brakeModeDisableBtn.get() ? NeutralMode.Coast : NeutralMode.Coast;
+        
+        armMotor1.getConfigurator().apply(motorConfigs);
+        armMotor2.getConfigurator().apply(motorConfigs);
+    }
+
+    /**
      * Updates shuffleboard
      */
     private void updateUI(double targetRate, double targetVolt) {
@@ -444,6 +466,7 @@ public class Arm extends SubsystemBase {
         sb_angleTargetVolt.setDouble(targetVolt);
         sb_extStage1.setString(armExtender1.get().name());
         sb_extStage2.setString(armExtender2.get().name());
+        sb_brakeModeEn.setBoolean(brakeModeDisabledBtn.get())
     }
 
     /**
