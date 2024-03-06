@@ -30,6 +30,7 @@ public class OperatorInterface extends SubsystemBase {
     private GenericEntry sb_driveFR;
 
     private GenericEntry sb_armRate;
+    private GenericEntry sb_armExtendManual;
 
     /**
      * Constructor
@@ -52,6 +53,7 @@ public class OperatorInterface extends SubsystemBase {
             .getLayout("Arm", BuiltInLayouts.kList)
             .withSize(2,4);
         sb_armRate = arm_layout.add("Arm Manual Rate", 0).getEntry();
+        sb_armExtendManual = arm_layout.add("Arm Extend", 0).getEntry();
     }
 
     /**
@@ -113,7 +115,10 @@ public class OperatorInterface extends SubsystemBase {
         // Arm Extension control
         int opPOVAngle = operatorController.getPOV();
         if(opPOVAngle == 0) arm.stepExtOut();
-        if(opPOVAngle == 180) arm.stepExtOut(); 
+        if(opPOVAngle == 180) arm.stepExtOut();
+        
+        //Update shuffleboard
+        sb_armExtendManual.setInteger(opPOVAngle);
     }
 
     /**
