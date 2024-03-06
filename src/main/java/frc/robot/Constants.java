@@ -64,10 +64,10 @@ public class Constants {
     public static final int armBrakeModeBtn = 4;
 
     // PH Solenoid Port
-    public static final int armExt1Rev = 9;
-    public static final int armExt1For = 8;
-    public static final int armExt2Rev = 6;
-    public static final int armExt2For = 7;
+    public static final int armExt1Rev = 8;
+    public static final int armExt1For = 9;
+    public static final int armExt2Rev = 7;
+    public static final int armExt2For = 6;
     public static final int climbRatchetRev = 4;
     public static final int climbRatchetFor = 5;
 

@@ -81,10 +81,10 @@ public class Arm extends SubsystemBase {
             "Match Start", new ArmStateValues(Rotation2d.fromDegrees(60), 0),
             "Home", defaultState,
             "Intake", new ArmStateValues(Rotation2d.fromDegrees(-5), 1),
-            "Speaker", new ArmStateValues(Rotation2d.fromDegrees(10), 0),
-            "Amp", new ArmStateValues(Rotation2d.fromDegrees(60), 1),
-            "Climb", new ArmStateValues(Rotation2d.fromDegrees(90), 2),
-            "Climb Balance", new ArmStateValues(Rotation2d.fromDegrees(80), 2),
+            "Speaker", new ArmStateValues(Rotation2d.fromDegrees(25.4), 0),
+            "Amp", new ArmStateValues(Rotation2d.fromDegrees(97.37), 1),
+            "Climb", new ArmStateValues(Rotation2d.fromDegrees(97.38), 0),
+            "Climb Balance", new ArmStateValues(Rotation2d.fromDegrees(97.38), 0),
             "Trap Score", new ArmStateValues(Rotation2d.fromDegrees(70), 2));
 
     private GenericEntry sb_armMode;
@@ -460,15 +460,15 @@ public class Arm extends SubsystemBase {
         boolean aboveState2Angle = getArmAngle().getDegrees() > Constants.armMinState2Angle.getDegrees();
 
         // Set target extension valve state
-        if (targetState == 2 && aboveState2Angle) {
+        if (targetState == 2) {
             armExtender1.set(DoubleSolenoid.Value.kForward);
             armExtender2.set(DoubleSolenoid.Value.kForward);
-        } else if (targetState == 1 || targetState == 2 && !aboveState2Angle) {
+        } else if (targetState == 1) {
             armExtender1.set(DoubleSolenoid.Value.kForward);
-            armExtender2.set(DoubleSolenoid.Value.kForward);
+            armExtender2.set(DoubleSolenoid.Value.kReverse);
         } else {
-            armExtender1.set(DoubleSolenoid.Value.kForward);
-            armExtender2.set(DoubleSolenoid.Value.kForward);
+            armExtender1.set(DoubleSolenoid.Value.kReverse);
+            armExtender2.set(DoubleSolenoid.Value.kReverse);
         }
 
         // Reset extension timer of the extension state has chanced

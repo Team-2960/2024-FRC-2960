@@ -23,6 +23,8 @@ public class OperatorInterface extends SubsystemBase {
     private Joystick driverController;
     private Joystick operatorController;
 
+    private int lastOpPOV;
+
     // Shuffleboard Entries
     private GenericEntry sb_driveX;
     private GenericEntry sb_driveY;
@@ -39,6 +41,8 @@ public class OperatorInterface extends SubsystemBase {
         // Create Joysticks
         driverController = new Joystick(0);
         operatorController = new Joystick(1);
+        
+        lastOpPOV = -1;
 
         // Setup Shuffleboard
         var drive_layout = Shuffleboard.getTab("OI")
@@ -108,14 +112,20 @@ public class OperatorInterface extends SubsystemBase {
         double armManual = -operatorController.getRawAxis(1);
         double armManualRate = armManual * 6;
         
-        if(Math.abs(armManual) > .05) arm.setArmVolt(armManualRate);
+        if(Math.abs(armManual) > .05){
+            arm.setArmVolt(armManualRate);
+        } else {
+            arm.setArmVolt(0);
+        }
 
         sb_armRate.setDouble(armManualRate);
 
         // Arm Extension control
         int opPOVAngle = operatorController.getPOV();
-        if(opPOVAngle == 0) arm.stepExtOut();
-        if(opPOVAngle == 180) arm.stepExtOut();
+        if(opPOVAngle == 0 && lastOpPOV != 0) arm.stepExtOut();
+        if(opPOVAngle == 180 && lastOpPOV != 180) arm.stepExtIn();
+
+        lastOpPOV = opPOVAngle;
         
         //Update shuffleboard
         sb_armExtendManual.setInteger(opPOVAngle);
