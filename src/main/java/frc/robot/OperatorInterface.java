@@ -1,8 +1,10 @@
 package frc.robot;
 
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.IntakePizzaBox;
+import frc.robot.subsystems.Climber.ClimberStates;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -71,13 +73,17 @@ public class OperatorInterface extends SubsystemBase {
     private void updateDrive() {
         Drive drive = Drive.getInstance();
 
+        boolean slowSpeed = driverController.getRawButton(5);
+        double maxSpeed = (slowSpeed?.5:1) * Constants.maxSpeed;
+        double maxAngleRate = (slowSpeed?.5:1) * Constants.maxAngularSpeed;
+
         boolean fieldRelative = !driverController.getRawButton(1);
         var alliance = DriverStation.getAlliance();
-        double alliance_dir = alliance.isPresent() && alliance.get()== Alliance.Red ? 1 : -1;
+        double alliance_dir = alliance.isPresent() && alliance.get() == Alliance.Red ? 1 : -1;
 
-        double xSpeed = -MathUtil.applyDeadband(driverController.getRawAxis(1), 0.1) * Constants.maxSpeed;
-        double ySpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.1) * Constants.maxSpeed;
-        double rSpeed = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1) * Constants.maxAngularSpeed;
+        double xSpeed = -MathUtil.applyDeadband(driverController.getRawAxis(1), 0.1) * maxSpeed;
+        double ySpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.1) * maxSpeed;
+        double rSpeed = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1) * maxAngleRate;
         
         drive.setfieldRelative(fieldRelative);
         drive.setSpeed(xSpeed, ySpeed);    
@@ -98,12 +104,11 @@ public class OperatorInterface extends SubsystemBase {
 
         // Arm Angle Control
         double armManual = -operatorController.getRawAxis(1);
+        double armManualRate = armManual * 6;
         
-        if(Math.abs(armManual) > .05){
-            double armManualRate = armManual * PowerDistribution.getVoltage();
-            arm.setArmVoltage(armManualRate);
-            sb_armRate.setDouble(armManualRate);
-        }
+        if(Math.abs(armManual) > .05) arm.setArmVolt(armManualRate);
+
+        sb_armRate.setDouble(armManualRate);
 
         // Arm Extension control
         int opPOVAngle = operatorController.getPOV();
@@ -133,6 +138,16 @@ public class OperatorInterface extends SubsystemBase {
      */
     private void updateClimber() {
         // TODO implement climber controls
+        if(operatorController.getRawButton(1)){
+            Climber.getInstance().setClimbState(ClimberStates.CLIMB_START);
+        }else if(operatorController.getRawButton(2)){
+            Climber.getInstance().setClimbState(ClimberStates.CLIMB);
+        }else if(operatorController.getRawButton(3)){
+            Climber.getInstance().setClimbState(ClimberStates.MATCH_START);
+        }else{
+            Climber.getInstance().setClimbState(ClimberStates.IDLE);
+        }
+
     }
 
     /**

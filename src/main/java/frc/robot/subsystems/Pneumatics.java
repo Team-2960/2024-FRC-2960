@@ -7,6 +7,8 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 
+import frc.robot.Constants;
+
 public class Pneumatics extends SubsystemBase {
 
     private static Pneumatics instance = null;

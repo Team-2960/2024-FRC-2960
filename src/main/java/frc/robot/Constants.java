@@ -28,9 +28,9 @@ public class Constants {
     );  
 
     public static final double winchDiam = 1.5; // in.
-    public static final double winchCircum = Math.PI * winchDiam; // in.
+    public static final double winchCircum = Math.PI * winchDiam * (15/36); // in.
 
-    public static final int revTBEncCountPerRev = 4096
+    public static final int revTBEncCountPerRev = 4096;
 
     // CAN IDs
     public static final int shooterTop = 14;
@@ -54,7 +54,7 @@ public class Constants {
     public static final int backRightDriveM = 7;
     public static final int backRightAngleM = 8;
 
-    public static final int phCANID = 20
+    public static final int phCANID = 20;
 
     // Digital Input Ports
     public static final int armDCEncoderPort = 0;
@@ -66,10 +66,10 @@ public class Constants {
     // PH Solenoid Port
     public static final int armExt1Rev = 9;
     public static final int armExt1For = 8;
-    public static final int armExt2Rev = 7;
-    public static final int armExt2For = 6;
-    public static final int climbRatchetRev = 5;
-    public static final int climbRatchetFor = 4;
+    public static final int armExt2Rev = 6;
+    public static final int armExt2For = 7;
+    public static final int climbRatchetRev = 4;
+    public static final int climbRatchetFor = 5;
 
     // Auton
     public static double autonRampDownSpeed = 0.5;  
@@ -95,24 +95,25 @@ public class Constants {
     public static final Rotation2d driveAngleRampDistance = Rotation2d.fromRadians(0.7);
 
     // Arm
-    public static PIDParam armPID = new PIDParam(0, 0.0, 0.0);
-    public static FFParam armFF = FFParam.arm(0.0, 3.197, 1.6, 0.0);
+    public static PIDParam armPID = new PIDParam(0.01, 0.0, 0.0);
+    public static FFParam armFF = FFParam.arm(0.0, 0.1, 0.2, 0.0);
 
-    public static final Rotation2d minArmPos = Rotation2d.fromDegrees(10); //Rotation2d.fromDegrees(-0.5);
+    public static final Rotation2d minArmS0Pos = Rotation2d.fromDegrees(30); //Rotation2d.fromDegrees(20);
+    public static final Rotation2d minArmS1Pos = Rotation2d.fromDegrees(20); //Rotation2d.fromDegrees(-0.5);
     public static final Rotation2d maxArmPos = Rotation2d.fromDegrees(90); //Rotation2d.fromDegrees(96.5);
 
     public static final Rotation2d armMinState2Angle = Rotation2d.fromDegrees(30);
 
     public static final Rotation2d armRampDownDist = Rotation2d.fromDegrees(10);
 
-    public static final Rotation2d climberZoneLowerAngle =  Rotation2d.fromDegrees(60); 
-    public static final Rotation2d climberZoneUpperAngle =  Rotation2d.fromDegrees(75);
+    public static final Rotation2d climberZoneLowerAngle =  Rotation2d.fromDegrees(46); 
+    public static final Rotation2d climberZoneUpperAngle =  Rotation2d.fromDegrees(70);
 
     public static final double armExtDelayTime = .25;   // Second
     public static final double maxArmSpeed = Math.PI;   // radians / s
 
     public static final Rotation2d armEncAnglePerRot = Rotation2d.fromDegrees(360);
-    public static final Rotation2d armEncAngleOffset = Rotation2d.fromDegrees(107);
+    public static final Rotation2d armEncAngleOffset = Rotation2d.fromDegrees(104.4);
 
     // Pizzabox
     public static final double intakeInPower = .5;
@@ -125,7 +126,7 @@ public class Constants {
     public static final double shooterMinShootSpeed = 500;     // rev / s
 
     // Climber
-    public static final double winchMaxExtension = 20;   // in.
+    public static final double winchMaxExtension = 425;   // in.
     public static final double winchRatchedDelay = .25;  // seconds
 
     // Pneumatics
