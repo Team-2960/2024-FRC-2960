@@ -71,7 +71,7 @@ public class IntakePizzaBox extends SubsystemBase {
         // Setup Shuffleboard
         var layout = Shuffleboard.getTab("Status")
                 .getLayout("Pizzabox", BuiltInLayouts.kList)
-                .withSize(2, 2);
+                .withSize(2, 6);
 
         sb_state = layout.add("State", state.name()).getEntry();
         sb_shooterTopVolt = layout.add("Shooter 1 Voltage", 0).getEntry();

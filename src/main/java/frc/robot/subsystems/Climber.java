@@ -79,7 +79,7 @@ public class Climber extends SubsystemBase {
         
         var layout = Shuffleboard.getTab("Status")
             .getLayout("Climber", BuiltInLayouts.kList)
-            .withSize(2,4);
+            .withSize(2,6);
 
         sb_state = layout.add("State", climbState.name()).getEntry();
         sb_isDown = layout.add("Is Down", false).getEntry();

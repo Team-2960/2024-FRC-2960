@@ -141,7 +141,7 @@ public class Arm extends SubsystemBase {
         // Setup Shuffleboard
         var layout = Shuffleboard.getTab("Status")
                 .getLayout("Arm", BuiltInLayouts.kList)
-                .withSize(2, 4);
+                .withSize(2, 6);
 
         sb_armMode = layout.add("Arm Control Mode", control_mode.name()).getEntry();
         sb_anglePosCurrent = layout.add("Angle Position Current", 0).getEntry();
