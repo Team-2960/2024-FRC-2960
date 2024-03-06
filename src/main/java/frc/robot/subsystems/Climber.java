@@ -199,7 +199,11 @@ public class Climber extends SubsystemBase {
                 ratchetRelease.set(DoubleSolenoid.Value.kReverse);
                 
                 // Extend the climber if the ratchet is disengaged
-                if (ratchetTimer.get() > Constants.winchRatchedDelay) setMotor(-1);
+                if (ratchetTimer.get() > Constants.winchRatchedDelay){
+                    setMotor(-0.5);
+                }else{
+                    setMotor(0.1);
+                }
 
             } else {
                 setMotor(0);
@@ -209,7 +213,7 @@ public class Climber extends SubsystemBase {
     }
 
     private void setMotor(double value){
-        setMotor(value);
+        winchL.set(value);
         winchR.set(value);
     }
 
