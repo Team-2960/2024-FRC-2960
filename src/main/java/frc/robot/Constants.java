@@ -95,8 +95,8 @@ public class Constants {
     public static final Rotation2d driveAngleRampDistance = Rotation2d.fromRadians(0.7);
 
     // Arm
-    public static PIDParam armPID = new PIDParam(0.01, 0.0, 0.0);
-    public static FFParam armFF = FFParam.arm(0.0, 0.1, 0.2, 0.0);
+    public static PIDParam armPID = new PIDParam(0.1, 0.0, 0.0);
+    public static FFParam armFF = FFParam.arm(.1, 3, 0.25, 0.0);
 
     public static final Rotation2d minArmS0Pos = Rotation2d.fromDegrees(30); //Rotation2d.fromDegrees(20);
     public static final Rotation2d minArmS1Pos = Rotation2d.fromDegrees(20); //Rotation2d.fromDegrees(-0.5);
@@ -110,7 +110,7 @@ public class Constants {
     public static final Rotation2d climberZoneUpperAngle =  Rotation2d.fromDegrees(70);
 
     public static final double armExtDelayTime = .25;   // Second
-    public static final double maxArmSpeed = Math.PI;   // radians / s
+    public static final double maxArmSpeed = .25*Math.PI;   // radians / s
 
     public static final Rotation2d armEncAnglePerRot = Rotation2d.fromDegrees(360);
     public static final Rotation2d armEncAngleOffset = Rotation2d.fromDegrees(104.4);

@@ -368,12 +368,12 @@ public class Arm extends SubsystemBase {
         }
 
         // Protect against climber collisions
-        if (!Climber.getInstance().isClearOfArm() && isInClimberZone())
-            targetSpeed = 0; // TODO Improve Collision Avoidance to eliminate deadlock possiblity
+        //if (!Climber.getInstance().isClearOfArm() && isInClimberZone())
+        //    targetSpeed = 0; // TODO Improve Collision Avoidance to eliminate deadlock possiblity
 
         // Keep arm in package
-        if (getArmExtension() == 2 && currentAngle.getDegrees() <= minS2Angle.getDegrees())
-            targetSpeed = 0;
+        //if (getArmExtension() == 2 && currentAngle.getDegrees() <= minS2Angle.getDegrees())
+        //    targetSpeed = 0;
 
         return targetSpeed;
     }

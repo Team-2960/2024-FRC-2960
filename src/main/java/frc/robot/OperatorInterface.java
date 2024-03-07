@@ -41,21 +41,21 @@ public class OperatorInterface extends SubsystemBase {
         // Create Joysticks
         driverController = new Joystick(0);
         operatorController = new Joystick(1);
-        
+
         lastOpPOV = -1;
 
         // Setup Shuffleboard
         var drive_layout = Shuffleboard.getTab("OI")
-            .getLayout("Drive", BuiltInLayouts.kList)
-            .withSize(2,4);
+                .getLayout("Drive", BuiltInLayouts.kList)
+                .withSize(2, 4);
         sb_driveX = drive_layout.add("X Speed", 0).getEntry();
         sb_driveY = drive_layout.add("Y Speed", 0).getEntry();
         sb_driveR = drive_layout.add("R Speed", 0).getEntry();
         sb_driveFR = drive_layout.add("Field Relative", true).getEntry();
 
         var arm_layout = Shuffleboard.getTab("OI")
-            .getLayout("Arm", BuiltInLayouts.kList)
-            .withSize(2,4);
+                .getLayout("Arm", BuiltInLayouts.kList)
+                .withSize(2, 4);
         sb_armRate = arm_layout.add("Arm Manual Rate", 0).getEntry();
         sb_armExtendManual = arm_layout.add("Arm Extend", 0).getEntry();
     }
@@ -72,7 +72,7 @@ public class OperatorInterface extends SubsystemBase {
             updateClimber();
         }
     }
-    
+
     /**
      * Updates the controls for the drivetrain
      */
@@ -80,8 +80,8 @@ public class OperatorInterface extends SubsystemBase {
         Drive drive = Drive.getInstance();
 
         boolean slowSpeed = driverController.getRawButton(5);
-        double maxSpeed = (slowSpeed?.5:1) * Constants.maxSpeed;
-        double maxAngleRate = (slowSpeed?.5:1) * Constants.maxAngularSpeed;
+        double maxSpeed = (slowSpeed ? .5 : 1) * Constants.maxSpeed;
+        double maxAngleRate = (slowSpeed ? .5 : 1) * Constants.maxAngularSpeed;
 
         boolean fieldRelative = !driverController.getRawButton(1);
         var alliance = DriverStation.getAlliance();
@@ -90,9 +90,9 @@ public class OperatorInterface extends SubsystemBase {
         double xSpeed = -MathUtil.applyDeadband(driverController.getRawAxis(1), 0.1) * maxSpeed;
         double ySpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.1) * maxSpeed;
         double rSpeed = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1) * maxAngleRate;
-        
+
         drive.setfieldRelative(fieldRelative);
-        drive.setSpeed(xSpeed, ySpeed);    
+        drive.setSpeed(xSpeed, ySpeed);
         drive.setAngleRate(rSpeed);
 
         // Update Shuffleboard
@@ -110,24 +110,21 @@ public class OperatorInterface extends SubsystemBase {
 
         // Arm Angle Control
         double armManual = -operatorController.getRawAxis(1);
-        double armManualRate = armManual * 6;
-        
-        if(Math.abs(armManual) > .05){
-            arm.setArmVolt(armManualRate);
-        } else {
-            arm.setArmVolt(0);
-        }
+        double armManualRate = Math.abs(armManual) > .05 ? armManual * Constants.maxArmSpeed : 0;
 
+        arm.setArmRate(armManualRate);
         sb_armRate.setDouble(armManualRate);
 
         // Arm Extension control
         int opPOVAngle = operatorController.getPOV();
-        if(opPOVAngle == 0 && lastOpPOV != 0) arm.stepExtOut();
-        if(opPOVAngle == 180 && lastOpPOV != 180) arm.stepExtIn();
+        if (opPOVAngle == 0 && lastOpPOV != 0)
+            arm.stepExtOut();
+        if (opPOVAngle == 180 && lastOpPOV != 180)
+            arm.stepExtIn();
 
         lastOpPOV = opPOVAngle;
-        
-        //Update shuffleboard
+
+        // Update shuffleboard
         sb_armExtendManual.setInteger(opPOVAngle);
     }
 
@@ -135,15 +132,15 @@ public class OperatorInterface extends SubsystemBase {
      * Updates the controls for the Pizzabox
      */
     private void updatePizzabox() {
-        if(driverController.getRawButton(1)){
+        if (driverController.getRawButton(1)) {
             IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.INTAKE);
-        }else if(driverController.getRawButton(2)){
+        } else if (driverController.getRawButton(2)) {
             IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT);
-        }else if(driverController.getRawButton(3)){
+        } else if (driverController.getRawButton(3)) {
             IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT_PREP);
-        }else if(driverController.getRawButton(4)){
+        } else if (driverController.getRawButton(4)) {
             IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.REVERSE);
-        }else{
+        } else {
             IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.IDLE);
         }
     }
@@ -153,13 +150,13 @@ public class OperatorInterface extends SubsystemBase {
      */
     private void updateClimber() {
         // TODO implement climber controls
-        if(operatorController.getRawButton(1)){
+        if (operatorController.getRawButton(1)) {
             Climber.getInstance().setClimbState(ClimberStates.CLIMB_START);
-        }else if(operatorController.getRawButton(2)){
+        } else if (operatorController.getRawButton(2)) {
             Climber.getInstance().setClimbState(ClimberStates.CLIMB);
-        }else if(operatorController.getRawButton(3)){
+        } else if (operatorController.getRawButton(3)) {
             Climber.getInstance().setClimbState(ClimberStates.MATCH_START);
-        }else{
+        } else {
             Climber.getInstance().setClimbState(ClimberStates.IDLE);
         }
 
@@ -167,7 +164,8 @@ public class OperatorInterface extends SubsystemBase {
 
     /**
      * Static Initializer
-     * @return  common instance of the OperatorInterface class
+     * 
+     * @return common instance of the OperatorInterface class
      */
     public static OperatorInterface getInstance() {
         if (oi == null) {
