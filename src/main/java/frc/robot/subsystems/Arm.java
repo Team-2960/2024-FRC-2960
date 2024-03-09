@@ -66,7 +66,7 @@ public class Arm extends SubsystemBase {
     private PIDController armPID;
     private ArmFeedforward armFF;
 
-    private final ArmStateValues defaultState = new ArmStateValues(Rotation2d.fromDegrees(10), 0);
+    private final ArmStateValues defaultState = new ArmStateValues(Rotation2d.fromDegrees(15), 0);
 
     private ArmControlMode control_mode;
 
@@ -80,7 +80,7 @@ public class Arm extends SubsystemBase {
     private Map<String, ArmStateValues> armStates = Map.of(
             "Match Start", new ArmStateValues(Rotation2d.fromDegrees(60), 0),
             "Home", defaultState,
-            "Intake", new ArmStateValues(Rotation2d.fromDegrees(-5), 1),
+            "Intake", new ArmStateValues(Rotation2d.fromDegrees(3), 1),
             "Speaker", new ArmStateValues(Rotation2d.fromDegrees(25.4), 0),
             "Amp", new ArmStateValues(Rotation2d.fromDegrees(97.37), 1),
             "Climb", new ArmStateValues(Rotation2d.fromDegrees(97.38), 0),
@@ -100,6 +100,8 @@ public class Arm extends SubsystemBase {
     private GenericEntry sb_extState;
     private GenericEntry sb_brakeModeDisabled;
     private GenericEntry sb_armClearOfClimber;
+    private GenericEntry sb_anglePosRotations;
+    private GenericEntry sb_errorOverTime;
 
     /**
      * Constructor
@@ -156,6 +158,8 @@ public class Arm extends SubsystemBase {
         sb_extState = layout.add("Ext State", manual_ext).getEntry();
         sb_brakeModeDisabled = layout.add("Brake Mode Disabled", brakeModeDisableBtn.get()).getEntry();
         sb_armClearOfClimber = layout.add("Arm clear of climber", false).getEntry();
+        sb_anglePosRotations = layout.add("Arm Encoder Rotations Output", 0).getEntry();
+        sb_errorOverTime = layout.add("Error Over Time", 0).getEntry();
     }
 
     /**
@@ -320,6 +324,10 @@ public class Arm extends SubsystemBase {
         control_mode = ArmControlMode.AUTOMATIC;
     }
 
+    public ArmControlMode getControlMode() {
+        return control_mode;
+    }
+
     /**
      * Subsystem periodic method
      */
@@ -368,12 +376,14 @@ public class Arm extends SubsystemBase {
         }
 
         // Protect against climber collisions
-        //if (!Climber.getInstance().isClearOfArm() && isInClimberZone())
-        //    targetSpeed = 0; // TODO Improve Collision Avoidance to eliminate deadlock possiblity
+        // if (!Climber.getInstance().isClearOfArm() && isInClimberZone())
+        // targetSpeed = 0; // TODO Improve Collision Avoidance to eliminate deadlock
+        // possiblity
 
         // Keep arm in package
-        //if (getArmExtension() == 2 && currentAngle.getDegrees() <= minS2Angle.getDegrees())
-        //    targetSpeed = 0;
+        // if (getArmExtension() == 2 && currentAngle.getDegrees() <=
+        // minS2Angle.getDegrees())
+        // targetSpeed = 0;
 
         return targetSpeed;
     }
@@ -430,11 +440,16 @@ public class Arm extends SubsystemBase {
     private void setMotorVolt(double voltage) {
         Rotation2d currentAngle = getArmAngle();
 
-        // Set soft limits
-        if (currentAngle.getDegrees() <= Constants.minArmS0Pos.getDegrees())
+
+        // Set soft limits        
+        if(absoluteArmEncoder.get() < Constants.upperEncLimit){
             voltage = Math.max(0, voltage);
-        if (currentAngle.getDegrees() >= Constants.maxArmPos.getDegrees())
+        }else if(absoluteArmEncoder.get() > Constants.lowerEncLimit && getArmExtension() != 0){
             voltage = Math.min(0, voltage);
+        }else if(absoluteArmEncoder.get() > Constants.LowerEncLimitS0 && getArmExtension() == 0){
+            voltage = Math.min(0, voltage);
+        }
+
 
         // Set Motors
         armMotor1.setVoltage(voltage);
@@ -502,9 +517,10 @@ public class Arm extends SubsystemBase {
         sb_angleTargetVolt.setDouble(targetVolt);
         sb_extStage1.setString(armExtender1.get().name());
         sb_extStage2.setString(armExtender2.get().name());
-        sb_extStage1.setInteger(manual_ext);
+        sb_extState.setInteger(manual_ext);
         sb_brakeModeDisabled.setBoolean(!brakeModeDisableBtn.get());
         sb_armClearOfClimber.setBoolean(!isInClimberZone());
+        sb_anglePosRotations.setDouble(absoluteArmEncoder.get());
     }
 
     /**

@@ -4,6 +4,7 @@ import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.IntakePizzaBox;
+import frc.robot.subsystems.Arm.ArmControlMode;
 import frc.robot.subsystems.Climber.ClimberStates;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.GenericEntry;
@@ -83,12 +84,12 @@ public class OperatorInterface extends SubsystemBase {
         double maxSpeed = (slowSpeed ? .5 : 1) * Constants.maxSpeed;
         double maxAngleRate = (slowSpeed ? .5 : 1) * Constants.maxAngularSpeed;
 
-        boolean fieldRelative = !driverController.getRawButton(1);
+        boolean fieldRelative = true;//!driverController.getRawButton(1);
         var alliance = DriverStation.getAlliance();
         double alliance_dir = alliance.isPresent() && alliance.get() == Alliance.Red ? 1 : -1;
 
-        double xSpeed = -MathUtil.applyDeadband(driverController.getRawAxis(1), 0.1) * maxSpeed;
-        double ySpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.1) * maxSpeed;
+        double xSpeed = -MathUtil.applyDeadband(driverController.getRawAxis(1), 0.1) * maxSpeed * alliance_dir;
+        double ySpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.1) * maxSpeed * alliance_dir;
         double rSpeed = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1) * maxAngleRate;
 
         drive.setfieldRelative(fieldRelative);
@@ -108,14 +109,34 @@ public class OperatorInterface extends SubsystemBase {
     private void updateArm() {
         Arm arm = Arm.getInstance();
 
-        // Arm Angle Control
-        double armManual = -operatorController.getRawAxis(1);
-        double armManualRate = Math.abs(armManual) > .05 ? armManual * Constants.maxArmSpeed : 0;
+        // Set Arm Presets
+        if (operatorController.getRawButton(1)) {
+            arm.setState("Speaker");
+        } else if (operatorController.getRawButton(2)) {
+            arm.setState("Amp");
+        }else if(operatorController.getRawButton(3)){
+            arm.setState("Climb");
+        }else if(operatorController.getRawButton(4)){
+            arm.setState("Intake");
+            
+        }
 
-        arm.setArmRate(armManualRate);
+
+        // Manual Arm Angle Control
+        double armManual = operatorController.getRawAxis(1);
+        double armManualRate = armManual * Constants.maxArmSpeed;
+
+        if (Math.abs(armManual) > .1) {
+            arm.setArmRate(armManualRate);
+        } else if (arm.getControlMode() == Arm.ArmControlMode.MANUAL_RATE) {
+            arm.setArmRate(0);
+        } else if (arm.getControlMode() == Arm.ArmControlMode.MANUAL_VOLT) {
+            arm.setArmVolt(0);
+        }
+        
         sb_armRate.setDouble(armManualRate);
 
-        // Arm Extension control
+        // Manual Arm Extension control
         int opPOVAngle = operatorController.getPOV();
         if (opPOVAngle == 0 && lastOpPOV != 0)
             arm.stepExtOut();
@@ -132,15 +153,28 @@ public class OperatorInterface extends SubsystemBase {
      * Updates the controls for the Pizzabox
      */
     private void updatePizzabox() {
-        if (driverController.getRawButton(1)) {
-            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.INTAKE);
-        } else if (driverController.getRawButton(2)) {
+        if(driverController.getRawButton(7)){
+            Climber.getInstance().setClimbState(ClimberStates.CLIMB_START);
+        }else if(driverController.getRawButton(8)){
+            Climber.getInstance().setClimbState(ClimberStates.CLIMB);
+        }else{
+            Climber.getInstance().setClimbState(ClimberStates.IDLE);
+        }
+
+        if (operatorController.getRawButton(6)) {
+            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT_PREP);
+        } else if (operatorController.getRawAxis(3) > .1) {
             IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT);
-        } else if (driverController.getRawButton(3)) {
+        } else if (operatorController.getRawButton(5)){
+            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.INTAKE);
+        }else if(operatorController.getRawAxis(2) > .1){
+            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.REVERSE);
+        }
+        /*else if (driverController.getRawButton(3)) {
             IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT_PREP);
         } else if (driverController.getRawButton(4)) {
             IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.REVERSE);
-        } else {
+        }*/ else {
             IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.IDLE);
         }
     }
@@ -150,12 +184,10 @@ public class OperatorInterface extends SubsystemBase {
      */
     private void updateClimber() {
         // TODO implement climber controls
-        if (operatorController.getRawButton(1)) {
+        if (operatorController.getRawButton(7)) {
             Climber.getInstance().setClimbState(ClimberStates.CLIMB_START);
-        } else if (operatorController.getRawButton(2)) {
+        } else if (operatorController.getRawButton(8)) {
             Climber.getInstance().setClimbState(ClimberStates.CLIMB);
-        } else if (operatorController.getRawButton(3)) {
-            Climber.getInstance().setClimbState(ClimberStates.MATCH_START);
         } else {
             Climber.getInstance().setClimbState(ClimberStates.IDLE);
         }

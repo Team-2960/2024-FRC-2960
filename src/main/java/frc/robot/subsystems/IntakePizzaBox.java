@@ -130,14 +130,14 @@ public class IntakePizzaBox extends SubsystemBase {
             // Check if shooter is ready to shoot
             if (shootEncoder1.getVelocity() > Constants.shooterMinShootSpeed
                     && shootEncoder2.getVelocity() > Constants.shooterMinShootSpeed) {
-                intakeRollers.set(Constants.intakeShootPower); // Run intake
+                intakeRollers.set(Constants.intakeInPower); // Run intake
             } else {
                 intakeRollers.set(0); // Turn Intake Off
             }
 
         } else if (state == PizzaboxState.REVERSE) {
             // Reverse shooter and intake
-            shooterTop.set(-Constants.shooterRevPower);
+            shooterTop.set(-Constants.shooterRevPower * 0.5);
             intakeRollers.set(-Constants.intakeOutPower);
         } else {
             // Turn shooter and intake off

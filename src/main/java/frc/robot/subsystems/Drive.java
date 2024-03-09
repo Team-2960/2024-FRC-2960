@@ -60,6 +60,8 @@ public class Drive extends SubsystemBase {
     private GenericEntry sb_speedY;
     private GenericEntry sb_speedR;
 
+    private boolean targetSeen;
+
     /**
      * Constructor
      */
@@ -83,6 +85,8 @@ public class Drive extends SubsystemBase {
         navx = new AHRS(SPI.Port.kMXP);
         navx.reset();
 
+        targetSeen = false;
+
         // Initialize pose estimation
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
                 kinematics,
@@ -101,9 +105,9 @@ public class Drive extends SubsystemBase {
         var pose_layout = Shuffleboard.getTab("Drive")
             .getLayout("Drive Pose", BuiltInLayouts.kList)
             .withSize(1,4);
-        sb_posEstX = pose_layout.add("Pose X", 0).getEntry();
-        sb_posEstY = pose_layout.add("Pose Y", 0).getEntry();
-        sb_posEstR = pose_layout.add("Pose R", 0).getEntry();
+        sb_posEstX = pose_layout.add("Pose X", swerveDrivePoseEstimator.getEstimatedPosition().getX()).getEntry();
+        sb_posEstY = pose_layout.add("Pose Y", swerveDrivePoseEstimator.getEstimatedPosition().getY()).getEntry();
+        sb_posEstR = pose_layout.add("Pose R", swerveDrivePoseEstimator.getEstimatedPosition().getRotation().getDegrees()).getEntry();
         
         sb_speedX  = pose_layout.add("Speed X", 0).getEntry();
         sb_speedY  = pose_layout.add("Speed Y", 0).getEntry();
@@ -199,6 +203,7 @@ public class Drive extends SubsystemBase {
     public void setVisionPose(Pose2d pose, double timeStamp) {
         // TODO Adjust standard deviations based on distance from target
         swerveDrivePoseEstimator.addVisionMeasurement(pose, timeStamp);
+        targetSeen = true;
     }
 
     /**
@@ -216,6 +221,14 @@ public class Drive extends SubsystemBase {
      */
     private void update_kinematics() {
         ChassisSpeeds speeds;
+
+        double xSpeed = this.xSpeed;
+        double ySpeed = this.ySpeed;
+
+        if(targetSeen && fieldRelative){
+            xSpeed *= -1;
+            ySpeed *= -1;
+        }
 
         rSpeed = getAngleRate();
 

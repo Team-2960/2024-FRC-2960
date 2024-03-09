@@ -5,7 +5,7 @@ import edu.wpi.first.math.geometry.*;
 import frc.robot.Util.*;
 
 public class Constants {
-    public static final Transform2d fieldCenterOffset = new Transform2d(-8.270875, -4.105275, new Rotation2d(0.0));
+    public static final Transform2d fieldCenterOffset = new Transform2d(8.270875, 4.105275, new Rotation2d(0.0));
 
     // Robot constants
     // TODO Convert constants to units library for clarity
@@ -23,8 +23,8 @@ public class Constants {
     public static final double driveRatio =  Constants.wheelCirc / Constants.driveGearRatio;   // Meters
 
     public static final Transform3d robotToCamera = new Transform3d(
-        new Translation3d(10*.0254, 0, 10 * .0254), 
-        new Rotation3d(30 * Math.PI / 180, 0, Math.PI)
+        new Translation3d(-robotLength/2+.040, 0, .206), 
+        new Rotation3d(32 * Math.PI / 180, 0, Math.PI)
     );  
 
     public static final double winchDiam = 1.5; // in.
@@ -80,13 +80,13 @@ public class Constants {
     public static PIDParam drivePID = new PIDParam(.1, 0.0, 0.0);
     public static FFParam driveFF = FFParam.simpleMotor(0.0, 0.75, 0.0);
 
-    public static PIDParam driveAngPID = new PIDParam(0.0, 0.0, 0.0);
-    public static FFParam driveAngFF = FFParam.simpleMotor(0.0, 0.195, 0.9);
+    public static PIDParam driveAngPID = new PIDParam(0.05, 0.0, 0.001);
+    public static FFParam driveAngFF = FFParam.simpleMotor(0.1, 0.1, 0);
 
     public static final double maxSpeed = 15;
     public static final double maxAngularSpeed = 12 * 2 * Math.PI;
 
-    public static final double swerveAngleRampRate = 20; 
+    public static final double swerveAngleRampRate = 7; 
     public static final Rotation2d swerveAngleRampDist = Rotation2d.fromDegrees(30);
 
     public static final double maxSwerveAngularSpeed = Math.PI * 4;     //Rad per second
@@ -95,41 +95,45 @@ public class Constants {
     public static final Rotation2d driveAngleRampDistance = Rotation2d.fromRadians(0.7);
 
     // Arm
-    public static PIDParam armPID = new PIDParam(0.1, 0.0, 0.0);
-    public static FFParam armFF = FFParam.arm(.1, 3, 0.25, 0.0);
+    public static PIDParam armPID = new PIDParam(0.01, 0.0, 0.0);
+    public static FFParam armFF = FFParam.arm(.1, 2, 0.25, 0.0);
 
-    public static final Rotation2d minArmS0Pos = Rotation2d.fromDegrees(30); //Rotation2d.fromDegrees(20);
-    public static final Rotation2d minArmS1Pos = Rotation2d.fromDegrees(20); //Rotation2d.fromDegrees(-0.5);
-    public static final Rotation2d maxArmPos = Rotation2d.fromDegrees(90); //Rotation2d.fromDegrees(96.5);
+    public static final Rotation2d minArmS0Pos = Rotation2d.fromDegrees(20);
+    public static final Rotation2d minArmIntakePos = Rotation2d.fromDegrees(2);
+    public static final Rotation2d maxArmPos = Rotation2d.fromDegrees(96.5);
 
     public static final Rotation2d armMinState2Angle = Rotation2d.fromDegrees(30);
 
-    public static final Rotation2d armRampDownDist = Rotation2d.fromDegrees(10);
+    public static final Rotation2d armRampDownDist = Rotation2d.fromDegrees(15);
 
     public static final Rotation2d climberZoneLowerAngle =  Rotation2d.fromDegrees(46); 
     public static final Rotation2d climberZoneUpperAngle =  Rotation2d.fromDegrees(70);
 
     public static final double armExtDelayTime = .25;   // Second
-    public static final double maxArmSpeed = .25*Math.PI;   // radians / s
+    public static final double maxArmSpeed = Math.PI;   // radians / s
 
     public static final Rotation2d armEncAnglePerRot = Rotation2d.fromDegrees(360);
-    public static final Rotation2d armEncAngleOffset = Rotation2d.fromDegrees(104.4);
+    public static final Rotation2d armEncAngleOffset = Rotation2d.fromDegrees(168.5);
+
+    public static final double lowerEncLimit = .455;
+    public static final double upperEncLimit = .19;
+    public static final double LowerEncLimitS0 = .42;
 
     // Pizzabox
     public static final double intakeInPower = .5;
     public static final double intakeShootPower = 1;
-    public static final double intakeOutPower = 1;
+    public static final double intakeOutPower = 0.5;
 
     public static final double shooterPrepPower = .2;    
     public static final double shooterShootPower = 1;
     public static final double shooterRevPower = 1;
-    public static final double shooterMinShootSpeed = 500;     // rev / s
+    public static final double shooterMinShootSpeed = 3000 ;     // rpm
 
     // Climber
     public static final double winchMaxExtension = 425;   // in.
     public static final double winchRatchedDelay = .25;  // seconds
 
     // Pneumatics
-    public static final double minPressure = 80;
+    public static final double minPressure = 0; //TODO change back to 80
     public static final double maxPressure = 120;
 }
