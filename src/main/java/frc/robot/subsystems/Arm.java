@@ -6,6 +6,8 @@ import java.util.Map;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -438,9 +440,6 @@ public class Arm extends SubsystemBase {
      * @param voltage desired motor voltage
      */
     private void setMotorVolt(double voltage) {
-        Rotation2d currentAngle = getArmAngle();
-
-
         // Set soft limits        
         if(absoluteArmEncoder.get() < Constants.upperEncLimit){
             voltage = Math.max(0, voltage);
@@ -452,8 +451,10 @@ public class Arm extends SubsystemBase {
 
 
         // Set Motors
-        armMotor1.setVoltage(voltage);
-        armMotor2.setVoltage(voltage);
+        VoltageOut settings = new VoltageOut(voltage);
+        settings.EnableFOC = true;
+        armMotor1.setControl(settings);
+        armMotor2.setControl(settings);
     }
 
     /**

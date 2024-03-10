@@ -95,8 +95,8 @@ public class Constants {
     public static final Rotation2d driveAngleRampDistance = Rotation2d.fromRadians(0.7);
 
     // Arm
-    public static PIDParam armPID = new PIDParam(0.01, 0.0, 0.0);
-    public static FFParam armFF = FFParam.arm(.1, 2, 0.25, 0.0);
+    public static PIDParam armPID = new PIDParam(0.0, 0.0, 0.0);
+    public static FFParam armFF = FFParam.arm(.1, 3.24, 0.28, 0.03);
 
     public static final Rotation2d minArmS0Pos = Rotation2d.fromDegrees(20);
     public static final Rotation2d minArmIntakePos = Rotation2d.fromDegrees(2);
