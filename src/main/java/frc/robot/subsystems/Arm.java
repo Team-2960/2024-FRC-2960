@@ -442,11 +442,11 @@ public class Arm extends SubsystemBase {
     private void setMotorVolt(double voltage) {
         // Set soft limits        
         if(absoluteArmEncoder.get() < Constants.upperEncLimit){
-            voltage = Math.max(0, voltage);
+            voltage = Math.min(0, voltage);
         }else if(absoluteArmEncoder.get() > Constants.lowerEncLimit && getArmExtension() != 0){
-            voltage = Math.min(0, voltage);
+            voltage = Math.max(0, voltage);
         }else if(absoluteArmEncoder.get() > Constants.LowerEncLimitS0 && getArmExtension() == 0){
-            voltage = Math.min(0, voltage);
+            voltage = Math.max(0, voltage);
         }
 
 

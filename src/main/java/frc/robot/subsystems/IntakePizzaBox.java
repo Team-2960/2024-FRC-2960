@@ -51,6 +51,7 @@ public class IntakePizzaBox extends SubsystemBase {
     private IntakePizzaBox() {
         // Initialize Intake Motor
         intakeRollers = new TalonFX(Constants.intakeRollers);
+        intakeRollers.setInverted(true);
         
 
         // Initialize Shooter Motors

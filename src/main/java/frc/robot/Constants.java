@@ -110,7 +110,7 @@ public class Constants {
     public static final Rotation2d climberZoneUpperAngle =  Rotation2d.fromDegrees(70);
 
     public static final double armExtDelayTime = .25;   // Second
-    public static final double maxArmSpeed = Math.PI;   // radians / s
+    public static final double maxArmSpeed = Math.PI * 0.5;   // radians / s
 
     public static final Rotation2d armEncAnglePerRot = Rotation2d.fromDegrees(360);
     public static final Rotation2d armEncAngleOffset = Rotation2d.fromDegrees(168.5);
@@ -120,9 +120,9 @@ public class Constants {
     public static final double LowerEncLimitS0 = .42;
 
     // Pizzabox
-    public static final double intakeInPower = .5;
+    public static final double intakeInPower = .75;
     public static final double intakeShootPower = 1;
-    public static final double intakeOutPower = 0.5;
+    public static final double intakeOutPower = 1;
 
     public static final double shooterPrepPower = .2;    
     public static final double shooterShootPower = 1;
