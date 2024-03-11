@@ -394,15 +394,13 @@ public class Arm extends SubsystemBase {
      * @return target arm control rate
      */
     private double calcTrapezoidalRate() {
-        double maxAngleRate = Math.PI;
-
         // Calculate trapezoidal profile
         Rotation2d currentAngle = getArmAngle();
         Rotation2d targetAngle = targetState.targetAngle;
         Rotation2d angleError = targetAngle.minus(currentAngle);
 
-        double targetSpeed = maxAngleRate;
-        double rampDownSpeed = angleError.getRadians() / Constants.armRampDownDist.getRadians() * maxAngleRate;
+        double targetSpeed = Constants.maxAutoArmSpeed;
+        double rampDownSpeed = angleError.getRadians() / Constants.armRampDownDist.getRadians() * Constants.maxAutoArmSpeed;
 
         if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed))
             targetSpeed = rampDownSpeed;

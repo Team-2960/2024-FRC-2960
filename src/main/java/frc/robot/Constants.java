@@ -111,6 +111,7 @@ public class Constants {
 
     public static final double armExtDelayTime = .25;   // Second
     public static final double maxArmSpeed = Math.PI;   // radians / s
+    public static final double maxAutoArmSpeed = .25 * Math.PI;     // radians / s
 
     public static final Rotation2d armEncAnglePerRot = Rotation2d.fromDegrees(360);
     public static final Rotation2d armEncAngleOffset = Rotation2d.fromDegrees(168.5);
