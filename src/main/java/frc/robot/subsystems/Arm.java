@@ -401,11 +401,13 @@ public class Arm extends SubsystemBase {
         Rotation2d targetAngle = targetState.targetAngle;
         Rotation2d angleError = targetAngle.minus(currentAngle);
 
-        double targetSpeed = maxAngleRate * (angleError.getRadians() > 0 ? 1 : +-1);
+        double targetSpeed = maxAngleRate;
         double rampDownSpeed = angleError.getRadians() / Constants.armRampDownDist.getRadians() * maxAngleRate;
 
         if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed))
             targetSpeed = rampDownSpeed;
+
+        targetSpeed *= (angleError.getRadians() > 0 ? 1 : -1);
 
         return targetSpeed;
     }
