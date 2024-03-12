@@ -94,6 +94,7 @@ public class Arm extends SubsystemBase {
     private GenericEntry sb_anglePosSetPoint;
     private GenericEntry sb_angleRateCurrent;
     private GenericEntry sb_angleRateSetPoint;
+    private GenericEntry sb_angleRateError;
     private GenericEntry sb_angleM1Volt;
     private GenericEntry sb_angleM2Volt;
     private GenericEntry sb_angleTargetVolt;
@@ -152,6 +153,7 @@ public class Arm extends SubsystemBase {
         sb_anglePosSetPoint = layout.add("Angle Position Set Point", 0).getEntry();
         sb_angleRateCurrent = layout.add("Angle Rate Current", 0).getEntry();
         sb_angleRateSetPoint = layout.add("Angle Rate Set Point", 0).getEntry();
+        sb_angleRateError = layout.add("Angle Rate Error", 0).getEntry();
         sb_angleM1Volt = layout.add("Angle Motor 1 Voltage", 0).getEntry();
         sb_angleM2Volt = layout.add("Angle Motor 2 Voltage", 0).getEntry();
         sb_angleTargetVolt = layout.add("Angle Target Voltage", 0).getEntry();
@@ -377,15 +379,14 @@ public class Arm extends SubsystemBase {
                 break;
         }
 
-        // Protect against climber collisions
-        // if (!Climber.getInstance().isClearOfArm() && isInClimberZone())
-        // targetSpeed = 0; // TODO Improve Collision Avoidance to eliminate deadlock
-        // possiblity
-
         // Keep arm in package
-        // if (getArmExtension() == 2 && currentAngle.getDegrees() <=
-        // minS2Angle.getDegrees())
-        // targetSpeed = 0;
+        if (getArmExtension() == 2) {
+            if (currentAngle.getDegrees() <= Constants.minArmS2Angle.getDegrees()){
+                targetSpeed = Math.max(0, targetSpeed);
+            } else  if (currentAngle.getDegrees() >= Constants.maxArmS2Angle.getDegrees()) {
+                targetSpeed = Math.min(0, targetSpeed);
+            }
+        }
 
         return targetSpeed;
     }
@@ -401,6 +402,16 @@ public class Arm extends SubsystemBase {
         // Calculate trapezoidal profile
         Rotation2d currentAngle = getArmAngle();
         Rotation2d targetAngle = targetState.targetAngle;
+
+        // Keep arm in package
+        if (getArmExtension() == 2) {
+            if (currentAngle.getDegrees() <= Constants.minArmS2Angle.getDegrees()){
+                targetAngle = Constants.minArmS2Angle;
+            } else  if (currentAngle.getDegrees() >= Constants.maxArmS2Angle.getDegrees()) {
+                targetAngle = Constants.maxArmS2Angle;
+            }
+        }
+
         Rotation2d angleError = targetAngle.minus(currentAngle);
 
         double targetSpeed = maxAngleRate * (angleError.getRadians() > 0 ? 1 : +-1);
@@ -423,6 +434,24 @@ public class Arm extends SubsystemBase {
             Rotation2d currentAngle = getArmAngle();
             double angleRate = getArmVelocity();
 
+            int ext_stage = getArmExtension();
+
+            ArmFeedforward armFF = armFFS0;
+
+            if (ext_stage = 2) {
+                armPID.setPID(Constants.armPIDS2.kP, Constants.armPIDS2.kI, Constants.armPIDS2.kD);
+                armFF = armFFS2;
+            } else if (ext_stage = 1) {
+                armPID.setPID(Constants.armPIDS1.kP, Constants.armPIDS1.kI, Constants.armPIDS1.kD);
+                armFF = armFFS1;
+            } else {
+                armPID.setPID(Constants.armPIDS0.kP, Constants.armPIDS0.kI, Constants.armPIDS0.kD);
+                armFF = armFFS0;
+            }
+
+            sb_angleRateError.setDouble(angleRate - targetSpeed);
+
+>>>>>>> d25a9710d997dabafecb1027f3e66e4a87488517
             // Calculate motor voltage output
             double calcPID = armPID.calculate(angleRate, targetSpeed);
             double calcFF = armFF.calculate(currentAngle.getRadians(), targetSpeed);
