@@ -1,12 +1,19 @@
 package frc.robot;
 
+import frc.robot.Auton.Commands.Drive.alignToPoint;
+import frc.robot.Auton.Commands.Drive.goToAngle;
+import frc.robot.Util.FieldLayout;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.IntakePizzaBox;
 import frc.robot.subsystems.Arm.ArmControlMode;
 import frc.robot.subsystems.Climber.ClimberStates;
+
+import java.text.FieldPosition;
+
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -91,6 +98,12 @@ public class OperatorInterface extends SubsystemBase {
         double xSpeed = -MathUtil.applyDeadband(driverController.getRawAxis(1), 0.1) * maxSpeed * alliance_dir;
         double ySpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.1) * maxSpeed * alliance_dir;
         double rSpeed = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1) * maxAngleRate;
+
+        if (driverController.getRawButton(1)){
+            drive.setTargetAngle(Rotation2d.fromDegrees(90));
+        }else if(driverController.getRawButton(2)){
+            drive.setTargetPoint(FieldLayout.getSpeakerPose().getTranslation(), new Rotation2d());
+        }
 
         drive.setfieldRelative(fieldRelative);
         drive.setSpeed(xSpeed, ySpeed);

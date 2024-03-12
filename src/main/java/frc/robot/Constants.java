@@ -115,6 +115,7 @@ public class Constants {
     public static final Rotation2d armEncAnglePerRot = Rotation2d.fromDegrees(360);
     public static final Rotation2d armEncAngleOffset = Rotation2d.fromDegrees(168.5);
 
+    // STAGE1 SOFT LIMIT RANGE 46 - 78.1
     public static final double lowerEncLimit = .455;
     public static final double upperEncLimit = .19;
     public static final double LowerEncLimitS0 = .42;

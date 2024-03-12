@@ -66,9 +66,7 @@ public class Arm extends SubsystemBase {
     private DigitalInput brakeModeDisableBtn;
 
     private PIDController armPID;
-    private ArmFeedforward armFFS0;
-    private ArmFeedforward armFFS1;
-    private ArmFeedforward armFFS2;
+    private ArmFeedforward armFF;
 
     private final ArmStateValues defaultState = new ArmStateValues(Rotation2d.fromDegrees(15), 0);
 
@@ -127,11 +125,8 @@ public class Arm extends SubsystemBase {
 
         brakeModeDisableBtn = new DigitalInput(Constants.armBrakeModeBtn);
 
-        armPID = new PIDController(Constants.armPIDS0.kP, Constants.armPIDS0.kP, Constants.armPIDS0.kP);
-        armFFS0 = new ArmFeedforward(Constants.armFFS0.kS, Constants.armFFS0.kG, Constants.armFFS0.kV);
-        armFFS1 = new ArmFeedforward(Constants.armFFS1.kS, Constants.armFFS1.kG, Constants.armFFS1.kV);
-        armFFS2 = new ArmFeedforward(Constants.armFFS2.kS, Constants.armFFS2.kG, Constants.armFFS2.kV);
-
+        armPID = new PIDController(Constants.armPID.kP, Constants.armPID.kP, Constants.armPID.kP);
+        armFF = new ArmFeedforward(Constants.armFF.kS, Constants.armFF.kG, Constants.armFF.kV);
 
         // TODO Set abs encoder offset
 
@@ -401,13 +396,15 @@ public class Arm extends SubsystemBase {
      * @return target arm control rate
      */
     private double calcTrapezoidalRate() {
+        double maxAngleRate = Math.PI;
+
         // Calculate trapezoidal profile
         Rotation2d currentAngle = getArmAngle();
         Rotation2d targetAngle = targetState.targetAngle;
         Rotation2d angleError = targetAngle.minus(currentAngle);
 
-        double targetSpeed = Constants.maxAutoArmSpeed * (angleError.getRadians() > 0 ? 1 : -1);
-        double rampDownSpeed = angleError.getRadians() / Constants.armRampDownDist.getRadians() * Constants.maxAutoArmSpeed;
+        double targetSpeed = maxAngleRate * (angleError.getRadians() > 0 ? 1 : +-1);
+        double rampDownSpeed = angleError.getRadians() / Constants.armRampDownDist.getRadians() * maxAngleRate;
 
         if (Math.abs(rampDownSpeed) < Math.abs(targetSpeed))
             targetSpeed = rampDownSpeed;
@@ -425,21 +422,6 @@ public class Arm extends SubsystemBase {
         if (this.control_mode != ArmControlMode.MANUAL_VOLT) {
             Rotation2d currentAngle = getArmAngle();
             double angleRate = getArmVelocity();
-
-            int ext_stage = getArmExtension();
-
-            ArmFeedforward armFF = armFFS0;
-
-            if (ext_stage = 2) {
-                armPID.setPID(Constants.armPIDS2.kP, Constants.armPIDS2.kI, Constants.armPIDS2.kD);
-                armFF = armFFS2;
-            } else if (ext_stage = 1) {
-                armPID.setPID(Constants.armPIDS1.kP, Constants.armPIDS1.kI, Constants.armPIDS1.kD);
-                armFF = armFFS1;
-            } else {
-                armPID.setPID(Constants.armPIDS0.kP, Constants.armPIDS0.kI, Constants.armPIDS0.kD);
-                armFF = armFFS0;
-            }
 
             // Calculate motor voltage output
             double calcPID = armPID.calculate(angleRate, targetSpeed);
