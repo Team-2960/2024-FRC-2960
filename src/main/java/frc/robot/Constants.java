@@ -1,6 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.units.*;
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.geometry.*;
 import frc.robot.Util.*;
 
@@ -95,12 +96,22 @@ public class Constants {
     public static final Rotation2d driveAngleRampDistance = Rotation2d.fromRadians(0.7);
 
     // Arm
-    public static PIDParam armPID = new PIDParam(0.01, 0.0, 0.0);
-    public static FFParam armFF = FFParam.arm(.1, 2, 0.25, 0.0);
+    public static PIDParam armPIDS0 = new PIDParam(0.01, 0.0, 0.0);
+    public static FFParam armFFS0 = FFParam.arm(.1, 2, 0.25, 0.0);
+
+    public static PIDParam armPIDS1 = new PIDParam(0.01, 0.0, 0.0);
+    public static FFParam armFFS1 = FFParam.arm(.1, 2, 0.25, 0.0);
+    
+    public static PIDParam armPIDS2 = new PIDParam(0.01, 0.0, 0.0);
+    public static FFParam armFFS2 = FFParam.arm(.1, 2, 0.25, 0.0);
 
     public static final Rotation2d minArmS0Pos = Rotation2d.fromDegrees(20);
+    public static final Rotation2d minArmS2Angle = Rotation2d.fromDegrees(2);
+    public static final Rotation2d maxArmS2Angle = Rotation2d.fromDegrees(96.5);
     public static final Rotation2d minArmIntakePos = Rotation2d.fromDegrees(2);
-    public static final Rotation2d maxArmPos = Rotation2d.fromDegrees(96.5);
+    public static final Rotation2d maxArmPos = Rotation2d.fromDegrees(096.5);
+    public static final Rotation2d minArm2dAngle = Rotation2d.fromDegrees(46);
+    public static final Rotation2d maxArm2dAngle = Rotation2d.fromDegrees(77);
 
     public static final Rotation2d armMinState2Angle = Rotation2d.fromDegrees(30);
 
@@ -135,6 +146,6 @@ public class Constants {
     public static final double winchRatchedDelay = .25;  // seconds
 
     // Pneumatics
-    public static final double minPressure = 0; //TODO change back to 80
+    public static final double minPressure = 80;
     public static final double maxPressure = 120;
 }

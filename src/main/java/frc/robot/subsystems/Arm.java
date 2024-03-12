@@ -66,7 +66,10 @@ public class Arm extends SubsystemBase {
     private DigitalInput brakeModeDisableBtn;
 
     private PIDController armPID;
-    private ArmFeedforward armFF;
+
+    private ArmFeedforward armFFS0;
+    private ArmFeedforward armFFS1;
+    private ArmFeedforward armFFS2;
 
     private final ArmStateValues defaultState = new ArmStateValues(Rotation2d.fromDegrees(15), 0);
 
@@ -126,8 +129,11 @@ public class Arm extends SubsystemBase {
 
         brakeModeDisableBtn = new DigitalInput(Constants.armBrakeModeBtn);
 
-        armPID = new PIDController(Constants.armPID.kP, Constants.armPID.kP, Constants.armPID.kP);
-        armFF = new ArmFeedforward(Constants.armFF.kS, Constants.armFF.kG, Constants.armFF.kV);
+        armPID = new PIDController(Constants.armPIDS0.kP, Constants.armPIDS0.kP, Constants.armPIDS0.kP);
+
+        armFFS0 = new ArmFeedforward(Constants.armFFS0.kS, Constants.armFFS0.kG, Constants.armFFS0.kV);
+        armFFS1 = new ArmFeedforward(Constants.armFFS1.kS, Constants.armFFS1.kG, Constants.armFFS1.kV);
+        armFFS2 = new ArmFeedforward(Constants.armFFS2.kS, Constants.armFFS2.kG, Constants.armFFS2.kV);
 
         // TODO Set abs encoder offset
 
@@ -381,11 +387,12 @@ public class Arm extends SubsystemBase {
 
         // Keep arm in package
         if (getArmExtension() == 2) {
-            if (currentAngle.getDegrees() <= Constants.minArmS2Angle.getDegrees()){
+            if (currentAngle.getDegrees() <= Constants.minArmS2Angle.getDegrees()) {
                 targetSpeed = Math.max(0, targetSpeed);
-            } else  if (currentAngle.getDegrees() >= Constants.maxArmS2Angle.getDegrees()) {
+            } /*else if (currentAngle.getDegrees() >= Constants.maxArmS2Angle.getDegrees()) {
                 targetSpeed = Math.min(0, targetSpeed);
             }
+            */
         }
 
         return targetSpeed;
@@ -404,12 +411,10 @@ public class Arm extends SubsystemBase {
         Rotation2d targetAngle = targetState.targetAngle;
 
         // Keep arm in package
-        if (getArmExtension() == 2) {
-            if (currentAngle.getDegrees() <= Constants.minArmS2Angle.getDegrees()){
-                targetAngle = Constants.minArmS2Angle;
-            } else  if (currentAngle.getDegrees() >= Constants.maxArmS2Angle.getDegrees()) {
-                targetAngle = Constants.maxArmS2Angle;
-            }
+        if (getArmExtension() == 2 && currentAngle.getDegrees() <= Constants.minArmS2Angle.getDegrees()) {
+
+            targetAngle = Constants.minArmS2Angle;
+
         }
 
         Rotation2d angleError = targetAngle.minus(currentAngle);
@@ -430,7 +435,12 @@ public class Arm extends SubsystemBase {
      */
     private double getAngleControlVolt(double targetSpeed) {
         double result = this.manual_volt;
+
         if (this.control_mode != ArmControlMode.MANUAL_VOLT) {
+            if (getArmAngle().getDegrees() <= Constants.minArmS2Angle.getDegrees() && getArmExtension() == 2) {
+                targetSpeed = Math.max(0, targetSpeed);
+            }
+
             Rotation2d currentAngle = getArmAngle();
             double angleRate = getArmVelocity();
 
@@ -438,10 +448,10 @@ public class Arm extends SubsystemBase {
 
             ArmFeedforward armFF = armFFS0;
 
-            if (ext_stage = 2) {
+            if (ext_stage == 2) {
                 armPID.setPID(Constants.armPIDS2.kP, Constants.armPIDS2.kI, Constants.armPIDS2.kD);
                 armFF = armFFS2;
-            } else if (ext_stage = 1) {
+            } else if (ext_stage == 1) {
                 armPID.setPID(Constants.armPIDS1.kP, Constants.armPIDS1.kI, Constants.armPIDS1.kD);
                 armFF = armFFS1;
             } else {
@@ -451,7 +461,6 @@ public class Arm extends SubsystemBase {
 
             sb_angleRateError.setDouble(angleRate - targetSpeed);
 
->>>>>>> d25a9710d997dabafecb1027f3e66e4a87488517
             // Calculate motor voltage output
             double calcPID = armPID.calculate(angleRate, targetSpeed);
             double calcFF = armFF.calculate(currentAngle.getRadians(), targetSpeed);
@@ -469,15 +478,14 @@ public class Arm extends SubsystemBase {
      * @param voltage desired motor voltage
      */
     private void setMotorVolt(double voltage) {
-        // Set soft limits        
-        if(absoluteArmEncoder.get() < Constants.upperEncLimit){
+        // Set soft limits
+        if (absoluteArmEncoder.get() < Constants.upperEncLimit) {
             voltage = Math.min(0, voltage);
-        }else if(absoluteArmEncoder.get() > Constants.lowerEncLimit && getArmExtension() != 0){
+        } else if (absoluteArmEncoder.get() > Constants.lowerEncLimit && getArmExtension() != 0) {
             voltage = Math.max(0, voltage);
-        }else if(absoluteArmEncoder.get() > Constants.LowerEncLimitS0 && getArmExtension() == 0){
+        } else if (absoluteArmEncoder.get() > Constants.LowerEncLimitS0 && getArmExtension() == 0) {
             voltage = Math.max(0, voltage);
         }
-
 
         // Set Motors
         VoltageOut settings = new VoltageOut(voltage);
@@ -505,7 +513,7 @@ public class Arm extends SubsystemBase {
         boolean aboveState2Angle = getArmAngle().getDegrees() > Constants.armMinState2Angle.getDegrees();
 
         // Set target extension valve state
-        if (targetState == 2) {
+        if (targetState == 2 && getArmAngle().getDegrees() > Constants.minArmS2Angle.getDegrees()) {
             armExtender1.set(DoubleSolenoid.Value.kForward);
             armExtender2.set(DoubleSolenoid.Value.kForward);
         } else if (targetState == 1) {

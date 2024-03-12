@@ -103,11 +103,13 @@ public class OperatorInterface extends SubsystemBase {
             drive.setTargetAngle(Rotation2d.fromDegrees(90));
         }else if(driverController.getRawButton(2)){
             drive.setTargetPoint(FieldLayout.getSpeakerPose().getTranslation(), new Rotation2d());
+        }else{
+            drive.setAngleRate(rSpeed);
         }
 
         drive.setfieldRelative(fieldRelative);
         drive.setSpeed(xSpeed, ySpeed);
-        drive.setAngleRate(rSpeed);
+        
 
         // Update Shuffleboard
         sb_driveX.setDouble(xSpeed);
