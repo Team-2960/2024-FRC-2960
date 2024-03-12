@@ -380,15 +380,14 @@ public class Arm extends SubsystemBase {
                 break;
         }
 
-        // Protect against climber collisions
-        // if (!Climber.getInstance().isClearOfArm() && isInClimberZone())
-        // targetSpeed = 0; // TODO Improve Collision Avoidance to eliminate deadlock
-        // possiblity
-
         // Keep arm in package
-        // if (getArmExtension() == 2 && currentAngle.getDegrees() <=
-        // minS2Angle.getDegrees())
-        // targetSpeed = 0;
+        if (getArmExtension() == 2) {
+            if (currentAngle.getDegrees() <= minArmS2Angle.getDegrees()){
+                targetSpeed = max(0, targetSpeed);
+            } else  if (currentAngle.getDegrees() >= maxArmS2Angle.getDegrees()) {
+                targetSpeed = min(0, targetSpeed);
+            }
+        }
 
         return targetSpeed;
     }
@@ -402,6 +401,16 @@ public class Arm extends SubsystemBase {
         // Calculate trapezoidal profile
         Rotation2d currentAngle = getArmAngle();
         Rotation2d targetAngle = targetState.targetAngle;
+
+        // Keep arm in package
+        if (getArmExtension() == 2) {
+            if (currentAngle.getDegrees() <= minArmS2Angle.getDegrees()){
+                targetAngle = minArmS2Angle;
+            } else  if (currentAngle.getDegrees() >= maxArmS2Angle.getDegrees()) {
+                targetAngle = maxArmS2Angle;
+            }
+        }
+
         Rotation2d angleError = targetAngle.minus(currentAngle);
 
         double targetSpeed = Constants.maxAutoArmSpeed * (angleError.getRadians() > 0 ? 1 : -1);

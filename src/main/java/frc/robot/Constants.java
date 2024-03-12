@@ -107,6 +107,8 @@ public class Constants {
     public static final Rotation2d minArmS0Pos = Rotation2d.fromDegrees(20);
     public static final Rotation2d minArmIntakePos = Rotation2d.fromDegrees(2);
     public static final Rotation2d maxArmPos = Rotation2d.fromDegrees(96.5);
+    public static final Rotation2d minArm2dAngle = Rotation2d.fromDegrees(46);
+    public static final Rotation2d maxArm2dAngle = Rotation2d.fromDegrees(77);
 
     public static final Rotation2d armMinState2Angle = Rotation2d.fromDegrees(30);
 
