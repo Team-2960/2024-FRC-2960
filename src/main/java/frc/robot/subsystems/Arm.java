@@ -94,6 +94,7 @@ public class Arm extends SubsystemBase {
     private GenericEntry sb_anglePosSetPoint;
     private GenericEntry sb_angleRateCurrent;
     private GenericEntry sb_angleRateSetPoint;
+    private GenericEntry sb_angleRateError;
     private GenericEntry sb_angleM1Volt;
     private GenericEntry sb_angleM2Volt;
     private GenericEntry sb_angleTargetVolt;
@@ -155,6 +156,7 @@ public class Arm extends SubsystemBase {
         sb_anglePosSetPoint = layout.add("Angle Position Set Point", 0).getEntry();
         sb_angleRateCurrent = layout.add("Angle Rate Current", 0).getEntry();
         sb_angleRateSetPoint = layout.add("Angle Rate Set Point", 0).getEntry();
+        sb_angleRateError = layout.add("Angle Rate Error", 0).getEntry();
         sb_angleM1Volt = layout.add("Angle Motor 1 Voltage", 0).getEntry();
         sb_angleM2Volt = layout.add("Angle Motor 2 Voltage", 0).getEntry();
         sb_angleTargetVolt = layout.add("Angle Target Voltage", 0).getEntry();
@@ -447,6 +449,8 @@ public class Arm extends SubsystemBase {
                 armPID.setPID(Constants.armPIDS0.kP, Constants.armPIDS0.kI, Constants.armPIDS0.kD);
                 armFF = armFFS0;
             }
+
+            sb_angleRateError.setDouble(angleRate - targetSpeed);
 
             // Calculate motor voltage output
             double calcPID = armPID.calculate(angleRate, targetSpeed);
