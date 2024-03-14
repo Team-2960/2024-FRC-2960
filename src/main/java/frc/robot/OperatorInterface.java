@@ -128,12 +128,13 @@ public class OperatorInterface extends SubsystemBase {
         if (operatorController.getRawButton(1)) {
             arm.setState("Speaker");
         } else if (operatorController.getRawButton(2)) {
-            arm.setState("Amp");
+            arm.setState("lineSpeaker");
         }else if(operatorController.getRawButton(3)){
-            arm.setState("Climb");
+            arm.setState("Climb");//amp
         }else if(operatorController.getRawButton(4)){
             arm.setState("Intake");
-            
+        }else if(operatorController.getPOV() == 90 && operatorController.getPOV() != -90){
+            arm.setState("longShot");
         }
 
 

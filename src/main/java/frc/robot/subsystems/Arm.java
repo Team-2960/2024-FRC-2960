@@ -19,7 +19,9 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -59,6 +61,12 @@ public class Arm extends SubsystemBase {
     private DoubleSolenoid armExtender1;
     private DoubleSolenoid armExtender2;
 
+    private DoubleSolenoid channel0;
+    private DoubleSolenoid channel1;
+    private DoubleSolenoid channel2;
+    private DoubleSolenoid channel3;
+
+
     private Encoder quadArmEncoder;
 
     private DutyCycleEncoder absoluteArmEncoder;
@@ -86,7 +94,9 @@ public class Arm extends SubsystemBase {
             "Match Start", new ArmStateValues(Rotation2d.fromDegrees(60), 0),
             "Home", defaultState,
             "Intake", new ArmStateValues(Rotation2d.fromDegrees(3), 1),
-            "Speaker", new ArmStateValues(Rotation2d.fromDegrees(25.4), 0),
+            "Speaker", new ArmStateValues(Rotation2d.fromDegrees(35), 0),
+            "lineSpeaker", new ArmStateValues(Rotation2d.fromDegrees(56), 0),
+            "longShot", new ArmStateValues(Rotation2d.fromDegrees(67.5), 0),
             "Amp", new ArmStateValues(Rotation2d.fromDegrees(97.37), 1),
             "Climb", new ArmStateValues(Rotation2d.fromDegrees(97.38), 0),
             "Climb Balance", new ArmStateValues(Rotation2d.fromDegrees(97.38), 0),
@@ -121,6 +131,10 @@ public class Arm extends SubsystemBase {
                 Constants.armExt1For);
         armExtender2 = new DoubleSolenoid(Constants.phCANID, PneumaticsModuleType.REVPH, Constants.armExt2Rev,
                 Constants.armExt2For);
+
+        channel0 = new DoubleSolenoid(Constants.phCANID, PneumaticsModuleType.REVPH, 0, 1);
+        channel1 = new DoubleSolenoid(Constants.phCANID, PneumaticsModuleType.REVPH, 2, 3);
+
 
         absoluteArmEncoder = new DutyCycleEncoder(Constants.armDCEncoderPort);
 
@@ -338,6 +352,11 @@ public class Arm extends SubsystemBase {
         return control_mode;
     }
 
+    public void pneumaticsChannelPreset(){
+        channel0.set(Value.kForward);
+        channel1.set(Value.kForward);
+    }
+
     /**
      * Subsystem periodic method
      */
@@ -349,6 +368,7 @@ public class Arm extends SubsystemBase {
         setMotorVolt(voltage);
         updateExtension();
         updateUI(targetArmRate, voltage);
+        pneumaticsChannelPreset();
     }
 
     /**
@@ -404,11 +424,11 @@ public class Arm extends SubsystemBase {
      * @return target arm control rate
      */
     private double calcTrapezoidalRate() {
-        double maxAngleRate = Math.PI;
-
+        
         // Calculate trapezoidal profile
         Rotation2d currentAngle = getArmAngle();
         Rotation2d targetAngle = targetState.targetAngle;
+        double maxAngleRate = Constants.maxArmAutoSpeed;
 
         // Keep arm in package
         if (getArmExtension() == 2 && currentAngle.getDegrees() <= Constants.minArmS2Angle.getDegrees()) {
