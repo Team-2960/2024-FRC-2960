@@ -22,6 +22,10 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.AddressableLED;
+import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 
 public class OperatorInterface extends SubsystemBase {
     // INSTANCE
@@ -33,6 +37,20 @@ public class OperatorInterface extends SubsystemBase {
 
     private int lastOpPOV;
 
+    // LED Control
+    int led_count = 20;
+    AddressableLED leds;
+    AddressableLEDBuffer led_idle;
+    AddressableLEDBuffer led_note;
+    AddressableLEDBuffer led_endgame1;
+    AddressableLEDBuffer led_endgame2;
+    Timer ledTimer = new Timer();
+
+    // Robot State Tracking
+    private Timer rumbleTimer = new Timer();
+    private boolean lastIsNotePresent = true;
+    private boolean lastIsEndGame = false;
+
     // Shuffleboard Entries
     private GenericEntry sb_driveX;
     private GenericEntry sb_driveY;
@@ -41,6 +59,10 @@ public class OperatorInterface extends SubsystemBase {
 
     private GenericEntry sb_armRate;
     private GenericEntry sb_armExtendManual;
+
+    private GenericEntry sb_rumblePower;
+    private GenericEntry sb_rumbleTimer;
+    private GenericEntry sb_isEndGame;
 
     /**
      * Constructor
@@ -51,6 +73,31 @@ public class OperatorInterface extends SubsystemBase {
         operatorController = new Joystick(1);
 
         lastOpPOV = -1;
+
+        // Setup LEDs
+        leds = new AddressableLED(0);
+        leds.setLength(led_count);
+
+        led_idle = new AddressableLEDBuffer(led_count);
+        led_note = new AddressableLEDBuffer(led_count);
+        led_endgame1 = new AddressableLEDBuffer(led_count);
+        led_endgame2 = new AddressableLEDBuffer(led_count);
+
+        for (int i = 0; i < led_count; i++) {
+            led_idle.setRGB(i, 255, 255, 255);
+            led_note.setRGB(i, 0, 0, 255);
+
+            if (i % 2 == 0) {
+                led_endgame1.setRGB(i, 255, 255, 255);
+                led_endgame2.setRGB(i, 0, 0, 255);
+            } else {
+
+                led_endgame1.setRGB(i, 0, 0, 255);
+                led_endgame2.setRGB(i, 255, 255, 255);
+            }
+        }
+
+        leds.setData(led_idle);
 
         // Setup Shuffleboard
         var drive_layout = Shuffleboard.getTab("OI")
@@ -66,6 +113,14 @@ public class OperatorInterface extends SubsystemBase {
                 .withSize(2, 4);
         sb_armRate = arm_layout.add("Arm Manual Rate", 0).getEntry();
         sb_armExtendManual = arm_layout.add("Arm Extend", 0).getEntry();
+
+        var rumble_layout = Shuffleboard.getTab("OI")
+                .getLayout("Rumble", BuiltInLayouts.kList)
+                .withSize(2, 4);
+
+        sb_rumblePower = rumble_layout.add("Rumble Power", 0).getEntry();
+        sb_rumbleTimer = rumble_layout.add("Rumble Timer", 0).getEntry();
+        sb_isEndGame = rumble_layout.add("Is End Game", false).getEntry();
     }
 
     /**
@@ -78,6 +133,7 @@ public class OperatorInterface extends SubsystemBase {
             updateArm();
             updatePizzabox();
             updateClimber();
+            updateDriverFeedback();
         }
     }
 
@@ -91,7 +147,7 @@ public class OperatorInterface extends SubsystemBase {
         double maxSpeed = (slowSpeed ? .5 : 1) * Constants.maxSpeed;
         double maxAngleRate = (slowSpeed ? .5 : 1) * Constants.maxAngularSpeed;
 
-        boolean fieldRelative = true;//!driverController.getRawButton(1);
+        boolean fieldRelative = true;// !driverController.getRawButton(1);
         var alliance = DriverStation.getAlliance();
         double alliance_dir = alliance.isPresent() && alliance.get() == Alliance.Red ? 1 : -1;
 
@@ -99,17 +155,16 @@ public class OperatorInterface extends SubsystemBase {
         double ySpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.1) * maxSpeed * alliance_dir;
         double rSpeed = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1) * maxAngleRate;
 
-        if (driverController.getRawButton(1)){
+        if (driverController.getRawButton(1)) {
             drive.setTargetAngle(Rotation2d.fromDegrees(90));
-        }else if(driverController.getRawButton(2)){
+        } else if (driverController.getRawButton(2)) {
             drive.setTargetPoint(FieldLayout.getSpeakerPose().getTranslation(), new Rotation2d());
-        }else{
+        } else {
             drive.setAngleRate(rSpeed);
         }
 
         drive.setfieldRelative(fieldRelative);
         drive.setSpeed(xSpeed, ySpeed);
-        
 
         // Update Shuffleboard
         sb_driveX.setDouble(xSpeed);
@@ -129,14 +184,16 @@ public class OperatorInterface extends SubsystemBase {
             arm.setState("Speaker");
         } else if (operatorController.getRawButton(2)) {
             arm.setState("lineSpeaker");
-        }else if(operatorController.getRawButton(3)){
-            arm.setState("Climb");//amp
-        }else if(operatorController.getRawButton(4)){
+        } else if (operatorController.getRawButton(3)) {
+            arm.setState("Climb");// amp
+        } else if (operatorController.getRawButton(4)) {
             arm.setState("Intake");
-        }else if(operatorController.getPOV() == 90 && operatorController.getPOV() != -90){
+        } else if (operatorController.getPOV() == 90 && operatorController.getPOV() != -90) {
             arm.setState("longShot");
         }
 
+        // TODO Map home preset
+        // TODO Map Podium shot preset
 
         // Manual Arm Angle Control
         double armManual = operatorController.getRawAxis(1);
@@ -149,7 +206,7 @@ public class OperatorInterface extends SubsystemBase {
         } else if (arm.getControlMode() == Arm.ArmControlMode.MANUAL_VOLT) {
             arm.setArmVolt(0);
         }
-        
+
         sb_armRate.setDouble(armManualRate);
 
         // Manual Arm Extension control
@@ -169,29 +226,18 @@ public class OperatorInterface extends SubsystemBase {
      * Updates the controls for the Pizzabox
      */
     private void updatePizzabox() {
-        if(driverController.getRawButton(7)){
-            Climber.getInstance().setClimbState(ClimberStates.CLIMB_START);
-        }else if(driverController.getRawButton(8)){
-            Climber.getInstance().setClimbState(ClimberStates.CLIMB);
-        }else{
-            Climber.getInstance().setClimbState(ClimberStates.IDLE);
-        }
+        IntakePizzaBox intakePB = IntakePizzaBox.getInstance();
 
         if (operatorController.getRawButton(6)) {
-            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT_PREP);
+            intakePB.setState(IntakePizzaBox.PizzaboxState.SHOOT_PREP);
         } else if (operatorController.getRawAxis(3) > .1) {
-            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT);
-        } else if (operatorController.getRawButton(5)){
-            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.INTAKE);
-        }else if(operatorController.getRawAxis(2) > .1){
-            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.REVERSE);
-        }
-        /*else if (driverController.getRawButton(3)) {
-            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT_PREP);
-        } else if (driverController.getRawButton(4)) {
-            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.REVERSE);
-        }*/ else {
-            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.IDLE);
+            intakePB.setState(IntakePizzaBox.PizzaboxState.SHOOT);
+        } else if (operatorController.getRawButton(5)) {
+            intakePB.setState(IntakePizzaBox.PizzaboxState.INTAKE);
+        } else if (operatorController.getRawAxis(2) > .1) {
+            intakePB.setState(IntakePizzaBox.PizzaboxState.REVERSE);
+        } else {
+            intakePB.setState(IntakePizzaBox.PizzaboxState.IDLE);
         }
     }
 
@@ -199,15 +245,74 @@ public class OperatorInterface extends SubsystemBase {
      * Updates the controls for the climber
      */
     private void updateClimber() {
+        Climber climber = Climber.getInstance();
         // TODO implement climber controls
-        if (operatorController.getRawButton(7)) {
-            Climber.getInstance().setClimbState(ClimberStates.CLIMB_START);
-        } else if (operatorController.getRawButton(8)) {
-            Climber.getInstance().setClimbState(ClimberStates.CLIMB);
+        if (operatorController.getRawButton(7) || driverController.getRawButton(7)) {
+            climber.setClimbState(ClimberStates.CLIMB_START);
+        } else if (operatorController.getRawButton(8) || driverController.getRawButton(8)) {
+            climber.setClimbState(ClimberStates.CLIMB);
         } else {
-            Climber.getInstance().setClimbState(ClimberStates.IDLE);
+            climber.setClimbState(ClimberStates.IDLE);
         }
 
+    }
+
+    /**
+     * Updates the driver feedback state
+     */
+    private void updateDriverFeedback() {
+        double rumblePower = 0;
+        IntakePizzaBox intakePB = IntakePizzaBox.getInstance();
+        AddressableLEDBuffer ledColor = led_idle;
+        
+        boolean isEndGame = DriverStation.isTeleop() && DriverStation.getMatchTime() <= 50;
+
+        // Rumble the controllers at half power for .5 seconds when a note is in the intake 
+        if (intakePB.isNotePresent()) {
+            if(!lastIsNotePresent) {
+                rumbleTimer.restart();
+                ledTimer.restart();
+            } 
+
+            if(rumbleTimer.get() < .5) rumblePower = .5;
+
+            ledColor = led_note;
+        } 
+        
+        // Rumble the controllers at full power for 1 second when the end game is about to start
+        if(isEndGame) {            
+            if(!lastIsEndGame) {
+                rumbleTimer.restart();
+                ledTimer.restart();
+            } 
+
+            if(rumbleTimer.get() < 1) rumblePower = 1;
+
+            double ledTime = ledTimer.get();
+            if(ledTime < 1) {
+                if(ledTime % .2 < .1) {
+                    ledColor = led_endgame1;
+                } else {
+                    ledColor = led_endgame2;
+                }
+            }
+        } 
+
+        // Update controller rumble
+        driverController.setRumble(RumbleType.kBothRumble, rumblePower);
+        operatorController.setRumble(RumbleType.kBothRumble, rumblePower);
+
+        // Update LEDs
+        leds.setData(ledColor);
+
+        // Update state transition checks
+        lastIsNotePresent = intakePB.isNotePresent();
+        lastIsEndGame = isEndGame;
+
+        // Update UI
+         sb_rumblePower.setDouble(rumblePower);
+         sb_rumbleTimer.setDouble(rumbleTimer.get());
+         sb_isEndGame.setBoolean(isEndGame);
     }
 
     /**
