@@ -24,6 +24,8 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.AddressableLED;
+import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 
 public class OperatorInterface extends SubsystemBase {
     // INSTANCE
@@ -35,7 +37,17 @@ public class OperatorInterface extends SubsystemBase {
 
     private int lastOpPOV;
 
-    private Timer rumbleTimer;
+    // LED Control
+    int led_count = 20;
+    AddressableLED leds;
+    AddressableLEDBuffer led_idle;
+    AddressableLEDBuffer led_note;
+    AddressableLEDBuffer led_endgame1;
+    AddressableLEDBuffer led_endgame2;
+    Timer ledTimer = new Timer();
+
+    // Robot State Tracking
+    private Timer rumbleTimer = new Timer();
     private boolean lastIsNotePresent = true;
     private boolean lastIsEndGame = false;
 
@@ -61,6 +73,31 @@ public class OperatorInterface extends SubsystemBase {
         operatorController = new Joystick(1);
 
         lastOpPOV = -1;
+
+        // Setup LEDs
+        leds = new AddressableLED(0);
+        leds.setLength(led_count);
+
+        led_idle = new AddressableLEDBuffer(led_count);
+        led_note = new AddressableLEDBuffer(led_count);
+        led_endgame1 = new AddressableLEDBuffer(led_count);
+        led_endgame2 = new AddressableLEDBuffer(led_count);
+
+        for (int i = 0; i < led_count; i++) {
+            led_idle.setRGB(i, 255, 255, 255);
+            led_idle.setRGB(i, 0, 0, 255);
+
+            if(i % 2 == 0) {
+                led_endgame1.setRGB(i, 255, 255, 255);
+                led_endgame2.setRGB(i, 0, 0, 255);
+            } else {
+                
+                led_endgame1.setRGB(i, 0, 0, 255);
+                led_endgame2.setRGB(i, 255, 255, 255);
+            }
+        }
+
+        leds.setData(led_idle);
 
         // Setup Shuffleboard
         var drive_layout = Shuffleboard.getTab("OI")
@@ -97,7 +134,7 @@ public class OperatorInterface extends SubsystemBase {
             updateArm();
             updatePizzabox();
             updateClimber();
-            updateRumble();
+            updateDriverFeedback();
         }
     }
 
@@ -221,35 +258,53 @@ public class OperatorInterface extends SubsystemBase {
     }
 
     /**
-     * Updates the controller rumble state
+     * Updates the driver feedback state
      */
-    private void updateRumble() {
+    private void updateDriverFeedback() {
         double rumblePower = 0;
         IntakePizzaBox intakePB = IntakePizzaBox.getInstance();
         DriverStation ds = DriverStation.getInstance();
+        AddressableLEDBuffer ledColor = led_idle;
         
         boolean isEndGame = ds.isTeleop() && ds.getMatchTime() >= 50;
 
         // Rumble the controllers at half power for .5 seconds when a note is in the intake 
         if (intakePB.isNotePresent()) {
-            if(!lastIsNotePresent) rumbleTimer.reset();
+            if(!lastIsNotePresent) {
+                rumbleTimer.restart();
+                ledTimer.restart()
+            } 
 
             if(rumbleTimer.get() < .5) rumblePower = .5;
 
-            // TODO update LEDs
+            ledColor = led_note;
         } 
         
         // Rumble the controllers at full power for 1 second when the end game is about to start
-        if(isEndGame) {
-            if(!lastIsEndGame) rumbleTimer.reset();
+        if(isEndGame) {            
+            if(!lastIsNotePresent) {
+                rumbleTimer.restart();
+                ledTimer.restart()
+            } 
+
             if(rumbleTimer.get() < 1) rumblePower = 1;
 
-            // TODO update LEDs
+            double ledTime = ledTimer.get()
+            if(ledTime < 1) {
+                if(ledTime % .2 < .1) {
+                    ledColor = led_endgame1;
+                } else {
+                    ledColor = led_endgame2;
+                }
+            }
         } 
 
         // Update controller rumble
         driverController.setRumble(RumbleType.kBothRumble, rumblePower);
         operatorController.setRumble(RumbleType.kBothRumble, rumblePower);
+
+        // Update LEDs
+        leds.setData(ledColor);
 
         // Update state transition checks
         lastIsNotePresent = intakePB.isNotePresent();
