@@ -155,6 +155,9 @@ public class OperatorInterface extends SubsystemBase {
             arm.setState("Intake");
         }
 
+        // TODO Map home preset
+        // TODO Map Podium shot preset 
+
         // Manual Arm Angle Control
         double armManual = operatorController.getRawAxis(1);
         double armManualRate = armManual * Constants.maxArmSpeed;
