@@ -25,7 +25,7 @@ public class Constants {
 
     public static final Transform3d robotToCamera = new Transform3d(
         new Translation3d(-robotLength/2+.040, 0, .206), 
-        new Rotation3d(32 * Math.PI / 180, 0, Math.PI)
+        new Rotation3d(38 * Math.PI / 180, 0, Math.PI)
     );  
 
     public static final double winchDiam = 1.5; // in.
