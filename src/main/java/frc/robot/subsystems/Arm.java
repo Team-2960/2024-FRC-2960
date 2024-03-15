@@ -93,13 +93,14 @@ public class Arm extends SubsystemBase {
     private Map<String, ArmStateValues> armStates = Map.of(
             "Match Start", new ArmStateValues(Rotation2d.fromDegrees(60), 0),
             "Home", defaultState,
-            "Intake", new ArmStateValues(Rotation2d.fromDegrees(3), 1),
+            "Intake", new ArmStateValues(Rotation2d.fromDegrees(2), 1),
             "Speaker", new ArmStateValues(Rotation2d.fromDegrees(35), 0),
             "lineSpeaker", new ArmStateValues(Rotation2d.fromDegrees(56), 0),
             "longShot", new ArmStateValues(Rotation2d.fromDegrees(67.5), 0),
             "Amp", new ArmStateValues(Rotation2d.fromDegrees(97.37), 1),
             "Climb", new ArmStateValues(Rotation2d.fromDegrees(97.38), 0),
-            "AmpSideShoot", new ArmStateValues(Rotation2d.fromDegrees(47), 0)
+            "AmpSideShoot", new ArmStateValues(Rotation2d.fromDegrees(47), 0),
+            "home", new ArmStateValues(Rotation2d.fromDegrees(18), 0)
             //"Climb Balance", new ArmStateValues(Rotation2d.fromDegrees(97.38), 0),
             //"Trap Score", new ArmStateValues(Rotation2d.fromDegrees(70), 2)
         );

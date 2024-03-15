@@ -163,6 +163,18 @@ public class OperatorInterface extends SubsystemBase {
             drive.setAngleRate(rSpeed);
         }
 
+
+        IntakePizzaBox intakePB = IntakePizzaBox.getInstance();
+        Climber climber = Climber.getInstance();
+
+        if(driverController.getRawButton(6)){
+            intakePB.setState(IntakePizzaBox.PizzaboxState.SHOOT);
+        }else if (driverController.getRawButton(8)){
+            climber.setClimbState(ClimberStates.CLIMB);
+        }else if (driverController.getRawAxis(3)> .1){
+            intakePB.setState(IntakePizzaBox.PizzaboxState.INTAKE);
+        }
+
         drive.setfieldRelative(fieldRelative);
         drive.setSpeed(xSpeed, ySpeed);
 
@@ -188,8 +200,10 @@ public class OperatorInterface extends SubsystemBase {
             arm.setState("Climb");// amp
         } else if (operatorController.getRawButton(4)) {
             arm.setState("Intake");
-        } else if (operatorController.getPOV() == 90 && operatorController.getPOV() != -90) {
+        } else if (operatorController.getPOV() == 90 && operatorController.getPOV() != 270) {
             arm.setState("longShot");
+        }else if(operatorController.getPOV()== 270 && operatorController.getPOV() != 90){
+            arm.setState("home");
         }
 
         // TODO Map home preset
