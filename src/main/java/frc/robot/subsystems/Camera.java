@@ -7,6 +7,7 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Timer;
@@ -86,6 +87,8 @@ public class Camera extends SubsystemBase {
             double ts = poseUpdate.timestampSeconds;
             if (lastTimeStamp < ts) {
                 lastPose = poseUpdate.estimatedPose.toPose2d().transformBy(Constants.fieldCenterOffset);
+
+                lastPose = new Pose2d(new Translation2d(lastPose.getX(), -lastPose.getY()), lastPose.getRotation());
 
                 // Update drivetrain pose estimation
                 Drive.getInstance().setVisionPose(lastPose, ts);

@@ -16,6 +16,7 @@ import frc.robot.Auton.Commands.Pizzabox.*;
 import frc.robot.Util.FieldLayout;
 
 public class AutonList {
+    /*
     public static final Command shootAndDrive = new SequentialCommandGroup(
         new setFieldRelative(true),
         new ParallelCommandGroup(
@@ -29,13 +30,59 @@ public class AutonList {
             new armToPreset("Home")
         )
     );
-    
+    */
 
+    public static final Command shootAndDriveSimple = new SequentialCommandGroup(
+      new setFieldRelative(false),
+      new ParallelCommandGroup(
+        new armToPreset("lineSpeaker"),
+        new prepShootNote()
+      ) ,
+      new WaitCommand(1),
+      new shootNote(),
+      new driveToTime(4, Rotation2d.fromDegrees(0), 2.5)
+    );
+
+    public static final Command AmpSideSimple = new SequentialCommandGroup(
+        new setFieldRelative(false),
+        new ParallelCommandGroup(
+            new armToPreset("AmpSideShoot"),
+            new prepShootNote()
+        ),
+        new WaitCommand(1),
+        new shootNote(),
+        new WaitCommand(5),
+        new driveToTime(2, Rotation2d.fromDegrees(-45), 2.5)
+    );
+
+    public static final Command middleSimple =new SequentialCommandGroup(
+        new setFieldRelative(false),
+        new ParallelCommandGroup(
+            new armToPreset("Speaker"),
+            new prepShootNote()
+        ),
+        new WaitCommand(1),
+        new shootNote(),
+        new WaitCommand(5),
+        new driveToTime(2, Rotation2d.fromDegrees(0), 2)
+    );
     
     public static final Map<String, Map<Alliance, Command>> auton_list = Map.of(
-        "Shoot and Drive", Map.of(
-            Alliance.Red, shootAndDrive, 
-            Alliance.Blue, shootAndDrive
+        //"Shoot and Drive", Map.of(
+            //Alliance.Red, shootAndDrive, 
+            //Alliance.Blue, shootAndDrive
+        //)
+        "Shoot and Drive Simple", Map.of(
+            Alliance.Red, shootAndDriveSimple,
+            Alliance.Blue, shootAndDriveSimple
+        ),
+        "Amp Side Simple", Map.of(
+            Alliance.Red, AmpSideSimple,
+            Alliance.Blue, AmpSideSimple
+        ),
+        "Middle Shoot Simple", Map.of(
+            Alliance.Red, middleSimple,
+            Alliance.Blue, middleSimple
         )
     );
 
@@ -50,6 +97,7 @@ public class AutonList {
     }
     
     public static Optional<Command> getDefaultCommands() {
-        return Optional.ofNullable(shootAndDrive);
+        return Optional.ofNullable(middleSimple);
+
     }
 }

@@ -60,6 +60,8 @@ public class Drive extends SubsystemBase {
     private GenericEntry sb_speedY;
     private GenericEntry sb_speedR;
 
+    private GenericEntry sb_speedTargetR;
+
     private boolean targetSeen;
 
     /**
@@ -112,6 +114,8 @@ public class Drive extends SubsystemBase {
         sb_speedX  = pose_layout.add("Speed X", 0).getEntry();
         sb_speedY  = pose_layout.add("Speed Y", 0).getEntry();
         sb_speedR  = pose_layout.add("Speed R", 0).getEntry();
+
+        sb_speedTargetR  = pose_layout.add("Target Speed R", 0).getEntry();
     }
 
     /**
@@ -246,6 +250,8 @@ public class Drive extends SubsystemBase {
 
         SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.maxSpeed);
 
+        sb_speedTargetR.setDouble(rSpeed);
+
         frontLeft.setDesiredState(swerveModuleStates[0]);
         frontRight.setDesiredState(swerveModuleStates[1]);
         backLeft.setDesiredState(swerveModuleStates[2]);
@@ -310,12 +316,13 @@ public class Drive extends SubsystemBase {
         double minError = Math.min(Math.abs(error), Math.abs(compError));
 
         // Calculate ramp down speed
-        double speed = Math.min(minError * Constants.driveAngleRampDistance.getRadians(), Constants.maxAngularSpeed);
+        double speed = Math.min(minError / Constants.driveAngleRampDistance.getRadians(), 1) *Constants.maxAngularSpeed;
 
         // Set direction
         double direction = error > 0 ? 1 : -1;
-        if (minError == compError)
-            direction *= -1;
+        
+        if (minError == compError)  direction *= -1;
+
         speed *= direction;
 
         return speed;

@@ -158,7 +158,7 @@ public class OperatorInterface extends SubsystemBase {
         if (driverController.getRawButton(1)) {
             drive.setTargetAngle(Rotation2d.fromDegrees(90));
         } else if (driverController.getRawButton(2)) {
-            drive.setTargetPoint(FieldLayout.getSpeakerPose().getTranslation(), new Rotation2d());
+            drive.setTargetPoint(FieldLayout.getSpeakerPose().getTranslation(), Rotation2d.fromDegrees(-90));
         } else {
             drive.setAngleRate(rSpeed);
         }
@@ -286,7 +286,7 @@ public class OperatorInterface extends SubsystemBase {
                 ledTimer.restart();
             } 
 
-            if(rumbleTimer.get() < 1) rumblePower = 1;
+            //if(rumbleTimer.get() < 1) rumblePower = 1;
 
             double ledTime = ledTimer.get();
             if(ledTime < 1) {

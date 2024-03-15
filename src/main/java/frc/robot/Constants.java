@@ -93,7 +93,7 @@ public class Constants {
     public static final double maxSwerveAngularSpeed = Math.PI * 4;     //Rad per second
     public static final double maxSwerveAngularAccel = Math.PI * 10;    //Rad per second ^ 2
 
-    public static final Rotation2d driveAngleRampDistance = Rotation2d.fromRadians(0.7);
+    public static final Rotation2d driveAngleRampDistance = Rotation2d.fromRadians(10);
 
     // Arm
     public static PIDParam armPIDS0 = new PIDParam(0.01, 0.0, 0.0);

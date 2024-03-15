@@ -99,8 +99,10 @@ public class Arm extends SubsystemBase {
             "longShot", new ArmStateValues(Rotation2d.fromDegrees(67.5), 0),
             "Amp", new ArmStateValues(Rotation2d.fromDegrees(97.37), 1),
             "Climb", new ArmStateValues(Rotation2d.fromDegrees(97.38), 0),
-            "Climb Balance", new ArmStateValues(Rotation2d.fromDegrees(97.38), 0),
-            "Trap Score", new ArmStateValues(Rotation2d.fromDegrees(70), 2));
+            "AmpSideShoot", new ArmStateValues(Rotation2d.fromDegrees(47), 0)
+            //"Climb Balance", new ArmStateValues(Rotation2d.fromDegrees(97.38), 0),
+            //"Trap Score", new ArmStateValues(Rotation2d.fromDegrees(70), 2)
+        );
 
     private GenericEntry sb_armMode;
     private GenericEntry sb_anglePosCurrent;
@@ -118,11 +120,16 @@ public class Arm extends SubsystemBase {
     private GenericEntry sb_armClearOfClimber;
     private GenericEntry sb_anglePosRotations;
     private GenericEntry sb_errorOverTime;
+    private GenericEntry sb_atAngle;
+    private GenericEntry sb_atExt;
+    private GenericEntry sb_atTarget;
 
     /**
      * Constructor
      */
     private Arm() {
+        //unused channels
+        
 
         armMotor1 = new TalonFX(Constants.armMotor1);
         armMotor2 = new TalonFX(Constants.armMotor2);
@@ -134,6 +141,10 @@ public class Arm extends SubsystemBase {
 
         channel0 = new DoubleSolenoid(Constants.phCANID, PneumaticsModuleType.REVPH, 0, 1);
         channel1 = new DoubleSolenoid(Constants.phCANID, PneumaticsModuleType.REVPH, 2, 3);
+
+        channel0.set(DoubleSolenoid.Value.kForward);
+        channel1.set(DoubleSolenoid.Value.kForward);
+
 
 
         absoluteArmEncoder = new DutyCycleEncoder(Constants.armDCEncoderPort);
@@ -149,6 +160,7 @@ public class Arm extends SubsystemBase {
         armFFS1 = new ArmFeedforward(Constants.armFFS1.kS, Constants.armFFS1.kG, Constants.armFFS1.kV);
         armFFS2 = new ArmFeedforward(Constants.armFFS2.kS, Constants.armFFS2.kG, Constants.armFFS2.kV);
 
+        //Auton Positions
         // TODO Set abs encoder offset
 
         // Set control mode
@@ -184,6 +196,10 @@ public class Arm extends SubsystemBase {
         sb_armClearOfClimber = layout.add("Arm clear of climber", false).getEntry();
         sb_anglePosRotations = layout.add("Arm Encoder Rotations Output", 0).getEntry();
         sb_errorOverTime = layout.add("Error Over Time", 0).getEntry();
+        
+        sb_atAngle = layout.add("At Angle", false).getEntry();
+        sb_atExt = layout.add("At Extension", false).getEntry();
+        sb_atTarget = layout.add("At Target", false).getEntry();
     }
 
     /**
@@ -298,7 +314,7 @@ public class Arm extends SubsystemBase {
         Rotation2d targetAngle = targetState.targetAngle;
         Rotation2d angleTol = targetState.angleTol;
 
-        return Math.abs(targetAngle.minus(currentAngle).getDegrees()) < angleTol.getDegrees();
+        return Math.abs(targetAngle.getDegrees() - currentAngle.getDegrees()) < angleTol.getDegrees();
     }
 
     /**
@@ -307,7 +323,7 @@ public class Arm extends SubsystemBase {
      * @return true if the extension are at their target
      */
     public boolean atExtention() {
-        return getArmExtension() == targetState.extState && extenderTimer.get() > Constants.armExtDelayTime;
+        return getArmExtension() == targetState.extState; // && extenderTimer.get() > Constants.armExtDelayTime;
     }
 
     /**
@@ -579,6 +595,9 @@ public class Arm extends SubsystemBase {
         sb_brakeModeDisabled.setBoolean(!brakeModeDisableBtn.get());
         sb_armClearOfClimber.setBoolean(!isInClimberZone());
         sb_anglePosRotations.setDouble(absoluteArmEncoder.get());
+        sb_atAngle.setBoolean(atAngle());
+        sb_atExt.setBoolean(atExtention());
+        sb_atTarget.setBoolean(atTarget());
     }
 
     /**

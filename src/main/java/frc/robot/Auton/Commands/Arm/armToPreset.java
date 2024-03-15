@@ -21,6 +21,20 @@ public class armToPreset extends Command {
 
     @Override
     public boolean isFinished() {
-        return Arm.getInstance().atTarget();
+        boolean finished = Arm.getInstance().atTarget();
+
+        if (finished) {
+            System.out.println("arm Preset isFinished True");
+        } else{ 
+            
+            System.out.println("arm Preset isFinished False");
+        }
+
+        return finished;
+    }
+
+    @Override
+    public void end(boolean interrupt) {
+        System.out.println("arm Preset End");
     }
 }

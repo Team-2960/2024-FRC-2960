@@ -12,4 +12,9 @@ public class prepShootNote extends Command {
     public void initialize() {
         IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT_PREP);
     }
+
+    @Override
+    public boolean isFinished() {
+        return true;
+    }
 }
