@@ -6,6 +6,7 @@ package frc.robot;
 
 import java.util.Optional;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Relay.Value;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -47,6 +48,8 @@ public class Robot extends TimedRobot {
         climber = Climber.getInstance();
         intake = IntakePizzaBox.getInstance();
         pneumatics = Pneumatics.getInstance();
+
+        CameraServer.startAutomaticCapture();
 
         autonCommand = AutonList.getDefaultCommands();
 
