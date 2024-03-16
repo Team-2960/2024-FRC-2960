@@ -35,7 +35,7 @@ public class AutonList {
     public static final Command shootAndDriveSimple = new SequentialCommandGroup(
       new setFieldRelative(false),
       new ParallelCommandGroup(
-        new armToPreset("lineSpeaker"),
+        new armToPreset("AmpSideShoot"),
         new prepShootNote()
       ) ,
       new WaitCommand(1),
@@ -97,7 +97,7 @@ public class AutonList {
     }
     
     public static Optional<Command> getDefaultCommands() {
-        return Optional.ofNullable(middleSimple);
+        return Optional.ofNullable(shootAndDriveSimple);
 
     }
 }
