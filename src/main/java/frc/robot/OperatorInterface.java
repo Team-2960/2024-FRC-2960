@@ -98,6 +98,7 @@ public class OperatorInterface extends SubsystemBase {
         }
 
         leds.setData(led_idle);
+        leds.start();
 
         // Setup Shuffleboard
         var drive_layout = Shuffleboard.getTab("OI")
@@ -164,15 +165,14 @@ public class OperatorInterface extends SubsystemBase {
         }
 
 
-        IntakePizzaBox intakePB = IntakePizzaBox.getInstance();
         Climber climber = Climber.getInstance();
 
         if(driverController.getRawButton(6)){
-            intakePB.setState(IntakePizzaBox.PizzaboxState.SHOOT);
+            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT);
         }else if (driverController.getRawButton(8)){
             climber.setClimbState(ClimberStates.CLIMB);
         }else if (driverController.getRawAxis(3)> .1){
-            intakePB.setState(IntakePizzaBox.PizzaboxState.INTAKE);
+            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.INTAKE);
         }
 
         drive.setfieldRelative(fieldRelative);
@@ -243,12 +243,12 @@ public class OperatorInterface extends SubsystemBase {
         IntakePizzaBox intakePB = IntakePizzaBox.getInstance();
 
         if (operatorController.getRawButton(6)) {
-            intakePB.setState(IntakePizzaBox.PizzaboxState.SHOOT_PREP);
+            intakePB.setState(IntakePizzaBox.PizzaboxState.FAST_SHOOT);
         } else if (operatorController.getRawAxis(3) > .1) {
             intakePB.setState(IntakePizzaBox.PizzaboxState.SHOOT);
         } else if (operatorController.getRawButton(5)) {
             intakePB.setState(IntakePizzaBox.PizzaboxState.INTAKE);
-        } else if (operatorController.getRawAxis(2) > .1) {
+        } else if (operatorController.getRawAxis(2) > .2) {
             intakePB.setState(IntakePizzaBox.PizzaboxState.REVERSE);
         } else {
             intakePB.setState(IntakePizzaBox.PizzaboxState.IDLE);
@@ -300,7 +300,7 @@ public class OperatorInterface extends SubsystemBase {
                 ledTimer.restart();
             } 
 
-            //if(rumbleTimer.get() < 1) rumblePower = 1;
+            if(rumbleTimer.get() < 1) rumblePower = 1;
 
             double ledTime = ledTimer.get();
             if(ledTime < 1) {
