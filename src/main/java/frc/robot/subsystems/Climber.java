@@ -151,18 +151,18 @@ public class Climber extends SubsystemBase {
     public void periodic() {
         switch (climbState) {
             case MATCH_START:
-                retractClimber(.2);
+                retractClimber(.2, false);
                 if (isDown()) setClimbState(ClimberStates.IDLE);
                 break;
             case CLIMB:
-                retractClimber(1);
+                retractClimber(1, true);
                 break;
             case CLIMB_START:
                 extendClimber();
                 break;
             case IDLE:
             default:
-                setMotor(0);
+                setMotor(0, true);
                 ratchetRelease.set(DoubleSolenoid.Value.kForward);
         }
 
@@ -175,14 +175,14 @@ public class Climber extends SubsystemBase {
     /**
      * Retracts the climber until the limit sensor is tripped
      */
-    private void retractClimber(double winchSpeed) {
+    private void retractClimber(double winchSpeed, boolean useSoftStop) {
         ratchetRelease.set(DoubleSolenoid.Value.kForward);
 
-        if(!isDown()) {
-            setMotor(winchSpeed);
+        if(isDown() || (useSoftStop && getExtension() < Constants.winchMinLimit)) {
+            setMotor(0, true);
         }else {
-            setMotor(0);
-            resetClimber();
+            setMotor(winchSpeed, true);
+            
         }
     }
 
@@ -200,21 +200,24 @@ public class Climber extends SubsystemBase {
                 
                 // Extend the climber if the ratchet is disengaged
                 if (ratchetTimer.get() > Constants.winchRatchedDelay){
-                    setMotor(-0.5);
+                    setMotor(-0.5, true);
+                    winchLimit.enableLimitSwitch(true);
                 }else{
-                    setMotor(0.1);
+                    setMotor(0.1, false);
                 }
 
             } else {
-                setMotor(0);
+                setMotor(0, true);
                 ratchetRelease.set(DoubleSolenoid.Value.kForward);
             }
         }
     }
 
-    private void setMotor(double value){
+    private void setMotor(double value, boolean enableLimit){
+        winchLimit.enableLimitSwitch(enableLimit);
         winchL.set(value);
         winchR.set(value);
+        
     }
 
     /**

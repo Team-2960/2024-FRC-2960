@@ -142,10 +142,12 @@ public class Constants {
     public static final double shooterShootPower = 1;
     public static final double shooterRevPower = 1;
     public static final double shooterMinShootSpeed = 3000 ;     // rpm
+    public static final double shooterFastShootSpeed = 5000;//rps
 
     // Climber
-    public static final double winchMaxExtension = 425;   // in.
-    public static final double winchRatchedDelay = .25;  // seconds
+    public static final double winchMaxExtension = 88;   // in.
+    public static final double winchMinLimit = 1.5; //in
+    public static final double winchRatchedDelay = .1;  // seconds
 
     // Pneumatics
     public static final double minPressure = 80;

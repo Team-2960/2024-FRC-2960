@@ -18,6 +18,7 @@ public class IntakePizzaBox extends SubsystemBase {
         IDLE,
         INTAKE,
         SHOOT,
+        FAST_SHOOT,
         SHOOT_PREP,
         REVERSE
     }
@@ -131,6 +132,17 @@ public class IntakePizzaBox extends SubsystemBase {
             // Check if shooter is ready to shoot
             if (shootEncoder1.getVelocity() > Constants.shooterMinShootSpeed
                     && shootEncoder2.getVelocity() > Constants.shooterMinShootSpeed) {
+                intakeRollers.set(Constants.intakeInPower); // Run intake
+            } else {
+                intakeRollers.set(0); // Turn Intake Off
+            }
+
+        } else if (state == PizzaboxState.FAST_SHOOT) {
+            shooterTop.set(Constants.shooterShootPower); // Turn shooter to max power
+
+            // Check if shooter is ready to shoot
+            if (shootEncoder1.getVelocity() > Constants.shooterFastShootSpeed
+                    && shootEncoder2.getVelocity() > Constants.shooterFastShootSpeed) {
                 intakeRollers.set(Constants.intakeInPower); // Run intake
             } else {
                 intakeRollers.set(0); // Turn Intake Off
