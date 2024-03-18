@@ -178,7 +178,7 @@ public class Climber extends SubsystemBase {
     private void retractClimber(double winchSpeed, boolean useSoftStop) {
         ratchetRelease.set(DoubleSolenoid.Value.kForward);
 
-        if(isDown() || (useSoftStop && getExtension() < Constants.winchMinLimit)) {
+        if(isDown()) {
             setMotor(0, true);
         }else {
             setMotor(winchSpeed, true);
@@ -203,7 +203,7 @@ public class Climber extends SubsystemBase {
                     setMotor(-0.5, true);
                     winchLimit.enableLimitSwitch(true);
                 }else{
-                    setMotor(0.1, false);
+                    setMotor(0.2, false);
                 }
 
             } else {

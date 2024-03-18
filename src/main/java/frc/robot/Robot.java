@@ -49,8 +49,7 @@ public class Robot extends TimedRobot {
         intake = IntakePizzaBox.getInstance();
         pneumatics = Pneumatics.getInstance();
 
-        CameraServer.startAutomaticCapture();
-
+        //CameraServer.startAutomaticCapture();
         autonCommand = AutonList.getDefaultCommands();
 
     }

@@ -51,8 +51,8 @@ public class AutonList {
         ),
         new WaitCommand(1),
         new shootNote(),
-        new WaitCommand(5),
-        new driveToTime(2, Rotation2d.fromDegrees(-45), 2.5)
+        new WaitCommand(12.5),
+        new driveToTime(6, Rotation2d.fromDegrees(45), 2.5)
     );
 
     public static final Command middleSimple =new SequentialCommandGroup(
@@ -97,7 +97,7 @@ public class AutonList {
     }
     
     public static Optional<Command> getDefaultCommands() {
-        return Optional.ofNullable(shootAndDriveSimple);
+        return Optional.ofNullable(AmpSideSimple);
 
     }
 }

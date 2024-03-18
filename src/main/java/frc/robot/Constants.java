@@ -147,7 +147,7 @@ public class Constants {
     // Climber
     public static final double winchMaxExtension = 88;   // in.
     public static final double winchMinLimit = 1.5; //in
-    public static final double winchRatchedDelay = .1;  // seconds
+    public static final double winchRatchedDelay = .25;  // seconds
 
     // Pneumatics
     public static final double minPressure = 80;
