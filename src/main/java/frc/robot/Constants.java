@@ -76,6 +76,15 @@ public class Constants {
     public static double autonRampDownSpeed = 0.5;  
     public static double minSpeed = 2;              // m/s
 
+    //Preset Auton Positions
+    public static final Pose2d redSourceSide = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
+    public static final Pose2d redCenter = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
+    public static final Pose2d redAmpSide = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
+    public static final Pose2d blueSourceSide = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
+    public static final Pose2d blueCenter = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
+    public static final Pose2d blueAmpSide = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
+
+
 
     // Drive
     public static PIDParam drivePID = new PIDParam(.1, 0.0, 0.0);

@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveWheelPositions;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
@@ -63,6 +64,7 @@ public class Drive extends SubsystemBase {
     private GenericEntry sb_speedTargetR;
 
     private boolean targetSeen;
+    private boolean ignoreCamera;
 
     /**
      * Constructor
@@ -206,8 +208,10 @@ public class Drive extends SubsystemBase {
      */
     public void setVisionPose(Pose2d pose, double timeStamp) {
         // TODO Adjust standard deviations based on distance from target
+        if(!ignoreCamera){
         swerveDrivePoseEstimator.addVisionMeasurement(pose, timeStamp);
         targetSeen = true;
+        }
     }
 
     /**
@@ -342,6 +346,7 @@ public class Drive extends SubsystemBase {
         return calcRateToAngle(targetAngle, pose.getRotation());
     }
 
+
     private void updateUI() {
         Pose2d pose = getEstimatedPos();
         sb_posEstX.setDouble(pose.getX());
@@ -351,6 +356,21 @@ public class Drive extends SubsystemBase {
         sb_speedX.setDouble(xSpeed);
         sb_speedY.setDouble(ySpeed);
         sb_speedR.setDouble(rSpeed);
+    }
+
+    public void ignoreCamera(boolean ignoreCamera){
+        this.ignoreCamera = ignoreCamera;
+    }
+
+    public void presetPosition(Pose2d pose2d){
+        swerveDrivePoseEstimator.resetPosition(pose2d.getRotation(), 
+            new SwerveModulePosition[] {
+                frontLeft.getPosition(),
+                frontRight.getPosition(),
+                backLeft.getPosition(),
+                backRight.getPosition()
+                }, 
+            pose2d);
     }
 
     /**

@@ -260,7 +260,6 @@ public class OperatorInterface extends SubsystemBase {
      */
     private void updateClimber() {
         Climber climber = Climber.getInstance();
-        // TODO implement climber controls
         if (operatorController.getRawButton(7) || driverController.getRawButton(7)) {
             climber.setClimbState(ClimberStates.CLIMB_START);
         } else if (operatorController.getRawButton(8) || driverController.getRawButton(8)) {
