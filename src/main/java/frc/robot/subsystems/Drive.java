@@ -358,8 +358,8 @@ public class Drive extends SubsystemBase {
         sb_speedR.setDouble(rSpeed);
     }
 
-    public void ignoreCamera(boolean ignoreCamera){
-        this.ignoreCamera = ignoreCamera;
+    public void ignoreCamera(boolean ignore){
+        this.ignoreCamera = ignore;
     }
 
     public void presetPosition(Pose2d pose2d){

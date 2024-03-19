@@ -1,8 +1,12 @@
 package frc.robot.subsystems;
 
+import java.util.function.Predicate;
+
+import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -13,7 +17,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import frc.robot.Constants; 
+import frc.robot.Constants;
 
 public class Camera extends SubsystemBase {
     private static Camera vision = null;
@@ -23,9 +27,12 @@ public class Camera extends SubsystemBase {
     private AprilTagFieldLayout aprilTagFieldLayout;
 
     private PhotonPoseEstimator photonPoseEstimator;
-    
+
     private Pose2d lastPose;
+    private Pose2d filteredLastPose;
     private double lastTimeStamp;
+
+    private Timer timer;
 
     private GenericEntry sb_PoseX;
     private GenericEntry sb_PoseY;
@@ -46,21 +53,21 @@ public class Camera extends SubsystemBase {
         // Initialize camera pose estimator
         photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout,
                 PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, camera, Constants.robotToCamera);
-        
+
         // Initialize class variables
         lastPose = new Pose2d();
         lastTimeStamp = 0;
 
         // Setup Shuffleboard
-         var layout = Shuffleboard.getTab("Status")
-             .getLayout("Camera", BuiltInLayouts.kList)
-             .withSize(1,4);
+        var layout = Shuffleboard.getTab("Status")
+                .getLayout("Camera", BuiltInLayouts.kList)
+                .withSize(1, 4);
         sb_PoseX = layout.add("Pose X", 0).getEntry();
         sb_PoseY = layout.add("Pose Y", 0).getEntry();
         sb_PoseR = layout.add("Pose R", 0).getEntry();
         sb_lastTimestamp = layout.add("Last Timestamp", lastTimeStamp).getEntry();
         sb_lastUpdatePeriod = layout.add("Time Since Last Update", 0).getEntry();
-        
+
     }
 
     /**
@@ -77,25 +84,38 @@ public class Camera extends SubsystemBase {
      */
     private void updatePose() {
         var estPoseUpdate = photonPoseEstimator.update();
+        var resultUpdate = camera.getLatestResult();
 
         // Check if an AprilTag is visible
         if (estPoseUpdate.isPresent()) {
             // Retrieve pose update
             var poseUpdate = estPoseUpdate.get();
+            var result = resultUpdate.getBestTarget();
+
+            if (Math.abs(result.getYaw()) > 30) {
+                double ts = poseUpdate.timestampSeconds;
+                // double angleFromAprilTag = photonPoseEstimator.get
+                if (lastTimeStamp < ts) {
+                    lastPose = poseUpdate.estimatedPose.toPose2d().transformBy(Constants.fieldCenterOffset);
+                    if (poseUpdate.estimatedPose.toPose2d().getRotation().getDegrees() > 0)
+
+                        lastPose = new Pose2d(new Translation2d(lastPose.getX(), -lastPose.getY()),
+                                lastPose.getRotation());
+
+                    // Update drivetrain pose estimation
+                    Drive.getInstance().setVisionPose(lastPose, ts);
+
+                    // Update last timestamp
+                    lastTimeStamp = ts;
+
+                    // If angle to April Tag < 30 degrees, ignore April Tag
+
+                }
+
+            }
 
             // Check if the camera has a new value
-            double ts = poseUpdate.timestampSeconds;
-            if (lastTimeStamp < ts) {
-                lastPose = poseUpdate.estimatedPose.toPose2d().transformBy(Constants.fieldCenterOffset);
 
-                lastPose = new Pose2d(new Translation2d(lastPose.getX(), -lastPose.getY()), lastPose.getRotation());
-
-                // Update drivetrain pose estimation
-                Drive.getInstance().setVisionPose(lastPose, ts);
-
-                // Update last timestamp
-                lastTimeStamp = ts;
-            }
         }
     }
 
@@ -103,15 +123,14 @@ public class Camera extends SubsystemBase {
      * Updates Shuffleboard
      */
     private void updateUI() {
-       sb_PoseX.setDouble(lastPose.getX());
+        sb_PoseX.setDouble(lastPose.getX());
         sb_PoseY.setDouble(lastPose.getY());
         sb_PoseR.setDouble(lastPose.getRotation().getDegrees());
         sb_lastTimestamp.setDouble(lastTimeStamp);
         sb_lastUpdatePeriod.setDouble(Timer.getFPGATimestamp() - lastTimeStamp);
-        
 
     }
-    
+
     /**
      * Static initializer
      */
