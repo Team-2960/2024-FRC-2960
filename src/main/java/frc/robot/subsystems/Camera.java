@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonUtils;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
@@ -29,10 +30,7 @@ public class Camera extends SubsystemBase {
     private PhotonPoseEstimator photonPoseEstimator;
 
     private Pose2d lastPose;
-    private Pose2d filteredLastPose;
     private double lastTimeStamp;
-
-    private Timer timer;
 
     private GenericEntry sb_PoseX;
     private GenericEntry sb_PoseY;
@@ -92,7 +90,7 @@ public class Camera extends SubsystemBase {
             var poseUpdate = estPoseUpdate.get();
             var result = resultUpdate.getBestTarget();
 
-            if (Math.abs(result.getYaw()) > 30) {
+            if (Math.toDegrees(Math.abs(result.getBestCameraToTarget().getRotation().getZ())) > 165) {
                 double ts = poseUpdate.timestampSeconds;
                 // double angleFromAprilTag = photonPoseEstimator.get
                 if (lastTimeStamp < ts) {
