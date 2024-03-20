@@ -249,6 +249,7 @@ public class OperatorInterface extends SubsystemBase {
         } else if (operatorController.getRawButton(5)) {
             intakePB.setState(IntakePizzaBox.PizzaboxState.INTAKE);
         } else if (operatorController.getRawAxis(2) > .2) {
+            
             intakePB.setState(IntakePizzaBox.PizzaboxState.REVERSE);
         } else {
             intakePB.setState(IntakePizzaBox.PizzaboxState.IDLE);

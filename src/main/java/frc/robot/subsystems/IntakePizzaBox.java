@@ -58,6 +58,7 @@ public class IntakePizzaBox extends SubsystemBase {
         // Initialize Shooter Motors
         shooterTop = new CANSparkFlex(Constants.shooterTop, MotorType.kBrushless);
         shooterBot = new CANSparkFlex(Constants.shooterBot, MotorType.kBrushless);
+        shooterTop.setInverted(true);
         shooterBot.follow(shooterTop, true);
 
         // Initialize Shooter Encoders
