@@ -143,13 +143,15 @@ public class Constants {
     public static final double LowerEncLimitS0 = .42;
 
     // Pizzabox
-    public static final double intakeInPower = .75;
-    public static final double intakeShootPower = 1;
-    public static final double intakeOutPower = 1;
+    public static final double intakeInVoltage = 8.3;
+    public static final double intakeShootVoltage = 8.3;
+    public static final double intakeOutVoltage = 8.3;
+    public static final double intakeSlowVoltage = 2;
+    public static final double intakeSlowCurrent = 20;
 
     public static final double shooterPrepPower = .2;    
-    public static final double shooterShootPower = 1;
-    public static final double shooterRevPower = 1;
+    public static final double shooterShootVoltage = 10.8;
+    public static final double shooterRevVoltage = 10.8;
     public static final double shooterMinShootSpeed = 3000 ;     // rpm
     public static final double shooterFastShootSpeed = 5000;//rps
 
