@@ -94,10 +94,10 @@ public class Camera extends SubsystemBase {
                 double ts = poseUpdate.timestampSeconds;
                 // double angleFromAprilTag = photonPoseEstimator.get
                 if (lastTimeStamp < ts) {
-                    lastPose = poseUpdate.estimatedPose.toPose2d().transformBy(Constants.fieldCenterOffset);
-                    if (poseUpdate.estimatedPose.toPose2d().getRotation().getDegrees() > 0)
+                    lastPose = poseUpdate.estimatedPose.toPose2d();//.transformBy(Constants.fieldCenterOffset);
+                    //if (poseUpdate.estimatedPose.toPose2d().getRotation().getDegrees() > 0)
 
-                        lastPose = new Pose2d(new Translation2d(lastPose.getX(), -lastPose.getY()),
+                        lastPose = new Pose2d(new Translation2d(lastPose.getX()-Constants.fieldCenterOffset.getX(), -lastPose.getY()+Constants.fieldCenterOffset.getY()),
                                 lastPose.getRotation());
 
                     // Update drivetrain pose estimation

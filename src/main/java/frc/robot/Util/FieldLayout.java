@@ -164,7 +164,7 @@ public class FieldLayout {
      * @param note_type id for the desired pre-staged notes
      * @return position of the selected note
      */
-    public Translation2d getNote(NoteType note_type) {
+    public static Translation2d getNote(NoteType note_type) {
         var alliance = DriverStation.getAlliance();
         if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
             return rNotes.get(note_type);

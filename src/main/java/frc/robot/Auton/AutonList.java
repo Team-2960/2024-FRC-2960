@@ -17,87 +17,106 @@ import frc.robot.Util.FieldLayout;
 
 public class AutonList {
     /*
-    public static final Command shootAndDrive = new SequentialCommandGroup(
-        new setFieldRelative(true),
-        new ParallelCommandGroup(
-            new armToPreset("Speaker"),
-            new prepShootNote()
-        ),
-        new shootNote(),
-        new ParallelCommandGroup(
-            new goToPosition(FieldLayout.getAutoClearX(), -2, 3, .1),
-            new goToAngle(FieldLayout.getForwardAngle(), Rotation2d.fromDegrees(2)),
-            new armToPreset("Home")
-        )
-    );
-    */
+     * public static final Command shootAndDrive = new SequentialCommandGroup(
+     * new setFieldRelative(true),
+     * new ParallelCommandGroup(
+     * new armToPreset("Speaker"),
+     * new prepShootNote()
+     * ),
+     * new shootNote(),
+     * new ParallelCommandGroup(
+     * new goToPosition(FieldLayout.getAutoClearX(), -2, 3, .1),
+     * new goToAngle(FieldLayout.getForwardAngle(), Rotation2d.fromDegrees(2)),
+     * new armToPreset("Home")
+     * )
+     * );
+     */
 
     public static final Command shootAndDriveSimple = new SequentialCommandGroup(
-      new setFieldRelative(false),
-      new ParallelCommandGroup(
-        new armToPreset("AmpSideShoot"),
-        new prepShootNote()
-      ) ,
-      new WaitCommand(1),
-      new shootNote(),
-      new driveToTime(4, Rotation2d.fromDegrees(0), 2.5)
-    );
+            new setFieldRelative(false),
+            new ParallelCommandGroup(
+                    new armToPreset("AmpSideShoot"),
+                    new prepShootNote()),
+            new WaitCommand(1),
+            new shootNote(),
+            new driveToTime(4, Rotation2d.fromDegrees(0), 2.5));
 
     public static final Command AmpSideSimple = new SequentialCommandGroup(
-        new setFieldRelative(false),
-        new ParallelCommandGroup(
-            new armToPreset("AmpSideShoot"),
-            new prepShootNote()
-        ),
-        new WaitCommand(1),
-        new shootNote(),
-        new WaitCommand(12.5),
-        new driveToTime(6, Rotation2d.fromDegrees(45), 2.5)
-    );
+            new setFieldRelative(false),
+            new ParallelCommandGroup(
+                    new armToPreset("AmpSideShoot"),
+                    new prepShootNote()),
+            new WaitCommand(1),
+            new shootNote(),
+            new WaitCommand(12.5),
+            new driveToTime(6, Rotation2d.fromDegrees(45), 2.5));
 
-    public static final Command middleSimple =new SequentialCommandGroup(
-        new setFieldRelative(false),
-        new ParallelCommandGroup(
-            new armToPreset("Speaker"),
-            new prepShootNote()
-        ),
-        new WaitCommand(1),
-        new shootNote(),
-        new WaitCommand(5),
-        new driveToTime(2, Rotation2d.fromDegrees(0), 2)
-    );
-    
+    public static final Command middleSimple = new SequentialCommandGroup(
+            new setFieldRelative(false),
+            new ParallelCommandGroup(
+                    new armToPreset("Speaker"),
+                    new prepShootNote()),
+            new WaitCommand(1),
+            new shootNote(),
+            new WaitCommand(5),
+            new driveToTime(2, Rotation2d.fromDegrees(0), 2));
+
+    public static final Command middle2NoteRed = new SequentialCommandGroup(
+            new setFieldRelative(true),
+            new setEnableCamera(true),
+            new setFieldPose(new Pose2d(6.53635, -1.443, Rotation2d.fromDegrees(180))),
+            new intakeNote(),
+            new ParallelCommandGroup(
+                    new armToPreset("Speaker"),
+                    new prepShootNote()
+            ),
+            new shootNote(),
+            new armToPreset("Intake"),
+            new ParallelRaceGroup(
+                new driveToTime(2, Rotation2d.fromDegrees(0), 3
+                ),
+                //new waitForAprilTag(),
+                new intakeNote()
+            ),
+            //new ParallelRaceGroup(
+            //        new intakeNote(),
+            //        new goToPosition(FieldLayout.getNote(FieldLayout.NoteType.NEAR_SPEAKER), 2, .5)
+            //),
+            new ParallelCommandGroup(
+                    new armToPreset("AmpSideShoot"),
+                    new prepShootNote()
+            ),
+            new shootFastNote()
+        );
+
     public static final Map<String, Map<Alliance, Command>> auton_list = Map.of(
-        //"Shoot and Drive", Map.of(
-            //Alliance.Red, shootAndDrive, 
-            //Alliance.Blue, shootAndDrive
-        //)
-        "Shoot and Drive Simple", Map.of(
-            Alliance.Red, shootAndDriveSimple,
-            Alliance.Blue, shootAndDriveSimple
-        ),
-        "Amp Side Simple", Map.of(
-            Alliance.Red, AmpSideSimple,
-            Alliance.Blue, AmpSideSimple
-        ),
-        "Middle Shoot Simple", Map.of(
-            Alliance.Red, middleSimple,
-            Alliance.Blue, middleSimple
-        )
-    );
+            // "Shoot and Drive", Map.of(
+            // Alliance.Red, shootAndDrive,
+            // Alliance.Blue, shootAndDrive
+            // )
+            "Shoot and Drive Simple", Map.of(
+                    Alliance.Red, shootAndDriveSimple,
+                    Alliance.Blue, shootAndDriveSimple),
+            "Amp Side Simple", Map.of(
+                    Alliance.Red, AmpSideSimple,
+                    Alliance.Blue, AmpSideSimple),
+            "Middle Shoot Simple", Map.of(
+                    Alliance.Red, middleSimple,
+                    Alliance.Blue, middleSimple));
 
     public static Optional<Command> getCommands(String name) {
         Map<Alliance, Command> named_auton = auton_list.get(name);
         Command auton = null;
         var alliance = DriverStation.getAlliance();
 
-        if(named_auton != null && alliance.isPresent()) auton = named_auton.get(alliance.get());
+        if (named_auton != null && alliance.isPresent())
+            auton = named_auton.get(alliance.get());
 
         return Optional.ofNullable(auton);
     }
-    
+
     public static Optional<Command> getDefaultCommands() {
-        return Optional.ofNullable(AmpSideSimple);
+        return Optional.ofNullable(middle2NoteRed);
 
     }
 }

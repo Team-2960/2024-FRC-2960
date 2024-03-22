@@ -157,9 +157,9 @@ public class OperatorInterface extends SubsystemBase {
         double rSpeed = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1) * maxAngleRate;
 
         if (driverController.getRawButton(1)) {
-            drive.setTargetAngle(Rotation2d.fromDegrees(90));
+            drive.setTargetAngle(Rotation2d.fromDegrees(-90));
         } else if (driverController.getRawButton(2)) {
-            drive.setTargetPoint(FieldLayout.getSpeakerPose().getTranslation(), Rotation2d.fromDegrees(-90));
+            //drive.setTargetPoint(FieldLayout.getSpeakerPose().getTranslation(), Rotation2d.fromDegrees(-90));
         } else {
             drive.setAngleRate(rSpeed);
         }
@@ -197,7 +197,7 @@ public class OperatorInterface extends SubsystemBase {
         } else if (operatorController.getRawButton(2)) {
             arm.setState("lineSpeaker");
         } else if (operatorController.getRawButton(3)) {
-            arm.setState("Climb");// amp
+            arm.setState("Amp");// amp
         } else if (operatorController.getRawButton(4)) {
             arm.setState("Intake");
         } else if (operatorController.getPOV() == 90 && operatorController.getPOV() != 270) {

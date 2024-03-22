@@ -25,7 +25,7 @@ public class Constants {
 
     public static final Transform3d robotToCamera = new Transform3d(
         new Translation3d(-robotLength/2+.040, 0, .206), 
-        new Rotation3d(38 * Math.PI / 180, 0, Math.PI)
+        new Rotation3d(36 * Math.PI / 180, 0, Math.PI)
     );  
 
     public static final double winchDiam = 1.5; // in.
@@ -153,7 +153,7 @@ public class Constants {
     public static final double shooterShootVoltage = 10.8;
     public static final double shooterRevVoltage = 10.8;
     public static final double shooterMinShootSpeed = 3000 ;     // rpm
-    public static final double shooterFastShootSpeed = 5000;//rps
+    public static final double shooterFastShootSpeed = 5900;//rps
 
     // Climber
     public static final double winchMaxExtension = 88;   // in.

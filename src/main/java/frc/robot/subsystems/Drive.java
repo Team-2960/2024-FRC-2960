@@ -214,6 +214,10 @@ public class Drive extends SubsystemBase {
         }
     }
 
+    public boolean getTargetSeen() {
+        return targetSeen;
+    }
+
     /**
      * Subsystem periodic method
      */
@@ -340,7 +344,7 @@ public class Drive extends SubsystemBase {
      */
     private double calcRateToPoint(Translation2d point, Rotation2d offset) {
         Pose2d pose = getEstimatedPos();
-        Translation2d targetOffset = targetPoint.minus(pose.getTranslation());
+        Translation2d targetOffset = point.minus(pose.getTranslation());
         Rotation2d targetAngle = targetOffset.getAngle().plus(offset);
 
         return calcRateToAngle(targetAngle, pose.getRotation());
@@ -363,14 +367,16 @@ public class Drive extends SubsystemBase {
     }
 
     public void presetPosition(Pose2d pose2d){
-        swerveDrivePoseEstimator.resetPosition(pose2d.getRotation(), 
+        swerveDrivePoseEstimator.resetPosition(
+            navx.getRotation2d(),
             new SwerveModulePosition[] {
                 frontLeft.getPosition(),
                 frontRight.getPosition(),
                 backLeft.getPosition(),
                 backRight.getPosition()
                 }, 
-            pose2d);
+            pose2d
+            );
     }
 
     /**
