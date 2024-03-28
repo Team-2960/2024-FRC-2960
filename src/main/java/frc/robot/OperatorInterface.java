@@ -16,11 +16,13 @@ import java.text.FieldPosition;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.DriverStation.MatchType;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -40,7 +42,7 @@ public class OperatorInterface extends SubsystemBase {
     private int lastOpPOV;
 
     // LED Control
-    int led_count = 20;
+    int led_count = 69;
     AddressableLED leds;
     AddressableLEDBuffer led_idle;
     AddressableLEDBuffer led_note;
@@ -87,14 +89,14 @@ public class OperatorInterface extends SubsystemBase {
 
         for (int i = 0; i < led_count; i++) {
             led_idle.setRGB(i, 255, 255, 255);
-            led_note.setRGB(i, 0, 0, 255);
+            led_note.setRGB(i, 0, 0, 127);
 
             if (i % 2 == 0) {
                 led_endgame1.setRGB(i, 255, 255, 255);
-                led_endgame2.setRGB(i, 0, 0, 255);
+                led_endgame2.setRGB(i, 0, 0, 127);
             } else {
 
-                led_endgame1.setRGB(i, 0, 0, 255);
+                led_endgame1.setRGB(i, 0, 0, 127);
                 led_endgame2.setRGB(i, 255, 255, 255);
             }
         }
@@ -124,7 +126,10 @@ public class OperatorInterface extends SubsystemBase {
         sb_rumblePower = rumble_layout.add("Rumble Power", 0).getEntry();
         sb_rumbleTimer = rumble_layout.add("Rumble Timer", 0).getEntry();
         sb_isEndGame = rumble_layout.add("Is End Game", false).getEntry();
+
+        
     }
+    
 
     /**
      * Subsystem Period Method
@@ -154,15 +159,16 @@ public class OperatorInterface extends SubsystemBase {
         var alliance = DriverStation.getAlliance();
         double alliance_dir = alliance.isPresent() && alliance.get() == Alliance.Red ? 1 : -1;
 
-        double xSpeed = -MathUtil.applyDeadband(driverController.getRawAxis(1), 0.1) * maxSpeed * alliance_dir;
-        double ySpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.1) * maxSpeed * alliance_dir;
-        double rSpeed = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.1) * maxAngleRate;
+        double xSpeed = -MathUtil.applyDeadband(driverController.getRawAxis(1), 0.05) * maxSpeed * alliance_dir;
+        double ySpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.05) * maxSpeed * alliance_dir;
+        double rSpeed = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.05) * maxAngleRate;
 
         if (driverController.getRawButton(1)) {
             drive.setTargetAngle(Rotation2d.fromDegrees(-90));
         } else if (driverController.getRawButton(2)) {
-            // drive.setTargetPoint(FieldLayout.getSpeakerPose().getTranslation(),
-            // Rotation2d.fromDegrees(-90));
+            drive.setTargetPoint(new Translation2d(0,0), Rotation2d.fromDegrees(0));
+        } else if (driverController.getRawButton(3)){
+            drive.setTargetPoint(FieldLayout.getSpeakerPose().getTranslation(), Rotation2d.fromDegrees(180));
         } else {
             drive.setAngleRate(rSpeed);
         }
@@ -291,7 +297,7 @@ public class OperatorInterface extends SubsystemBase {
         IntakePizzaBox intakePB = IntakePizzaBox.getInstance();
         AddressableLEDBuffer ledColor = led_idle;
 
-        boolean isEndGame = DriverStation.isTeleop() && DriverStation.getMatchTime() <= 50;
+        boolean isEndGame = DriverStation.isTeleop() && DriverStation.getMatchTime() <= 50 && DriverStation.getMatchType() != MatchType.None;
 
         // Rumble the controllers at half power for .5 seconds when a note is in the
         // intake
