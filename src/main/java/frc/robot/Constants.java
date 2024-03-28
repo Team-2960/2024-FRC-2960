@@ -87,14 +87,15 @@ public class Constants {
 
 
     // Drive
-    public static PIDParam drivePID = new PIDParam(.1, 0.0, 0.0);
-    public static FFParam driveFF = FFParam.simpleMotor(0.0, 0.75, 0.0);
+    public static PIDParam drivePID = new PIDParam(.5, 0.0, 0.0);
+    public static FFParam driveFF = FFParam.simpleMotor(0.0, 2.25, 0.0);
 
     public static PIDParam driveAngPID = new PIDParam(0.05, 0.0, 0.001);
     public static FFParam driveAngFF = FFParam.simpleMotor(0.1, 0.1, 0);
 
-    public static final double maxSpeed = 15;
-    public static final double maxAngularSpeed = 12 * 2 * Math.PI;
+    public static final double maxSpeed = 4.5;
+    public static final double maxAngularSpeed = 1.5 * 2 * Math.PI;
+    public static final double maxAutoAngularSpeed = 0.5 * 2 * Math.PI;
 
     public static final double swerveAngleRampRate = 7; 
     public static final Rotation2d swerveAngleRampDist = Rotation2d.fromDegrees(30);
@@ -102,7 +103,7 @@ public class Constants {
     public static final double maxSwerveAngularSpeed = Math.PI * 4;     //Rad per second
     public static final double maxSwerveAngularAccel = Math.PI * 10;    //Rad per second ^ 2
 
-    public static final Rotation2d driveAngleRampDistance = Rotation2d.fromRadians(10);
+    public static final Rotation2d driveAngleRampDistance = Rotation2d.fromDegrees(20);
 
     // Arm
     public static PIDParam armPIDS0 = new PIDParam(0.01, 0.0, 0.0);
@@ -137,11 +138,13 @@ public class Constants {
     public static final Rotation2d armEncAnglePerRot = Rotation2d.fromDegrees(360);
     public static final Rotation2d armEncAngleOffset = Rotation2d.fromDegrees(168.5);
 
+    public static final double armOffset = 0;
+
     // STAGE1 SOFT LIMIT RANGE 46 - 78.1
-    public static final double lowerEncLimit = .422 - 16/360;
-    public static final double upperEncLimit = .161;
+    public static final double lowerEncLimit = .449;
+    public static final double upperEncLimit = .184;
     public static final double LowerEncLimitS0 = .42 - 16/360;
-    public static final double lowerEncLimitS2 = .17;
+    public static final double lowerEncLimitS2 = .2;
 
     // Pizzabox
     public static final double intakeInVoltage = 8.3;
@@ -154,7 +157,7 @@ public class Constants {
     public static final double shooterShootVoltage = 10.8;
     public static final double shooterRevVoltage = 10.8;
     public static final double shooterMinShootSpeed = 3000 ;     // rpm
-    public static final double shooterFastShootSpeed = 5900;//rps
+    public static final double shooterFastShootSpeed = 5500;//rps
 
     // Climber
     public static final double winchMaxExtension = 88;   // in.
@@ -163,6 +166,6 @@ public class Constants {
     winchRatchedDelay = .25;  // seconds
 
     // Pneumatics
-    public static final double minPressure = 80;
+    public static final double minPressure = 100;
     public static final double maxPressure = 120;
 }
