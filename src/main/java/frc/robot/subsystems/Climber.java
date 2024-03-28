@@ -4,6 +4,7 @@ import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -29,7 +30,6 @@ public class Climber extends SubsystemBase {
     private CANSparkMax winchL;
     private CANSparkMax winchR;
 
-
     private SparkLimitSwitch winchLimit;
     private RelativeEncoder winchEncoder;
 
@@ -37,7 +37,7 @@ public class Climber extends SubsystemBase {
     private Timer ratchetTimer;
 
     private ClimberStates climbState = ClimberStates.IDLE;
-    
+
     private GenericEntry sb_state;
     private GenericEntry sb_isDown;
     private GenericEntry sb_isClearOfArm;
@@ -46,22 +46,21 @@ public class Climber extends SubsystemBase {
     private GenericEntry sb_winchExt;
     private GenericEntry sb_ratchetTime;
     private GenericEntry sb_ratchetValve;
-    
 
     /**
      * Constructor
      */
     private Climber() {
         // Initialize Motors
-        winchL = new CANSparkMax(Constants.winchMotorL,MotorType.kBrushless);
-        winchR = new CANSparkMax(Constants.winchMotorR,MotorType.kBrushless);
-        winchL.setIdleMode(IdleMode.kCoast);
-        winchR.setIdleMode(IdleMode.kCoast);
+        winchL = new CANSparkMax(Constants.winchMotorL, MotorType.kBrushless);
+        winchR = new CANSparkMax(Constants.winchMotorR, MotorType.kBrushless);
+        winchL.setIdleMode(IdleMode.kBrake);
+        winchR.setIdleMode(IdleMode.kBrake);
         winchR.setInverted(true);
 
         // Initialize Encoder
-        winchEncoder = winchL.getEncoder();
-        winchEncoder.setPositionConversionFactor(Constants.winchCircum); 
+        winchEncoder = winchR.getEncoder();
+        winchEncoder.setPositionConversionFactor(Constants.winchCircum);
 
         // Initialize limit switch
         winchLimit = winchL.getForwardLimitSwitch(SparkLimitSwitch.Type.kNormallyOpen);
@@ -70,16 +69,17 @@ public class Climber extends SubsystemBase {
         climbState = ClimberStates.MATCH_START;
 
         // Initialize Ratchet Release
-        ratchetRelease = new DoubleSolenoid(Constants.phCANID, PneumaticsModuleType.REVPH, 
-            Constants.climbRatchetRev,Constants.climbRatchetFor);
+        ratchetRelease = new DoubleSolenoid(Constants.phCANID, PneumaticsModuleType.REVPH,
+                Constants.climbRatchetRev, Constants.climbRatchetFor);
+        ratchetRelease.set(DoubleSolenoid.Value.kReverse);
 
         ratchetTimer = new Timer();
 
         // Setup Shuffleboard
-        
+
         var layout = Shuffleboard.getTab("Status")
-            .getLayout("Climber", BuiltInLayouts.kList)
-            .withSize(2,6);
+                .getLayout("Climber", BuiltInLayouts.kList)
+                .withSize(2, 6);
 
         sb_state = layout.add("State", climbState.name()).getEntry();
         sb_isDown = layout.add("Is Down", false).getEntry();
@@ -144,6 +144,14 @@ public class Climber extends SubsystemBase {
         return isDown() || getExtension() < armContactHeight;
     }
 
+    public void setRatchet(boolean enabled) {
+        if (enabled) {
+            ratchetRelease.set(Value.kForward);
+        } else {
+            ratchetRelease.set(Value.kReverse);
+        }
+    }
+
     /**
      * Climber periodic update
      */
@@ -152,7 +160,8 @@ public class Climber extends SubsystemBase {
         switch (climbState) {
             case MATCH_START:
                 retractClimber(.2, false);
-                if (isDown()) setClimbState(ClimberStates.IDLE);
+                if (isDown())
+                    setClimbState(ClimberStates.IDLE);
                 break;
             case CLIMB:
                 retractClimber(1, true);
@@ -163,12 +172,12 @@ public class Climber extends SubsystemBase {
             case IDLE:
             default:
                 setMotor(0, true);
-                ratchetRelease.set(DoubleSolenoid.Value.kForward);
         }
 
         // Reset the climber encoder if the limit switch is set
-        if (isDown()) resetClimber();
-        
+        if (isDown())
+            resetClimber();
+
         updateUI();
     }
 
@@ -176,13 +185,12 @@ public class Climber extends SubsystemBase {
      * Retracts the climber until the limit sensor is tripped
      */
     private void retractClimber(double winchSpeed, boolean useSoftStop) {
-        ratchetRelease.set(DoubleSolenoid.Value.kForward);
 
-        if(isDown()) {
+        if (isDown()) {
             setMotor(0, true);
-        }else {
+        } else {
             setMotor(winchSpeed, true);
-            
+
         }
     }
 
@@ -191,33 +199,21 @@ public class Climber extends SubsystemBase {
      */
     private void extendClimber() {
         // Check if the arm is clear of the climber
-        if(!Arm.getInstance().isInClimberZone()) {
+        if (!Arm.getInstance().isInClimberZone()) {
             // Check if the climber is at its max extention
-            if(getExtension() < Constants.winchMaxExtension) { 
-                // Disengage ratchet
-                if(ratchetRelease.get() != DoubleSolenoid.Value.kReverse) ratchetTimer.restart();
-                ratchetRelease.set(DoubleSolenoid.Value.kReverse);
-                
-                // Extend the climber if the ratchet is disengaged
-                if (ratchetTimer.get() > Constants.winchRatchedDelay){
-                    setMotor(-0.5, true);
-                    winchLimit.enableLimitSwitch(true);
-                }else{
-                    setMotor(0.2, false);
-                }
-
+            if (getExtension() < Constants.winchMaxExtension) {
+                setMotor(-.5, true);
             } else {
                 setMotor(0, true);
-                ratchetRelease.set(DoubleSolenoid.Value.kForward);
             }
         }
     }
 
-    private void setMotor(double value, boolean enableLimit){
+    private void setMotor(double value, boolean enableLimit) {
         winchLimit.enableLimitSwitch(enableLimit);
         winchL.set(value);
         winchR.set(value);
-        
+
     }
 
     /**

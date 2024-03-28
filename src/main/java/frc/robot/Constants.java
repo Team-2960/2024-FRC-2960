@@ -114,16 +114,16 @@ public class Constants {
     public static PIDParam armPIDS2 = new PIDParam(0.01, 0.0, 0.0);
     public static FFParam armFFS2 = FFParam.arm(.1, 2, 0.25, 0.0);
 
-    public static final Rotation2d minArmS0Pos = Rotation2d.fromDegrees(20);
-    public static final Rotation2d minArmS0Angle = Rotation2d.fromDegrees(2);
-    public static final Rotation2d minArmS2Angle = Rotation2d.fromDegrees(46);
-    public static final Rotation2d maxArmS2Angle = Rotation2d.fromDegrees(96.5);
-    public static final Rotation2d minArmIntakePos = Rotation2d.fromDegrees(2);
-    public static final Rotation2d maxArmPos = Rotation2d.fromDegrees(96.5);
-    public static final Rotation2d minArm2dAngle = Rotation2d.fromDegrees(46);
-    public static final Rotation2d maxArm2dAngle = Rotation2d.fromDegrees(77);
+    public static final Rotation2d minArmS0Pos = Rotation2d.fromDegrees(20 + 16);
+    public static final Rotation2d minArmS0Angle = Rotation2d.fromDegrees(2 + 16);
+    public static final Rotation2d minArmS2Angle = Rotation2d.fromDegrees(46 + 16);
+    public static final Rotation2d maxArmS2Angle = Rotation2d.fromDegrees(96.5 + 16);
+    public static final Rotation2d minArmIntakePos = Rotation2d.fromDegrees(2 + 16);
+    public static final Rotation2d maxArmPos = Rotation2d.fromDegrees(96.5 + 16);
+    public static final Rotation2d minArm2dAngle = Rotation2d.fromDegrees(46 + 16);
+    public static final Rotation2d maxArm2dAngle = Rotation2d.fromDegrees(77 + 16);
 
-    public static final Rotation2d armMinState2Angle = Rotation2d.fromDegrees(30);
+    public static final Rotation2d armMinState2Angle = Rotation2d.fromDegrees(30 + 16);
 
     public static final Rotation2d armRampDownDist = Rotation2d.fromDegrees(20);
 
@@ -138,9 +138,10 @@ public class Constants {
     public static final Rotation2d armEncAngleOffset = Rotation2d.fromDegrees(168.5);
 
     // STAGE1 SOFT LIMIT RANGE 46 - 78.1
-    public static final double lowerEncLimit = .455;
-    public static final double upperEncLimit = .199;
-    public static final double LowerEncLimitS0 = .42;
+    public static final double lowerEncLimit = .422 - 16/360;
+    public static final double upperEncLimit = .161;
+    public static final double LowerEncLimitS0 = .42 - 16/360;
+    public static final double lowerEncLimitS2 = .17;
 
     // Pizzabox
     public static final double intakeInVoltage = 8.3;
@@ -149,7 +150,7 @@ public class Constants {
     public static final double intakeSlowVoltage = 2;
     public static final double intakeSlowCurrent = 20;
 
-    public static final double shooterPrepPower = .2;    
+    public static final double shooterPrepPower = .75;    
     public static final double shooterShootVoltage = 10.8;
     public static final double shooterRevVoltage = 10.8;
     public static final double shooterMinShootSpeed = 3000 ;     // rpm
@@ -158,7 +159,8 @@ public class Constants {
     // Climber
     public static final double winchMaxExtension = 88;   // in.
     public static final double winchMinLimit = 1.5; //in
-    public static final double winchRatchedDelay = .25;  // seconds
+    public static final double 
+    winchRatchedDelay = .25;  // seconds
 
     // Pneumatics
     public static final double minPressure = 80;

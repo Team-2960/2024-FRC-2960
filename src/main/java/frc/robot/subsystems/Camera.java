@@ -90,11 +90,12 @@ public class Camera extends SubsystemBase {
             var poseUpdate = estPoseUpdate.get();
             var result = resultUpdate.getBestTarget();
 
-            if (Math.toDegrees(Math.abs(result.getBestCameraToTarget().getRotation().getZ())) > 165) {
+            if (resultUpdate.hasTargets() && Math.toDegrees(Math.abs(result.getBestCameraToTarget().getRotation().getZ())) > 165) {
                 double ts = poseUpdate.timestampSeconds;
-                // double angleFromAprilTag = photonPoseEstimator.get
-                if (lastTimeStamp < ts) {
-                    lastPose = poseUpdate.estimatedPose.toPose2d();//.transformBy(Constants.fieldCenterOffset);
+                //double angleFromAprilTag = photonPoseEstimator.get
+                //if (resultUpdate.hasTargets() && Math.toDegrees((Math.abs(result.getBestCameraToTarget().getRotation().getZ()))) > 165) { TODO
+                lastPose = poseUpdate.estimatedPose.toPose2d(); 
+                    //.transformBy(Constants.fieldCenterOffset);
                     //if (poseUpdate.estimatedPose.toPose2d().getRotation().getDegrees() > 0)
 
                         lastPose = new Pose2d(new Translation2d(lastPose.getX()-Constants.fieldCenterOffset.getX(), -lastPose.getY()+Constants.fieldCenterOffset.getY()),
@@ -115,7 +116,7 @@ public class Camera extends SubsystemBase {
             // Check if the camera has a new value
 
         }
-    }
+    
 
     /**
      * Updates Shuffleboard

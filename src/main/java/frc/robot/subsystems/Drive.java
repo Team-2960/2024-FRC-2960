@@ -14,9 +14,14 @@ import edu.wpi.first.math.kinematics.SwerveDriveWheelPositions;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.WidgetType;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import com.kauailabs.navx.frc.AHRS;
 
@@ -63,8 +68,12 @@ public class Drive extends SubsystemBase {
 
     private GenericEntry sb_speedTargetR;
 
+    private ComplexWidget sb_field2d;
+
     private boolean targetSeen;
     private boolean ignoreCamera;
+
+    private Field2d field2d;
 
     /**
      * Constructor
@@ -90,6 +99,8 @@ public class Drive extends SubsystemBase {
         navx.reset();
 
         targetSeen = false;
+
+        field2d = new Field2d();
 
         // Initialize pose estimation
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
@@ -118,6 +129,10 @@ public class Drive extends SubsystemBase {
         sb_speedR  = pose_layout.add("Speed R", 0).getEntry();
 
         sb_speedTargetR  = pose_layout.add("Target Speed R", 0).getEntry();
+
+        sb_field2d = Shuffleboard.getTab("Drive").add(field2d).withWidget("Field");
+
+        
     }
 
     /**
@@ -170,6 +185,7 @@ public class Drive extends SubsystemBase {
     /**
      * Sets the target angle of the robot and sets the robot to Angle angle
      * control mode.
+     * 
      * 
      * @param angle target angle for the robot.
      */
@@ -360,6 +376,8 @@ public class Drive extends SubsystemBase {
         sb_speedX.setDouble(xSpeed);
         sb_speedY.setDouble(ySpeed);
         sb_speedR.setDouble(rSpeed);
+
+        field2d.setRobotPose(swerveDrivePoseEstimator.getEstimatedPosition());
     }
 
     public void ignoreCamera(boolean ignore){
@@ -377,6 +395,7 @@ public class Drive extends SubsystemBase {
                 }, 
             pose2d
             );
+        targetSeen = false;
     }
 
     /**

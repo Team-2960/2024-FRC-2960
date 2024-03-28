@@ -43,7 +43,7 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         drive = Drive.getInstance();
         oi = OperatorInterface.getInstance();
-        camera = Camera.getInstance();
+        //camera = Camera.getInstance();
         arm = Arm.getInstance();
         climber = Climber.getInstance();
         intake = IntakePizzaBox.getInstance();

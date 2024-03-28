@@ -91,16 +91,16 @@ public class Arm extends SubsystemBase {
     private int manual_ext;
 
     private Map<String, ArmStateValues> armStates = Map.of(
-            "Match Start", new ArmStateValues(Rotation2d.fromDegrees(60), 0),
+            "Match Start", new ArmStateValues(Rotation2d.fromDegrees(60 + 16), 0),
             "Home", defaultState,
-            "Intake", new ArmStateValues(Rotation2d.fromDegrees(2), 1),
-            "Speaker", new ArmStateValues(Rotation2d.fromDegrees(35), 0),
-            "lineSpeaker", new ArmStateValues(Rotation2d.fromDegrees(56), 0),
-            "longShot", new ArmStateValues(Rotation2d.fromDegrees(67.5), 0),
-            "Amp", new ArmStateValues(Rotation2d.fromDegrees(97.37), 1),
-            "Climb", new ArmStateValues(Rotation2d.fromDegrees(97.38), 0),
-            "AmpSideShoot", new ArmStateValues(Rotation2d.fromDegrees(47), 0),
-            "home", new ArmStateValues(Rotation2d.fromDegrees(18), 0)
+            "Intake", new ArmStateValues(Rotation2d.fromDegrees(15.5), 1),
+            "Speaker", new ArmStateValues(Rotation2d.fromDegrees(37 + 16), 0),
+            "lineSpeaker", new ArmStateValues(Rotation2d.fromDegrees(56 + 16), 0),
+            "longShot", new ArmStateValues(Rotation2d.fromDegrees(67.5 + 16), 0),
+            "Amp", new ArmStateValues(Rotation2d.fromDegrees(97.37 + 16), 1),
+            "Climb", new ArmStateValues(Rotation2d.fromDegrees(97.38 + 16), 0),
+            "AmpSideShoot", new ArmStateValues(Rotation2d.fromDegrees(47 + 16), 0),
+            "home", new ArmStateValues(Rotation2d.fromDegrees(18 + 16), 0)
             //"Climb Balance", new ArmStateValues(Rotation2d.fromDegrees(97.38), 0),
             //"Trap Score", new ArmStateValues(Rotation2d.fromDegrees(70), 2)
         );
@@ -518,9 +518,11 @@ public class Arm extends SubsystemBase {
         // Set soft limits
         if (absoluteArmEncoder.get() < Constants.upperEncLimit) {
             voltage = Math.min(0, voltage);
-        } else if (absoluteArmEncoder.get() > Constants.lowerEncLimit && getArmExtension() != 0) {
+        } else if (absoluteArmEncoder.get() > Constants.lowerEncLimit && getArmExtension() == 1) {
             voltage = Math.max(0, voltage);
         } else if (absoluteArmEncoder.get() > Constants.LowerEncLimitS0 && getArmExtension() == 0) {
+            voltage = Math.max(0, voltage);
+        } else if(absoluteArmEncoder.get() > Constants.lowerEncLimitS2 && getArmExtension() == 2){
             voltage = Math.max(0, voltage);
         }
 

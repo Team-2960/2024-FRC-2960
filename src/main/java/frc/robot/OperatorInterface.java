@@ -2,6 +2,7 @@ package frc.robot;
 
 import frc.robot.Auton.Commands.Drive.alignToPoint;
 import frc.robot.Auton.Commands.Drive.goToAngle;
+import frc.robot.Auton.Commands.Pizzabox.prepShootNote;
 import frc.robot.Util.FieldLayout;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Climber;
@@ -13,6 +14,7 @@ import frc.robot.subsystems.Climber.ClimberStates;
 import java.text.FieldPosition;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -159,21 +161,29 @@ public class OperatorInterface extends SubsystemBase {
         if (driverController.getRawButton(1)) {
             drive.setTargetAngle(Rotation2d.fromDegrees(-90));
         } else if (driverController.getRawButton(2)) {
-            //drive.setTargetPoint(FieldLayout.getSpeakerPose().getTranslation(), Rotation2d.fromDegrees(-90));
+            // drive.setTargetPoint(FieldLayout.getSpeakerPose().getTranslation(),
+            // Rotation2d.fromDegrees(-90));
         } else {
             drive.setAngleRate(rSpeed);
         }
 
-
         Climber climber = Climber.getInstance();
 
-        if(driverController.getRawButton(6)){
+        if (driverController.getPOV() == 0){
+            drive.presetPosition(new Pose2d(0.0, 0.0, new Rotation2d()));
+        }
+
+
+        if (driverController.getRawButton(6)) {
             IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT);
-        }else if (driverController.getRawButton(8)){
+        }
+        if (driverController.getRawButton(8)) {
             climber.setClimbState(ClimberStates.CLIMB);
-        }else if (driverController.getRawAxis(3)> .1){
+        }
+        if (driverController.getRawAxis(3) > .1) {
             IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.INTAKE);
         }
+        climber.setRatchet(driverController.getRawButton((5)));
 
         drive.setfieldRelative(fieldRelative);
         drive.setSpeed(xSpeed, ySpeed);
@@ -202,11 +212,10 @@ public class OperatorInterface extends SubsystemBase {
             arm.setState("Intake");
         } else if (operatorController.getPOV() == 90 && operatorController.getPOV() != 270) {
             arm.setState("longShot");
-        }else if(operatorController.getPOV()== 270 && operatorController.getPOV() != 90){
+        } else if (operatorController.getPOV() == 270 && operatorController.getPOV() != 90) {
             arm.setState("home");
         }
 
-        // TODO Map home preset
         // TODO Map Podium shot preset
 
         // Manual Arm Angle Control
@@ -249,8 +258,10 @@ public class OperatorInterface extends SubsystemBase {
         } else if (operatorController.getRawButton(5)) {
             intakePB.setState(IntakePizzaBox.PizzaboxState.INTAKE);
         } else if (operatorController.getRawAxis(2) > .2) {
-            
+
             intakePB.setState(IntakePizzaBox.PizzaboxState.REVERSE);
+        } else if (operatorController.getRawAxis(5) > .1) {
+            intakePB.setState(IntakePizzaBox.PizzaboxState.SHOOT_PREP);
         } else {
             intakePB.setState(IntakePizzaBox.PizzaboxState.IDLE);
         }
@@ -279,39 +290,42 @@ public class OperatorInterface extends SubsystemBase {
         double rumblePower = 0;
         IntakePizzaBox intakePB = IntakePizzaBox.getInstance();
         AddressableLEDBuffer ledColor = led_idle;
-        
+
         boolean isEndGame = DriverStation.isTeleop() && DriverStation.getMatchTime() <= 50;
 
-        // Rumble the controllers at half power for .5 seconds when a note is in the intake 
+        // Rumble the controllers at half power for .5 seconds when a note is in the
+        // intake
         if (intakePB.isNotePresent()) {
-            if(!lastIsNotePresent) {
+            if (!lastIsNotePresent) {
                 rumbleTimer.restart();
                 ledTimer.restart();
-            } 
+            }
 
-            if(rumbleTimer.get() < .5) rumblePower = .5;
+            if (rumbleTimer.get() < .5)
+                rumblePower = .5;
 
             ledColor = led_note;
-        } 
-        
-        // Rumble the controllers at full power for 1 second when the end game is about to start
-        if(isEndGame) {            
-            if(!lastIsEndGame) {
+        }
+
+        // Rumble the controllers at full power for 1 second when the end game is about
+        // to start
+        if (isEndGame) {
+            if (!lastIsEndGame) {
                 rumbleTimer.restart();
                 ledTimer.restart();
-            } 
+            }
 
-            //if(rumbleTimer.get() < 1) rumblePower = 1;TODO add this back later
+            // if(rumbleTimer.get() < 1) rumblePower = 1;TODO add this back later
 
             double ledTime = ledTimer.get();
-            if(ledTime < 1) {
-                if(ledTime % .2 < .1) {
+            if (ledTime < 1) {
+                if (ledTime % .2 < .1) {
                     ledColor = led_endgame1;
                 } else {
                     ledColor = led_endgame2;
                 }
             }
-        } 
+        }
 
         // Update controller rumble
         driverController.setRumble(RumbleType.kBothRumble, rumblePower);
@@ -325,9 +339,9 @@ public class OperatorInterface extends SubsystemBase {
         lastIsEndGame = isEndGame;
 
         // Update UI
-         sb_rumblePower.setDouble(rumblePower);
-         sb_rumbleTimer.setDouble(rumbleTimer.get());
-         sb_isEndGame.setBoolean(isEndGame);
+        sb_rumblePower.setDouble(rumblePower);
+        sb_rumbleTimer.setDouble(rumbleTimer.get());
+        sb_isEndGame.setBoolean(isEndGame);
     }
 
     /**
