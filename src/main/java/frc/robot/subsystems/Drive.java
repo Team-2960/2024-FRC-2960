@@ -340,7 +340,7 @@ public class Drive extends SubsystemBase {
         double minError = Math.min(Math.abs(error), Math.abs(compError));
 
         // Calculate ramp down speed
-        double speed = Math.min(minError / Constants.driveAngleRampDistance.getRadians(), 1) *Constants.maxAngularSpeed;
+        double speed = Math.min(minError / Constants.driveAngleRampDistance.getRadians(), 1) *Constants.maxAutoAngularSpeed;
 
         // Set direction
         double direction = error > 0 ? 1 : -1;
@@ -361,7 +361,7 @@ public class Drive extends SubsystemBase {
     private double calcRateToPoint(Translation2d point, Rotation2d offset) {
         Pose2d pose = getEstimatedPos();
         Translation2d targetOffset = point.minus(pose.getTranslation());
-        Rotation2d targetAngle = targetOffset.getAngle().plus(offset);
+        Rotation2d targetAngle = Rotation2d.fromDegrees(360).minus(targetOffset.getAngle().plus(offset));
 
         return calcRateToAngle(targetAngle, pose.getRotation());
     }
