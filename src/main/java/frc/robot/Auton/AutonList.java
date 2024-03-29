@@ -16,22 +16,12 @@ import frc.robot.Auton.Commands.Pizzabox.*;
 import frc.robot.Util.FieldLayout;
 
 public class AutonList {
-        /*
-         * public static final Command shootAndDrive = new SequentialCommandGroup(
-         * new setFieldRelative(true),
-         * new ParallelCommandGroup(
-         * new armToPreset("Speaker"),
-         * new prepShootNote()
-         * ),
-         * new shootNote(),
-         * new ParallelCommandGroup(
-         * new goToPosition(FieldLayout.getAutoClearX(), -2, 3, .1),
-         * new goToAngle(FieldLayout.getForwardAngle(), Rotation2d.fromDegrees(2)),
-         * new armToPreset("Home")
-         * )
-         * );
-         */
-
+        public static final Command autonPreamble = new SequentialCommandGroup(
+                        new intakeNote(),
+                        new ParallelCommandGroup(
+                                        new armToPreset("Speaker"),
+                                        new prepShootNote()),
+                        new shootFastNote());
         public static final Command sourceSideRed = new SequentialCommandGroup(
                         new setFieldPose(new Pose2d(0, 0, Rotation2d.fromDegrees(120))),
                         new setFieldRelative(false),
@@ -97,22 +87,17 @@ public class AutonList {
                         new setFieldRelative(true),
                         new setEnableCamera(true),
                         new setFieldPose(new Pose2d(6.53635, -1.443, Rotation2d.fromDegrees(180))),
-                        new intakeNote(),
-                        new ParallelCommandGroup(
-                                        new armToPreset("Speaker"),
-                                        new prepShootNote()),
-                        new shootNote(),
+                        autonPreamble,
                         new armToPreset("Intake"),
                         new ParallelRaceGroup(
-                                        new driveToTime(2, Rotation2d.fromDegrees(0), 3),
-                                        // new waitForAprilTag(),
-                                        new intakeNote()),
-                        // new ParallelRaceGroup(
-                        // new intakeNote(),
-                        // new goToPosition(FieldLayout.getNote(FieldLayout.NoteType.NEAR_SPEAKER), 2,
-                        // .5)
-                        // ),
+                                        new intakeNote(),
+                                        new goToPosition(FieldLayout.getNote(FieldLayout.NoteType.NEAR_SPEAKER), 1,
+                                                        .5),
+                                        new alignToPoint(FieldLayout.getNote(FieldLayout.NoteType.NEAR_SPEAKER),
+                                                        Rotation2d.fromDegrees(0), false)), //TODO have it align first
                         new ParallelCommandGroup(
+                                        new alignToPoint(FieldLayout.getSpeakerPose().getTranslation(),
+                                                        Rotation2d.fromDegrees(0), true),
                                         new armToPreset("AmpSideShoot"),
                                         new prepShootNote()),
                         new shootFastNote());
@@ -139,6 +124,13 @@ public class AutonList {
                                         new armToPreset("AmpSideShoot"),
                                         new prepShootNote()),
                         new shootFastNote());
+
+        public static final Command testAuton = new SequentialCommandGroup(
+                        new setFieldRelative(true),
+                        new setFieldPose(new Pose2d(0, 0, Rotation2d.fromDegrees(180))),
+                        new ParallelCommandGroup(
+                                        new goToPosition(-1, 0, 1, 0.1),
+                                        new goToAngle(Rotation2d.fromDegrees(180), Rotation2d.fromDegrees(1))));
 
         public static final Map<String, Map<Alliance, Command>> auton_list = Map.of(
                         // "Shoot and Drive", Map.of(
@@ -167,7 +159,7 @@ public class AutonList {
         }
 
         public static Optional<Command> getDefaultCommands() {
-                return Optional.ofNullable(sourceSideRed);
+                return Optional.ofNullable(middle2NoteRed);
 
         }
 }

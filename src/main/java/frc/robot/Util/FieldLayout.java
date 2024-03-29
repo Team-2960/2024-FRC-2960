@@ -2,6 +2,8 @@ package frc.robot.Util;
 
 import java.util.Map;
 
+import javax.sql.rowset.spi.TransactionalWriter;
+
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants;
@@ -171,6 +173,11 @@ public class FieldLayout {
         } else {
             return bNotes.get(note_type);
         }
+    }
+
+    public static Translation2d getNoteOffset(NoteType noteType, double x, double y){
+        var notePos = getNote(noteType);
+        return new Translation2d(notePos.getX() + x, notePos.getY() + y);
     }
 
     /**

@@ -13,11 +13,12 @@ public class alignToPoint extends Command {
     Translation2d targetPoint;
     Rotation2d offsetAngle;
     Rotation2d tolerance;
+    boolean enableFinished;
 
     Drive drive;
 
-    public alignToPoint(double x, double y, Rotation2d tolerance) {
-        this(new Translation2d(x, y), tolerance);
+    public alignToPoint(double x, double y, Rotation2d tolerance, boolean enableFinished) {
+        this(new Translation2d(x, y), tolerance, enableFinished);
     }
 
     /**
@@ -25,8 +26,8 @@ public class alignToPoint extends Command {
      * @param   targetPoint     Point for the robot to track
      * @param   tolerance       Angle tolerance on tracking the target
      */
-    public alignToPoint(Translation2d targetPoint, Rotation2d tolerance) {
-        this(targetPoint, new Rotation2d(), tolerance);
+    public alignToPoint(Translation2d targetPoint, Rotation2d tolerance, boolean enableFinished) {
+        this(targetPoint, new Rotation2d(), tolerance, enableFinished);
     }
 
     /**
@@ -35,10 +36,11 @@ public class alignToPoint extends Command {
      * @param   offsetAngle     Angle offset from target point
      * @param   tolerance       Angle tolerance on tracking the target
      */
-    public alignToPoint(Translation2d targetPoint, Rotation2d offsetAngle, Rotation2d tolerance) {
+    public alignToPoint(Translation2d targetPoint, Rotation2d offsetAngle, Rotation2d tolerance, boolean enableFinished) {
         this.targetPoint = targetPoint;
         this.offsetAngle = offsetAngle;
         this.tolerance = tolerance;
+        this.enableFinished = enableFinished;
 
         drive = Drive.getInstance();
     }
@@ -74,6 +76,6 @@ public class alignToPoint extends Command {
     @Override
     public boolean isFinished() {
         // Check if the robot is at the target angle
-        return Math.abs(getTargetError().getRadians()) < tolerance.getRadians();
+        return Math.abs(getTargetError().getRadians()) < tolerance.getRadians() && enableFinished;
     }
 }
