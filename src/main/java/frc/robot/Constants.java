@@ -150,7 +150,7 @@ public class Constants {
     public static final double intakeInVoltage = 8.3;
     public static final double intakeShootVoltage = 8.3;
     public static final double intakeOutVoltage = 8.3;
-    public static final double intakeSlowVoltage = 2;
+    public static final double intakeSlowVoltage = 4;
     public static final double intakeSlowCurrent = 20;
 
     public static final double shooterPrepPower = .75;    

@@ -6,6 +6,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
@@ -33,7 +34,8 @@ public class IntakePizzaBox extends SubsystemBase {
     private RelativeEncoder shootEncoder1;
     private RelativeEncoder shootEncoder2;
 
-    private DigitalInput photoeye;
+    private DigitalInput shooterPhotoeye;
+    private DigitalInput intakePhotoeye;
 
     private PizzaboxState state;
 
@@ -45,7 +47,9 @@ public class IntakePizzaBox extends SubsystemBase {
     private GenericEntry sb_intakeRollerVolt;
     private GenericEntry sb_intakeRollerCurrent;
     private GenericEntry sb_intakeRollerRate;
-    private GenericEntry sb_notePresent;
+    private GenericEntry sb_shooterNotePresent;
+    private GenericEntry sb_intakeNotePresent;
+
 
     /**
      * Constructor
@@ -53,7 +57,7 @@ public class IntakePizzaBox extends SubsystemBase {
     private IntakePizzaBox() {
         // Initialize Intake Motor
         intakeRollers = new TalonFX(Constants.intakeRollers);
-        intakeRollers.setInverted(true);
+        intakeRollers.setInverted(false);
 
         // Initialize Shooter Motors
         shooterTop = new CANSparkFlex(Constants.shooterTop, MotorType.kBrushless);
@@ -65,8 +69,9 @@ public class IntakePizzaBox extends SubsystemBase {
         shootEncoder1 = shooterTop.getEncoder();
         shootEncoder2 = shooterBot.getEncoder();
 
-        // Initialize photoeye
-        photoeye = new DigitalInput(3);
+        // Initialize shooterPhotoeye
+        shooterPhotoeye = new DigitalInput(3);
+        intakePhotoeye = new DigitalInput(5);
 
         // Initialize state
         state = PizzaboxState.IDLE;
@@ -83,7 +88,8 @@ public class IntakePizzaBox extends SubsystemBase {
         sb_shooterBotRate = layout.add("Shooter 2 Rate", 0).getEntry();
         sb_intakeRollerVolt = layout.add("Intake Roller Voltage", 0).getEntry();
         sb_intakeRollerRate = layout.add("Intake Roller Rate", 0).getEntry();
-        sb_notePresent = layout.add("Note Present", false).getEntry();
+        sb_shooterNotePresent = layout.add("Shooter Note Present", false).getEntry();
+        sb_intakeNotePresent = layout.add("Intake Note Present", false).getEntry();
         sb_intakeRollerCurrent = layout.add("Intake Roller Current", 0).getEntry();
 
     }
@@ -112,7 +118,11 @@ public class IntakePizzaBox extends SubsystemBase {
      * @return true if a gamepiece is present, false otherwise
      */
     public boolean isNotePresent() {
-        return photoeye.get();
+        return shooterPhotoeye.get();
+    }
+
+    public boolean isIntakeNotePresent(){
+        return intakePhotoeye.get();
     }
 
     /**
@@ -122,23 +132,15 @@ public class IntakePizzaBox extends SubsystemBase {
     public void periodic() {
         if (state == PizzaboxState.INTAKE) {
             // Check if a gamepiece is present
-            double getIntakeCurrent = intakeRollers.getTorqueCurrent().getValueAsDouble();
-            intakeRollers.setVoltage(Constants.intakeInVoltage);
-
             if (isNotePresent()) {
                 intakeRollers.setVoltage(0);
-            }else if (Math.abs(getIntakeCurrent) > Constants.intakeSlowCurrent) {
+                if(Arm.getInstance().getArmAngle().getDegrees() <= 10) Arm.getInstance().setState("home");
+            }else if (isIntakeNotePresent()) {
                 intakeRollers.setVoltage(Constants.intakeSlowVoltage);
             }else{
                 intakeRollers.setVoltage(Constants.intakeInVoltage);
             }
             
-
-            if (isNotePresent()) {
-                intakeRollers.setVoltage(0); // Stop intake if a gamepiece is present
-            } else {
-                intakeRollers.setVoltage(Constants.intakeInVoltage); // Run motor if no intake is present
-            }
         } else if (state == PizzaboxState.SHOOT_PREP) {
             shooterTop.set(Constants.shooterPrepPower); // Turn shooter to idle speed
         } else if (state == PizzaboxState.SHOOT) {
@@ -184,7 +186,8 @@ public class IntakePizzaBox extends SubsystemBase {
         sb_shooterBotRate.setDouble(shootEncoder2.getVelocity());
         sb_intakeRollerVolt.setDouble(intakeRollers.getMotorVoltage().getValueAsDouble());
         sb_intakeRollerRate.setDouble(intakeRollers.getVelocity().getValueAsDouble());
-        sb_notePresent.setBoolean(isNotePresent());
+        sb_shooterNotePresent.setBoolean(isNotePresent());
+        sb_intakeNotePresent.setBoolean(isIntakeNotePresent());
         sb_intakeRollerCurrent.setDouble(intakeRollers.getStatorCurrent().getValueAsDouble());
     }
 

@@ -568,6 +568,10 @@ public class Arm extends SubsystemBase {
             extenderTimer.restart();
     }
 
+    public ArmStateValues getState(){
+        return targetState;
+    }
+
     /**
      * Updates the brake mode control of the
      */

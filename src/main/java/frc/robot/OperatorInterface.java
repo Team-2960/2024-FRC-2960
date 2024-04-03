@@ -88,7 +88,7 @@ public class OperatorInterface extends SubsystemBase {
         led_endgame2 = new AddressableLEDBuffer(led_count);
 
         for (int i = 0; i < led_count; i++) {
-            led_idle.setRGB(i, 255, 255, 255);
+            led_idle.setRGB(i, 148, 148, 148);
             led_note.setRGB(i, 0, 0, 127);
 
             if (i % 2 == 0) {

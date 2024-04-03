@@ -125,6 +125,83 @@ public class AutonList {
                                         new prepShootNote()),
                         new shootFastNote());
 
+        public static final Command ampSide1NoteRed = new SequentialCommandGroup(
+                new setFieldRelative(true),
+                new setEnableCamera(true),
+                new setFieldPose(new Pose2d(7.6073 , -2.6622, Rotation2d.fromDegrees(120))),
+                new intakeNote(),
+                        new ParallelCommandGroup(
+                                        new armToPreset("Speaker"),
+                                        new prepShootNote()),
+                        new shootFastNote(),
+                new ParallelCommandGroup(
+                        new goToPosition(6, -2.5, 1, 0.2)
+                )
+        );
+
+        public static final Command sourceSide3NoteRed= new SequentialCommandGroup(
+                new setFieldRelative(true),
+                new setEnableCamera(true),
+                new setFieldPose(new Pose2d(0,0,Rotation2d.fromDegrees(180))),
+                new intakeNote(),
+                        new ParallelCommandGroup(
+                                        new armToPreset("Speaker"),
+                                        new prepShootNote()),
+                        new shootFastNote(),
+                new ParallelCommandGroup(
+                        new goToAngle(Rotation2d.fromDegrees(180), Rotation2d.fromDegrees(1)),
+                        new goToPosition(0, 0, 1, 0.2)
+                ),
+                new ParallelCommandGroup(
+                        new goToAngle(Rotation2d.fromDegrees(180), Rotation2d.fromDegrees(1)),
+                        new goToPosition(0, 0, 1, 0.2)
+                ),
+                new ParallelCommandGroup(
+                        new goToAngle(Rotation2d.fromDegrees(180), Rotation2d.fromDegrees(1)),
+                        new goToPosition(0, 0, 1, 0.2)
+                ),
+                new ParallelRaceGroup(
+                        new alignToPoint(FieldLayout.cNoteMid, Rotation2d.fromDegrees(0), false),
+                        new goToPosition(FieldLayout.cNoteMid, 1, 0),
+                        new intakeNote()
+                ),
+                new ParallelCommandGroup(
+                        new goToAngle(Rotation2d.fromDegrees(180), Rotation2d.fromDegrees(1)),
+                        new goToPosition(0, 0, 1, 0.2)
+                ),
+                new ParallelCommandGroup(
+                        new goToAngle(Rotation2d.fromDegrees(180), Rotation2d.fromDegrees(1)),
+                        new goToPosition(0, 0, 1, 0.2)
+                ),
+                new ParallelCommandGroup(
+                        new goToAngle(Rotation2d.fromDegrees(180), Rotation2d.fromDegrees(1)),
+                        new goToPosition(0, 0, 1, 0.2)
+                ),
+                new intakeNote(),
+                        new ParallelCommandGroup(
+                                        new armToPreset("Speaker"),
+                                        new prepShootNote()),
+                        new shootFastNote(),
+                new ParallelRaceGroup(
+                        new alignToPoint(FieldLayout.rNoteStage, Rotation2d.fromDegrees(0), false),
+                        new goToPosition(FieldLayout.rNoteStage, 1, 0),
+                        new intakeNote()
+                ),
+                new ParallelRaceGroup(
+                        new goToPosition(0, 0, 0, 0),
+                        new alignToPoint(FieldLayout.getSpeakerPose().getTranslation(), Rotation2d.fromDegrees(0), false)
+                ),
+                
+                new intakeNote(),
+                        new ParallelCommandGroup(
+                                        new armToPreset("Speaker"),
+                                        new prepShootNote()),
+                        new shootFastNote()
+
+                
+        );
+
+
         public static final Command testAuton = new SequentialCommandGroup(
                         new setFieldRelative(true),
                         new setFieldPose(new Pose2d(0, 0, Rotation2d.fromDegrees(180))),
@@ -159,7 +236,7 @@ public class AutonList {
         }
 
         public static Optional<Command> getDefaultCommands() {
-                return Optional.ofNullable(middle2NoteRed);
+                return Optional.ofNullable(ampSide1NoteRed);
 
         }
 }

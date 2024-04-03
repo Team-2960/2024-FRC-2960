@@ -90,7 +90,7 @@ public class Camera extends SubsystemBase {
             var poseUpdate = estPoseUpdate.get();
             var result = resultUpdate.getBestTarget();
 
-            if (resultUpdate.hasTargets() && Math.toDegrees(Math.abs(result.getBestCameraToTarget().getRotation().getZ())) > 165) {
+            if (resultUpdate.hasTargets() && Math.toDegrees(Math.abs(result.getBestCameraToTarget().getRotation().getZ())) > 172) {
                 double ts = poseUpdate.timestampSeconds;
                 //double angleFromAprilTag = photonPoseEstimator.get
                 //if (resultUpdate.hasTargets() && Math.toDegrees((Math.abs(result.getBestCameraToTarget().getRotation().getZ()))) > 165) { TODO
