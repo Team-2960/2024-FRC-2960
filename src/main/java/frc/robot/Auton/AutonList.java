@@ -5,6 +5,8 @@ import java.sql.Driver;
 import java.util.Map;
 import java.util.Optional;
 
+import com.pathplanner.lib.path.PathPlannerPath;
+
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -14,7 +16,8 @@ import frc.robot.Auton.Commands.Drive.*;
 import frc.robot.Auton.Commands.Arm.*;
 import frc.robot.Auton.Commands.Pizzabox.*;
 import frc.robot.Util.FieldLayout;
-
+import frc.robot.subsystems.Drive;
+/*
 public class AutonList {
         public static final Command autonPreamble = new SequentialCommandGroup(
                         new intakeNote(),
@@ -208,7 +211,10 @@ public class AutonList {
                         new ParallelCommandGroup(
                                         new goToPosition(-1, 0, 1, 0.1),
                                         new goToAngle(Rotation2d.fromDegrees(180), Rotation2d.fromDegrees(1))));
-
+        
+        public static final Command testAuton2 =
+                Drive.getInstance().followPathCommand("Example Path");
+       
         public static final Map<String, Map<Alliance, Command>> auton_list = Map.of(
                         // "Shoot and Drive", Map.of(
                         // Alliance.Red, shootAndDrive,
@@ -236,7 +242,8 @@ public class AutonList {
         }
 
         public static Optional<Command> getDefaultCommands() {
-                return Optional.ofNullable(ampSide1NoteRed);
+                return Optional.ofNullable(testAuton2);
 
         }
-}
+        
+}*/

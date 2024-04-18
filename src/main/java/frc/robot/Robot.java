@@ -11,7 +11,8 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Relay.Value;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Auton.AutonList;
+import frc.robot.Auton.RobotContainer;
+//import frc.robot.Auton.AutonList;
 import frc.robot.subsystems.*;
 
 /**
@@ -38,6 +39,8 @@ public class Robot extends TimedRobot {
     private Climber climber;
     private IntakePizzaBox intake;
     private Pneumatics pneumatics;
+    private RobotContainer robotContainer;
+    private Command autonomousCommand;
 
     @Override
     public void robotInit() {
@@ -48,9 +51,10 @@ public class Robot extends TimedRobot {
         climber = Climber.getInstance();
         intake = IntakePizzaBox.getInstance();
         pneumatics = Pneumatics.getInstance();
+        robotContainer = new RobotContainer();
 
-        //CameraServer.startAutomaticCapture();
-        autonCommand = AutonList.getDefaultCommands();
+        CameraServer.startAutomaticCapture();
+        //autonCommand = AutonList.getDefaultCommands();
 
         
 
@@ -64,17 +68,24 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-        if (autonCommand.isPresent()) autonCommand.get().schedule();
+        //if (autonCommand.isPresent()) autonCommand.get().schedule();
+        autonomousCommand = robotContainer.getAutonomousCommand();
+
+        if(autonomousCommand != null){
+            autonomousCommand.schedule();
+        }
     }
 
     @Override
     public void autonomousPeriodic() {
-
     }
 
     @Override
     public void teleopInit() {
         drive.ignoreCamera(false);
+        if (autonomousCommand != null) {
+            autonomousCommand.cancel();
+        }
     }
 
     @Override

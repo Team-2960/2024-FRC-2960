@@ -1,6 +1,10 @@
 package frc.robot;
 
 import edu.wpi.first.units.*;
+import edu.wpi.first.wpilibj2.command.PIDCommand;
+
+import com.pathplanner.lib.util.PIDConstants;
+
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.geometry.*;
 import frc.robot.Util.*;
@@ -88,9 +92,11 @@ public class Constants {
 
     // Drive
     public static PIDParam drivePID = new PIDParam(.5, 0.0, 0.0);
+    public static PIDConstants drivePIDConstants = new PIDConstants(.5, 0.0, 0.0);
     public static FFParam driveFF = FFParam.simpleMotor(0.0, 2.25, 0.0);
 
     public static PIDParam driveAngPID = new PIDParam(0.05, 0.0, 0.001);
+    public static PIDConstants driveAngPIDConstants = new PIDConstants(0.05, 0.0, 0.001);
     public static FFParam driveAngFF = FFParam.simpleMotor(0.1, 0.1, 0);
 
     public static final double maxSpeed = 4.5;

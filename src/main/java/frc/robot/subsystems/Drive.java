@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -7,14 +8,17 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveWheelPositions;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableValue;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
@@ -23,7 +27,15 @@ import edu.wpi.first.wpilibj.shuffleboard.WidgetType;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import java.sql.Driver;
+
 import com.kauailabs.navx.frc.AHRS;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.FollowPathHolonomic;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
 
 public class Drive extends SubsystemBase {
     public enum AngleControlMode {
@@ -56,7 +68,8 @@ public class Drive extends SubsystemBase {
     private Rotation2d targetAngle = new Rotation2d();
     private Translation2d targetPoint = new Translation2d();
     private AngleControlMode angleMode = AngleControlMode.AngleRate;
-    private boolean fieldRelative = true;
+    private boolean fieldRelative = false;
+    private ChassisSpeeds chassisSpeeds;
 
     private GenericEntry sb_posEstX;
     private GenericEntry sb_posEstY;
@@ -74,6 +87,8 @@ public class Drive extends SubsystemBase {
     private boolean ignoreCamera;
 
     private Field2d field2d;
+
+    public AutoBuilder autoBuilder;
 
     /**
      * Constructor
@@ -96,11 +111,12 @@ public class Drive extends SubsystemBase {
         
         // Initialize NavX
         navx = new AHRS(SPI.Port.kMXP);
-        navx.reset();
-
+        //navx.reset();
         targetSeen = false;
 
         field2d = new Field2d();
+
+        chassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, 0, navx.getRotation2d());
 
         // Initialize pose estimation
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
@@ -115,6 +131,31 @@ public class Drive extends SubsystemBase {
                 new Pose2d(),
                 VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
                 VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
+
+        //Setup PathPlanner
+        autoBuilder = new AutoBuilder();
+        autoBuilder.configureHolonomic(this::getEstimatedPos, 
+            this::presetPosition,
+            this::getChassisSpeeds,
+            this::pathPlannerKinematics, 
+            new HolonomicPathFollowerConfig(
+                    new PIDConstants(1, 0, 0), new PIDConstants(1, 0, 0), 
+                    Constants.maxSpeed, 
+                    0.4, 
+                    new ReplanningConfig()), 
+            () -> {
+              var alliance = DriverStation.getAlliance();
+              if (alliance.isPresent()) {
+                return alliance.get() == DriverStation.Alliance.Red;
+              }
+              return false;
+            }, 
+            this
+            
+        );
+    
+
+        
 
         // Setup Shuffleboard
         var pose_layout = Shuffleboard.getTab("Drive")
@@ -216,6 +257,15 @@ public class Drive extends SubsystemBase {
         return swerveDrivePoseEstimator.getEstimatedPosition();
     }
 
+    public ChassisSpeeds getChassisSpeeds(){
+        return kinematics.toChassisSpeeds(new SwerveModuleState[] {
+                        frontLeft.getState(),
+                        frontRight.getState(),
+                        backLeft.getState(),
+                        backRight.getState()
+                });
+    }
+
     /**
      * Sets a new vision pose update
      * 
@@ -224,9 +274,9 @@ public class Drive extends SubsystemBase {
      */
     public void setVisionPose(Pose2d pose, double timeStamp) {
         // TODO Adjust standard deviations based on distance from target
-        if(!ignoreCamera){
-        swerveDrivePoseEstimator.addVisionMeasurement(pose, timeStamp);
-        targetSeen = true;
+        if (!ignoreCamera) {
+            swerveDrivePoseEstimator.addVisionMeasurement(pose, timeStamp);
+            targetSeen = true;
         }
     }
 
@@ -239,10 +289,16 @@ public class Drive extends SubsystemBase {
      */
     @Override
     public void periodic() {
+        if(DriverStation.isAutonomous()){
+            fieldRelative = false;
+        }else if(DriverStation.isTeleop()){
+            fieldRelative = true;
+        }
         update_kinematics();
         update_odometry();
         updateUI();
     }
+
 
     /**
      * Updates the robot swerve kinematics
@@ -253,7 +309,7 @@ public class Drive extends SubsystemBase {
         double xSpeed = this.xSpeed;
         double ySpeed = this.ySpeed;
 
-        if(targetSeen && fieldRelative){
+        if (targetSeen && fieldRelative) {
             xSpeed *= -1;
             ySpeed *= -1;
         }
@@ -265,7 +321,7 @@ public class Drive extends SubsystemBase {
             Rotation2d fieldAngle = Rotation2d.fromDegrees(360).minus(robot_pose.getRotation());
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rSpeed, fieldAngle);
         } else {
-            speeds = new ChassisSpeeds(xSpeed, ySpeed, rSpeed);
+            speeds = chassisSpeeds;
         }
 
         speeds = ChassisSpeeds.discretize(speeds, Constants.updatePeriod);
@@ -280,6 +336,23 @@ public class Drive extends SubsystemBase {
         frontRight.setDesiredState(swerveModuleStates[1]);
         backLeft.setDesiredState(swerveModuleStates[2]);
         backRight.setDesiredState(swerveModuleStates[3]);
+    }
+
+   /*  private void pathPlannerKinematics(ChassisSpeeds chassisSpeeds){
+        this.xSpeed = chassisSpeeds.vxMetersPerSecond;
+        this.ySpeed = chassisSpeeds.vyMetersPerSecond;
+        ChassisSpeeds targetSpeeds = ChassisSpeeds.discretize(chassisSpeeds, Constants.updatePeriod);
+        SwerveModuleState[] targetStates = kinematics.toSwerveModuleStates(targetSpeeds);
+        SwerveDriveKinematics.desaturateWheelSpeeds(targetStates, Constants.maxSpeed);
+        frontLeft.setDesiredState(targetStates[0]);
+        frontRight.setDesiredState(targetStates[1]);
+        backLeft.setDesiredState(targetStates[2]);
+        backRight.setDesiredState(targetStates[3]);
+    }
+    */
+    
+    private void pathPlannerKinematics(ChassisSpeeds chassisSpeeds){
+        this.chassisSpeeds = chassisSpeeds;
     }
 
     /**
@@ -340,12 +413,14 @@ public class Drive extends SubsystemBase {
         double minError = Math.min(Math.abs(error), Math.abs(compError));
 
         // Calculate ramp down speed
-        double speed = Math.min(minError / Constants.driveAngleRampDistance.getRadians(), 1) *Constants.maxAutoAngularSpeed;
+        double speed = Math.min(minError / Constants.driveAngleRampDistance.getRadians(), 1)
+                * Constants.maxAutoAngularSpeed;
 
         // Set direction
         double direction = error > 0 ? 1 : -1;
-        
-        if (minError == compError)  direction *= -1;
+
+        if (minError == compError)
+            direction *= -1;
 
         speed *= direction;
 
@@ -366,7 +441,6 @@ public class Drive extends SubsystemBase {
         return calcRateToAngle(targetAngle, pose.getRotation());
     }
 
-
     private void updateUI() {
         Pose2d pose = getEstimatedPos();
         sb_posEstX.setDouble(pose.getX());
@@ -380,23 +454,52 @@ public class Drive extends SubsystemBase {
         field2d.setRobotPose(swerveDrivePoseEstimator.getEstimatedPosition());
     }
 
-    public void ignoreCamera(boolean ignore){
+    public void ignoreCamera(boolean ignore) {
         this.ignoreCamera = ignore;
     }
 
-    public void presetPosition(Pose2d pose2d){
+    public void presetPosition(Pose2d pose2d) {
         swerveDrivePoseEstimator.resetPosition(
-            navx.getRotation2d(),
-            new SwerveModulePosition[] {
-                frontLeft.getPosition(),
-                frontRight.getPosition(),
-                backLeft.getPosition(),
-                backRight.getPosition()
-                }, 
-            pose2d
-            );
+                navx.getRotation2d(),
+                new SwerveModulePosition[] {
+                        frontLeft.getPosition(),
+                        frontRight.getPosition(),
+                        backLeft.getPosition(),
+                        backRight.getPosition()
+                },
+                pose2d);
         targetSeen = false;
     }
+
+    public Command followPathCommand(String pathName) {
+    PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
+
+    return new FollowPathHolonomic(
+            path,
+            this::getEstimatedPos, // Robot pose supplier
+            this::getChassisSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+            this::pathPlannerKinematics, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds
+            new HolonomicPathFollowerConfig( // HolonomicPathFollowerConfig, this should likely live in your Constants class
+                    Constants.drivePIDConstants, // Translation PID constants
+                    Constants.driveAngPIDConstants, // Rotation PID constants
+                    Constants.maxSpeed, // Max module speed, in m/s
+                    0.4, // Drive base radius in meters. Distance from robot center to furthest module.
+                    new ReplanningConfig() // Default path replanning config. See the API for the options here
+            ),
+            () -> {
+              // Boolean supplier that controls when the path will be mirrored for the red alliance
+              // This will flip the path being followed to the red side of the field.
+              // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+              var alliance = DriverStation.getAlliance();
+              if (alliance.isPresent()) {
+                return alliance.get() == DriverStation.Alliance.Red;
+              }
+              return false;
+            },
+            this // Reference to this subsystem to set requirements
+    );
+  }
 
     /**
      * Static Initializer
