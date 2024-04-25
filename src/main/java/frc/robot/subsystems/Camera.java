@@ -83,7 +83,6 @@ public class Camera extends SubsystemBase {
     private void updatePose() {
         var estPoseUpdate = photonPoseEstimator.update();
         var resultUpdate = camera.getLatestResult();
-
         // Check if an AprilTag is visible
         if (estPoseUpdate.isPresent()) {
             // Retrieve pose update
@@ -98,7 +97,7 @@ public class Camera extends SubsystemBase {
                     //.transformBy(Constants.fieldCenterOffset);
                     //if (poseUpdate.estimatedPose.toPose2d().getRotation().getDegrees() > 0)
 
-                        lastPose = new Pose2d(new Translation2d(lastPose.getX()-Constants.fieldCenterOffset.getX(), -lastPose.getY()+Constants.fieldCenterOffset.getY()),
+                        lastPose = new Pose2d(new Translation2d(lastPose.getX(), lastPose.getY()),
                                 lastPose.getRotation());
 
                     // Update drivetrain pose estimation

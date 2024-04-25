@@ -128,6 +128,7 @@ public class OperatorInterface extends SubsystemBase {
         sb_isEndGame = rumble_layout.add("Is End Game", false).getEntry();
 
         
+        
     }
     
 
@@ -159,10 +160,9 @@ public class OperatorInterface extends SubsystemBase {
         var alliance = DriverStation.getAlliance();
         double alliance_dir = alliance.isPresent() && alliance.get() == Alliance.Red ? 1 : -1;
 
-        double xSpeed = -MathUtil.applyDeadband(driverController.getRawAxis(1), 0.05) * maxSpeed * alliance_dir;
+        double xSpeed = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.05) * maxSpeed * alliance_dir;
         double ySpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.05) * maxSpeed * alliance_dir;
-        double rSpeed = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.05) * maxAngleRate;
-
+        double rSpeed = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.05) * maxAngleRate * -1;
         if (driverController.getRawButton(1)) {
             drive.setTargetAngle(Rotation2d.fromDegrees(-90));
         } else if (driverController.getRawButton(2)) {

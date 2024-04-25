@@ -3,7 +3,8 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -17,7 +18,10 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableValue;
+import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
@@ -36,6 +40,8 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 
 public class Drive extends SubsystemBase {
     public enum AngleControlMode {
@@ -71,6 +77,7 @@ public class Drive extends SubsystemBase {
     private boolean fieldRelative = false;
     private ChassisSpeeds chassisSpeeds;
 
+    //Shuffleboard
     private GenericEntry sb_posEstX;
     private GenericEntry sb_posEstY;
     private GenericEntry sb_posEstR;
@@ -88,17 +95,28 @@ public class Drive extends SubsystemBase {
 
     private Field2d field2d;
 
+    //PathPlanner
     public AutoBuilder autoBuilder;
+
+    //AdvantageScope
+    private final SwerveDrivePoseEstimator odometeryPoseEstimator;
+    private SwerveModuleState[] swerveModuleStates;
+    private StructPublisher<Pose2d> odometryPose;
+    private StructPublisher<Pose2d> visionPose;
+    private StructArrayPublisher<Pose2d> arrayPose;
+    private StructArrayPublisher<SwerveModuleState> swerveModules;
+
+
 
     /**
      * Constructor
      */
     private Drive() {
         // Set swerve drive positions
-        frontLeftLocation = new Translation2d((Constants.robotLength/2 - Constants.wheelInset), -(Constants.robotWidth/2 - Constants.wheelInset));
-        frontRightLocation = new Translation2d((Constants.robotLength/2 - Constants.wheelInset), (Constants.robotWidth/2 - Constants.wheelInset));
-        backLeftLocation = new Translation2d(-(Constants.robotLength/2 - Constants.wheelInset), -(Constants.robotWidth/2 - Constants.wheelInset));
-        backRightLocation = new Translation2d(-(Constants.robotLength/2 - Constants.wheelInset), (Constants.robotWidth/2 - Constants.wheelInset));
+        frontLeftLocation = new Translation2d((Constants.robotLength/2 - Constants.wheelInset), (Constants.robotWidth/2 - Constants.wheelInset));
+        frontRightLocation = new Translation2d((Constants.robotLength/2 - Constants.wheelInset), -(Constants.robotWidth/2 - Constants.wheelInset));
+        backLeftLocation = new Translation2d(-(Constants.robotLength/2 - Constants.wheelInset), (Constants.robotWidth/2 - Constants.wheelInset));
+        backRightLocation = new Translation2d(-(Constants.robotLength/2 - Constants.wheelInset), -(Constants.robotWidth/2 - Constants.wheelInset));
 
         // Initialize Swerve Kinematics
         kinematics = new SwerveDriveKinematics(
@@ -111,12 +129,12 @@ public class Drive extends SubsystemBase {
         
         // Initialize NavX
         navx = new AHRS(SPI.Port.kMXP);
-        //navx.reset();
+        navx.reset();
         targetSeen = false;
 
         field2d = new Field2d();
 
-        chassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, 0, navx.getRotation2d());
+        chassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, 0, new Rotation2d());
 
         // Initialize pose estimation
         swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(
@@ -154,9 +172,35 @@ public class Drive extends SubsystemBase {
             
         );
     
-
         
+        //Using AdvantageScope
+        swerveModuleStates = new SwerveModuleState[]{
+            frontLeft.getState(),
+            frontRight.getState(),
+            backLeft.getState(),
+            backRight.getState()
+        };
+        odometeryPoseEstimator = new SwerveDrivePoseEstimator(kinematics,
+                navx.getRotation2d(),
+                new SwerveModulePosition[] {
+                        frontLeft.getPosition(),
+                        frontRight.getPosition(),
+                        backLeft.getPosition(),
+                        backRight.getPosition()
+                },
+                new Pose2d(),
+                VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
+                VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
 
+        odometryPose = NetworkTableInstance.getDefault()
+            .getStructTopic("Odometry Pose", Pose2d.struct).publish();
+        visionPose = NetworkTableInstance.getDefault()
+            .getStructTopic("Vision Pose", Pose2d.struct).publish();
+        arrayPose = NetworkTableInstance.getDefault()
+            .getStructArrayTopic("Pose Array", Pose2d.struct).publish();
+        swerveModules = NetworkTableInstance.getDefault()
+            .getStructArrayTopic("Swerve States", SwerveModuleState.struct).publish();
+        
         // Setup Shuffleboard
         var pose_layout = Shuffleboard.getTab("Drive")
             .getLayout("Drive Pose", BuiltInLayouts.kList)
@@ -173,10 +217,9 @@ public class Drive extends SubsystemBase {
 
         sb_field2d = Shuffleboard.getTab("Drive").add(field2d).withWidget("Field");
 
-        
     }
 
-    /**
+    /*
      * Sets field relative mode
      * 
      * @param enable true to enable field relative mode, false to disable. (Default:
@@ -279,7 +322,7 @@ public class Drive extends SubsystemBase {
             targetSeen = true;
         }
     }
-
+        
     public boolean getTargetSeen() {
         return targetSeen;
     }
@@ -297,6 +340,7 @@ public class Drive extends SubsystemBase {
         update_kinematics();
         update_odometry();
         updateUI();
+        updateScope();
     }
 
 
@@ -309,16 +353,16 @@ public class Drive extends SubsystemBase {
         double xSpeed = this.xSpeed;
         double ySpeed = this.ySpeed;
 
-        if (targetSeen && fieldRelative) {
+        /*if (targetSeen && fieldRelative) {
             xSpeed *= -1;
             ySpeed *= -1;
-        }
+        }*/
 
         rSpeed = getAngleRate();
 
         if (fieldRelative) {
             Pose2d robot_pose = getEstimatedPos();
-            Rotation2d fieldAngle = Rotation2d.fromDegrees(360).minus(robot_pose.getRotation());
+            Rotation2d fieldAngle = robot_pose.getRotation();
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rSpeed, fieldAngle);
         } else {
             speeds = chassisSpeeds;
@@ -452,6 +496,21 @@ public class Drive extends SubsystemBase {
         sb_speedR.setDouble(rSpeed);
 
         field2d.setRobotPose(swerveDrivePoseEstimator.getEstimatedPosition());
+    }
+
+    private void updateScope(){
+        odometryPose.set(odometeryPoseEstimator.getEstimatedPosition());
+        visionPose.set(swerveDrivePoseEstimator.getEstimatedPosition());
+        arrayPose.set(new Pose2d[]{
+            odometeryPoseEstimator.getEstimatedPosition(),
+            swerveDrivePoseEstimator.getEstimatedPosition()
+        });
+        swerveModules.set(new SwerveModuleState[]{
+            frontLeft.getState(),
+            frontRight.getState(),
+            backLeft.getState(),
+            backRight.getState()
+        });
     }
 
     public void ignoreCamera(boolean ignore) {

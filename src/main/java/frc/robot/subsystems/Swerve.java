@@ -49,9 +49,11 @@ public class Swerve extends SubsystemBase {
         mDrive.setInverted(invertDrive);
         swerveAngleOffset = swerveOffset;
         mAngle = new CANSparkMax(angleMotorID, MotorType.kBrushless);
+        mAngle.setInverted(true);
 
         // Initialize Angle Sensor
         encAngle = mAngle.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
+        encAngle.setInverted(true);
 
         // Initialize Drive rate controllers
         drivePIDcontroller = new PIDController(Constants.drivePID.kP, Constants.drivePID.kI,

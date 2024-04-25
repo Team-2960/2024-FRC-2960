@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 1.8893943242431936,
-      "y": 5.597247558131481
+      "x": 2.014155870887771,
+      "y": 6.0
     },
-    "rotation": 0.0
+    "rotation": 0
   },
   "command": {
     "type": "sequential",
@@ -14,7 +14,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Example Path"
+            "pathName": "Test Path"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "armIntake"
           }
         }
       ]
