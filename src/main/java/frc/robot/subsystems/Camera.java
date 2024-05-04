@@ -14,6 +14,8 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
@@ -37,6 +39,9 @@ public class Camera extends SubsystemBase {
     private GenericEntry sb_PoseR;
     private GenericEntry sb_lastTimestamp;
     private GenericEntry sb_lastUpdatePeriod;
+
+    //Advantage Scope
+    private StructPublisher<Pose2d> visionPose;
 
     /**
      * Constructor
@@ -65,7 +70,10 @@ public class Camera extends SubsystemBase {
         sb_PoseR = layout.add("Pose R", 0).getEntry();
         sb_lastTimestamp = layout.add("Last Timestamp", lastTimeStamp).getEntry();
         sb_lastUpdatePeriod = layout.add("Time Since Last Update", 0).getEntry();
-
+        
+        //AdvantageScope
+        visionPose = NetworkTableInstance.getDefault()
+            .getStructTopic("Vision Pose", Pose2d.struct).publish();
     }
 
     /**
@@ -127,6 +135,8 @@ public class Camera extends SubsystemBase {
         sb_lastTimestamp.setDouble(lastTimeStamp);
         sb_lastUpdatePeriod.setDouble(Timer.getFPGATimestamp() - lastTimeStamp);
 
+        //AdvantageScope
+        visionPose.set(lastPose);
     }
 
     /**

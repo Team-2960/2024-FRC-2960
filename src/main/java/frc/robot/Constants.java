@@ -110,6 +110,7 @@ public class Constants {
     public static final double maxSwerveAngularAccel = Math.PI * 10;    //Rad per second ^ 2
 
     public static final Rotation2d driveAngleRampDistance = Rotation2d.fromDegrees(20);
+    public static final PIDParam angleAlignPID = new PIDParam(4, 0, 0.3);
 
     // Arm
     public static PIDParam armPIDS0 = new PIDParam(0.01, 0.0, 0.0);
@@ -145,6 +146,12 @@ public class Constants {
     public static final Rotation2d armEncAngleOffset = Rotation2d.fromDegrees(168.5);
 
     public static final double armOffset = 0;
+
+    public static final double armAlignAngleOffset = 0;
+
+    public static final double armLength = 0.58;
+
+    public static final double armHeightOffset = 0.26;
 
     // STAGE1 SOFT LIMIT RANGE 46 - 78.1
     public static final double lowerEncLimit = .449;

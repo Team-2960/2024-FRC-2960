@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import frc.robot.Constants;
+import frc.robot.Util.FieldLayout;
 
 import java.util.Map;
 
@@ -91,15 +92,15 @@ public class Arm extends SubsystemBase {
     private int manual_ext;
 
     private Map<String, ArmStateValues> armStates = Map.of(
-            "Match Start", new ArmStateValues(Rotation2d.fromDegrees(60 + Constants.armOffset), 0),
+            "Match Start", new ArmStateValues(Rotation2d.fromDegrees(60), 0),
             "Home", defaultState,
             "Intake", new ArmStateValues(Rotation2d.fromDegrees(7), 1),
             "Speaker", new ArmStateValues(Rotation2d.fromDegrees(46), 0),
             "lineSpeaker", new ArmStateValues(Rotation2d.fromDegrees(56), 0),
-            "longShot", new ArmStateValues(Rotation2d.fromDegrees(67.5 + Constants.armOffset), 0),
+            "longShot", new ArmStateValues(Rotation2d.fromDegrees(67.5), 0),
             "Amp", new ArmStateValues(Rotation2d.fromDegrees(102), 1),
-            "Climb", new ArmStateValues(Rotation2d.fromDegrees(97.38 + Constants.armOffset), 0),
-            "AmpSideShoot", new ArmStateValues(Rotation2d.fromDegrees(47 + Constants.armOffset), 0),
+            "Climb", new ArmStateValues(Rotation2d.fromDegrees(97.38), 0),
+            "AmpSideShoot", new ArmStateValues(Rotation2d.fromDegrees(47), 0),
             "home", new ArmStateValues(Rotation2d.fromDegrees(23), 0)
             //"Climb Balance", new ArmStateValues(Rotation2d.fromDegrees(97.38), 0),
             //"Trap Score", new ArmStateValues(Rotation2d.fromDegrees(70), 2)
@@ -531,6 +532,22 @@ public class Arm extends SubsystemBase {
         settings.EnableFOC = true;
         armMotor1.setControl(settings);
         armMotor2.setControl(settings);
+    }
+
+    public void armAutoAlign(){
+        Drive drive = Drive.getInstance();
+        double distance = Math.abs(FieldLayout.getSpeakerPose().getX() - drive.getEstimatedPos().getX()) + 
+            (Math.cos(getArmAngle().getRadians()) * Constants.armLength ) + 0.23;
+        double height =  FieldLayout.stageHeight - (Constants.armHeightOffset + (Math.sin(getArmAngle().getRadians()) * Constants.armLength));
+        double desiredAngle = 90 - Math.toDegrees(Math.atan2(height, distance));
+        control_mode = ArmControlMode.AUTOMATIC;
+        if(desiredAngle < 23){
+            desiredAngle = 23;
+        }else if(desiredAngle > 100 ){
+            desiredAngle = 100;
+        }
+        new Rotation2d();
+        this.targetState = new ArmStateValues(Rotation2d.fromDegrees(desiredAngle), 0);
     }
 
     /**

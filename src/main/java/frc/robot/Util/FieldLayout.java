@@ -26,19 +26,20 @@ public class FieldLayout {
         FAR_AMP2
     }
 
-    public static final Pose2d rSpeaker = new Pose2d(8.308, -1.443, Rotation2d.fromDegrees(180));
-    public static final Pose2d bSpeaker = new Pose2d(-8.309, -1.443, Rotation2d.fromDegrees(0));
+    public static final Pose2d rSpeaker = new Pose2d(8.308, -1.443, Rotation2d.fromDegrees(180)).transformBy(Constants.fieldCenterOffset);
+    public static final Pose2d bSpeaker = new Pose2d(-8.309, -1.443, Rotation2d.fromDegrees(0)).transformBy(Constants.fieldCenterOffset);
 
-    public static final Pose2d rAmp = new Pose2d(6.430, -4.099, Rotation2d.fromDegrees(270));
-    public static final Pose2d bAmp = new Pose2d(-6.430, -4.099, Rotation2d.fromDegrees(270));
+    public static final Pose2d rAmp = new Pose2d(6.430, -4.099, Rotation2d.fromDegrees(270)).transformBy(Constants.fieldCenterOffset);
+    public static final Pose2d bAmp = new Pose2d(-6.430, -4.099, Rotation2d.fromDegrees(270)).transformBy(Constants.fieldCenterOffset);
 
-    public static final Pose2d rStageAmp = new Pose2d(3.634, -0.393, Rotation2d.fromDegrees(60));
-    public static final Pose2d rStageSource = new Pose2d(3.634, 0.392, Rotation2d.fromDegrees(300));
-    public static final Pose2d rStageFar = new Pose2d(2.949, 0.000, Rotation2d.fromDegrees(180));
+    public static final Pose2d rStageAmp = new Pose2d(3.634, -0.393, Rotation2d.fromDegrees(60)).transformBy(Constants.fieldCenterOffset);
+    public static final Pose2d rStageSource = new Pose2d(3.634, 0.392, Rotation2d.fromDegrees(300)).transformBy(Constants.fieldCenterOffset);
+    public static final Pose2d rStageFar = new Pose2d(2.949, 0.000, Rotation2d.fromDegrees(180)).transformBy(Constants.fieldCenterOffset);
 
-    public static final Pose2d bStageAmp = new Pose2d(-3.634, -0.393, Rotation2d.fromDegrees(120));
-    public static final Pose2d bStageSource = new Pose2d(-3.634, 0.392, Rotation2d.fromDegrees(240));
-    public static final Pose2d bStageFar = new Pose2d(-2.949, 0.000, Rotation2d.fromDegrees(0));
+    public static final Pose2d bStageAmp = new Pose2d(-3.634, -0.393, Rotation2d.fromDegrees(120)).transformBy(Constants.fieldCenterOffset);
+    public static final Pose2d bStageSource = new Pose2d(-3.634, 0.392, Rotation2d.fromDegrees(240)).transformBy(Constants.fieldCenterOffset);
+    public static final Pose2d bStageFar = new Pose2d(-2.949, 0.000, Rotation2d.fromDegrees(0)).transformBy(Constants.fieldCenterOffset);
+    public static final double stageHeight = 1.98; //In meters
 
     public static final Map<StageFace, Pose2d> rStage = Map.of(
             StageFace.AMP, rStageAmp,
@@ -50,19 +51,19 @@ public class FieldLayout {
             StageFace.SOURCE, bStageSource,
             StageFace.FAR, bStageFar);
 
-    public static final Translation2d rNoteStage = new Translation2d(5.185, 0.000);
-    public static final Translation2d rNoteSpeaker = new Translation2d(5.185, -1.397);
-    public static final Translation2d rNoteAmp = new Translation2d(5.185, -2.793);
+    public static final Translation2d rNoteStage = new Translation2d(5.185, 0.000).plus(Constants.fieldCenterOffset.getTranslation());
+    public static final Translation2d rNoteSpeaker = new Translation2d(5.185, -1.397).plus(Constants.fieldCenterOffset.getTranslation());
+    public static final Translation2d rNoteAmp = new Translation2d(5.185, -2.793).plus(Constants.fieldCenterOffset.getTranslation());
 
-    public static final Translation2d bNoteStage = new Translation2d(-5.185, 0.000);
-    public static final Translation2d bNoteSpeaker = new Translation2d(-5.185, -1.397);
-    public static final Translation2d bNoteAmp = new Translation2d(-5.185, -2.793);
+    public static final Translation2d bNoteStage = new Translation2d(-5.185, 0.000).plus(Constants.fieldCenterOffset.getTranslation());
+    public static final Translation2d bNoteSpeaker = new Translation2d(-5.185, -1.397).plus(Constants.fieldCenterOffset.getTranslation());
+    public static final Translation2d bNoteAmp = new Translation2d(-5.185, -2.793).plus(Constants.fieldCenterOffset.getTranslation());
 
-    public static final Translation2d cNoteSource2 = new Translation2d(0.000, 3.234);
-    public static final Translation2d cNoteSource1 = new Translation2d(0.000, 3.234);
-    public static final Translation2d cNoteMid = new Translation2d(0.000, 3.234);
-    public static final Translation2d cNoteAmp1 = new Translation2d(0.000, 3.234);
-    public static final Translation2d cNoteAmp2 = new Translation2d(0.000, 3.234);
+    public static final Translation2d cNoteSource2 = new Translation2d(0.000, 3.234).plus(Constants.fieldCenterOffset.getTranslation());
+    public static final Translation2d cNoteSource1 = new Translation2d(0.000, 3.234).plus(Constants.fieldCenterOffset.getTranslation());
+    public static final Translation2d cNoteMid = new Translation2d(0.000, 3.234).plus(Constants.fieldCenterOffset.getTranslation());
+    public static final Translation2d cNoteAmp1 = new Translation2d(0.000, 3.234).plus(Constants.fieldCenterOffset.getTranslation());
+    public static final Translation2d cNoteAmp2 = new Translation2d(0.000, 3.234).plus(Constants.fieldCenterOffset.getTranslation());
 
     public static final Map<NoteType, Translation2d> rNotes = Map.of(
             NoteType.NEAR_STAGE, rNoteStage,
@@ -84,11 +85,11 @@ public class FieldLayout {
             NoteType.FAR_AMP1, cNoteAmp1,
             NoteType.FAR_AMP2, cNoteAmp2);
 
-    public static final double rAutoLineX = 6.137; // Meters
-    public static final double bAutoLineX = -6.137; // Meters
+    public static final double rAutoLineX = 6.137 + Constants.fieldCenterOffset.getX(); // Meters
+    public static final double bAutoLineX = -6.137 + Constants.fieldCenterOffset.getX(); // Meters
 
-    public static final double rWingLineX = 2.338; // Meters
-    public static final double bWingLineX = -2.338; // Meters
+    public static final double rWingLineX = 2.338 + Constants.fieldCenterOffset.getX(); // Meters
+    public static final double bWingLineX = -2.338 + Constants.fieldCenterOffset.getX(); // Meters
 
     /**
      * Gets the pose of the speaker for the current alliance

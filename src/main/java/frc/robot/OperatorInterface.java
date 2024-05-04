@@ -1,25 +1,17 @@
 package frc.robot;
 
-import frc.robot.Auton.Commands.Drive.alignToPoint;
-import frc.robot.Auton.Commands.Drive.goToAngle;
-import frc.robot.Auton.Commands.Pizzabox.prepShootNote;
 import frc.robot.Util.FieldLayout;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.IntakePizzaBox;
-import frc.robot.subsystems.Arm.ArmControlMode;
 import frc.robot.subsystems.Climber.ClimberStates;
-
-import java.text.FieldPosition;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.DriverStation.MatchType;
@@ -166,7 +158,7 @@ public class OperatorInterface extends SubsystemBase {
         if (driverController.getRawButton(1)) {
             drive.setTargetAngle(Rotation2d.fromDegrees(-90));
         } else if (driverController.getRawButton(2)) {
-            drive.setTargetPoint(new Translation2d(0,0), Rotation2d.fromDegrees(0));
+            drive.setTargetPoint(FieldLayout.getSpeakerPose().getTranslation(), FieldLayout.getSpeakerPose().getRotation());
         } else if (driverController.getRawButton(3)){
             drive.setTargetPoint(FieldLayout.getSpeakerPose().getTranslation(), Rotation2d.fromDegrees(180));
         } else {
@@ -189,6 +181,8 @@ public class OperatorInterface extends SubsystemBase {
         if (driverController.getRawAxis(3) > .1) {
             IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.INTAKE);
         }
+
+        
         climber.setRatchet(driverController.getRawButton((5)));
 
         drive.setfieldRelative(fieldRelative);
@@ -217,7 +211,7 @@ public class OperatorInterface extends SubsystemBase {
         } else if (operatorController.getRawButton(4)) {
             arm.setState("Intake");
         } else if (operatorController.getPOV() == 90 && operatorController.getPOV() != 270) {
-            arm.setState("longShot");
+            arm.armAutoAlign();
         } else if (operatorController.getPOV() == 270 && operatorController.getPOV() != 90) {
             arm.setState("home");
         }
