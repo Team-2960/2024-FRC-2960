@@ -149,7 +149,7 @@ public class Constants {
 
     public static final double armAlignAngleOffset = 0;
 
-    public static final double armLength = 0.58;
+    public static final double armLength = 0.4953;
 
     public static final double armHeightOffset = 0.26;
 
@@ -169,8 +169,8 @@ public class Constants {
     public static final double shooterPrepPower = .75;    
     public static final double shooterShootVoltage = 10.8;
     public static final double shooterRevVoltage = 10.8;
-    public static final double shooterMinShootSpeed = 3000 ;     // rpm
-    public static final double shooterFastShootSpeed = 5500;//rps
+    public static final double shooterMinShootSpeed = 4000 ;     // rpm
+    public static final double shooterFastShootSpeed = 5500;//rpm
 
     // Climber
     public static final double winchMaxExtension = 88;   // in.

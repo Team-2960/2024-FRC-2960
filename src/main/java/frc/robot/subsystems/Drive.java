@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ComplexWidget;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.WidgetType;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.Optional;
@@ -38,6 +39,7 @@ import java.util.function.Supplier;
 
 import javax.swing.text.html.Option;
 
+import java.lang.reflect.Field;
 import java.sql.Driver;
 
 import com.kauailabs.navx.frc.AHRS;
@@ -94,15 +96,17 @@ public class Drive extends SubsystemBase {
     private GenericEntry sb_speedX;
     private GenericEntry sb_speedY;
     private GenericEntry sb_speedR;
-
+    private GenericEntry sb_robotTargetAngle;
     private GenericEntry sb_speedTargetR;
 
     private ComplexWidget sb_field2d;
+    
 
     private boolean targetSeen;
     private boolean ignoreCamera;
 
     private Field2d field2d;
+    private FieldObject2d fieldTargetPoint;
 
     // PathPlanner
     public AutoBuilder autoBuilder;
@@ -147,6 +151,7 @@ public class Drive extends SubsystemBase {
         targetSeen = false;
 
         field2d = new Field2d();
+        field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(), Rotation2d.fromDegrees(0));
 
         chassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, 0, new Rotation2d());
 
@@ -227,10 +232,12 @@ public class Drive extends SubsystemBase {
         sb_speedX = pose_layout.add("Speed X", 0).getEntry();
         sb_speedY = pose_layout.add("Speed Y", 0).getEntry();
         sb_speedR = pose_layout.add("Speed R", 0).getEntry();
-
+        sb_robotTargetAngle = pose_layout.add("Robot Target Angle", 0).getEntry();
+        
         sb_speedTargetR = pose_layout.add("Target Speed R", 0).getEntry();
 
         sb_field2d = Shuffleboard.getTab("Drive").add(field2d).withWidget("Field");
+        
 
     }
 
@@ -516,7 +523,6 @@ public class Drive extends SubsystemBase {
         }
         double speed = angleAlignPID.calculate(currentAngle.getRadians(), tarAngle);
         return speed;
-
     }
 
     /**
@@ -542,8 +548,10 @@ public class Drive extends SubsystemBase {
         sb_speedX.setDouble(xSpeed);
         sb_speedY.setDouble(ySpeed);
         sb_speedR.setDouble(rSpeed);
+        sb_robotTargetAngle.setDouble(targetAngle.getDegrees());
 
         field2d.setRobotPose(swerveDrivePoseEstimator.getEstimatedPosition());
+        field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(), Rotation2d.fromDegrees(0));
     }
 
     private void updateScope() {
