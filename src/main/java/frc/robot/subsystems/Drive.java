@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -98,6 +99,7 @@ public class Drive extends SubsystemBase {
     private GenericEntry sb_speedR;
     private GenericEntry sb_robotTargetAngle;
     private GenericEntry sb_speedTargetR;
+    private double robotTargetAngle;
 
     private ComplexWidget sb_field2d;
     
@@ -149,7 +151,7 @@ public class Drive extends SubsystemBase {
         navx = new AHRS(SPI.Port.kMXP);
         navx.reset();
         targetSeen = false;
-
+        robotTargetAngle = 0;
         field2d = new Field2d();
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(), Rotation2d.fromDegrees(0));
 
@@ -238,7 +240,6 @@ public class Drive extends SubsystemBase {
 
         sb_field2d = Shuffleboard.getTab("Drive").add(field2d).withWidget("Field");
         
-
     }
 
     /*
@@ -493,35 +494,40 @@ public class Drive extends SubsystemBase {
      */
     private double calcRateToAngle(Rotation2d targetAngle, Rotation2d currentAngle) {
 
-        /*
-         * // Determine minimum error distance
-         * double error = currentAngle.minus(targetAngle).getRadians();
-         * double compError = 2 * Math.PI - Math.abs(error);
-         * double minError = Math.min(Math.abs(error), Math.abs(compError));
-         * 
-         * // Calculate ramp down speed
-         * double speed = Math.min(minError /
-         * Constants.driveAngleRampDistance.getRadians(), 1)
-         * / Constants.maxAutoAngularSpeed;
-         * 
-         * // Set direction
-         * double direction = error > 0 ? 1 : -1;
-         * 
-         * if (minError == compError)
-         * direction *= -1;
-         * 
-         * speed *= direction;
-         * 
-         * 
-         * return speed;
-         */
-        double tarAngle;
-        if (Math.abs(targetAngle.getDegrees() - currentAngle.getDegrees()) > 180) {
-            tarAngle = targetAngle.getRadians() + Math.toRadians(360);
-        } else {
-            tarAngle = targetAngle.getRadians();
+       /* 
+        // Determine minimum error distance
+        double error = currentAngle.minus(targetAngle).getRadians();
+        double compError = 2 * Math.PI - Math.abs(error);
+        double minError = Math.min(Math.abs(error), Math.abs(compError));
+         
+        // Calculate ramp down speed
+        double speed = Math.min(minError /
+        Constants.driveAngleRampDistance.getRadians(), 1)
+        / Constants.maxAutoAngularSpeed;
+         
+        // Set direction
+        double direction = error > 0 ? 1 : -1;
+         
+        if (minError == compError)
+        direction *= -1;
+         
+        speed *= direction;
+        return speed;
+        */
+        
+        Rotation2d angleDiff = currentAngle.minus(targetAngle);
+        Rotation2d tarAngle;
+        if(angleDiff.getDegrees() > 180){
+            tarAngle = targetAngle.rotateBy(Rotation2d.fromDegrees(360));
+        }else{
+            tarAngle = targetAngle;
         }
-        double speed = angleAlignPID.calculate(currentAngle.getRadians(), tarAngle);
+        double speed = angleAlignPID.calculate(currentAngle.getRadians(), tarAngle.getRadians());
+        robotTargetAngle = tarAngle.getDegrees();
+        
+       /* if (Math.abs(angleDiff.getDegrees()) > 180){
+            speed *= -1;
+        }*/
         return speed;
     }
 
@@ -534,7 +540,7 @@ public class Drive extends SubsystemBase {
     private double calcRateToPoint(Translation2d point, Rotation2d offset) {
         Pose2d pose = getEstimatedPos();
         Translation2d targetOffset = point.minus(pose.getTranslation());
-        Rotation2d targetAngle = Rotation2d.fromDegrees(360).minus(targetOffset.getAngle().plus(offset));
+        Rotation2d targetAngle = (targetOffset.getAngle().plus(offset));
 
         return calcRateToAngle(targetAngle, pose.getRotation());
     }
@@ -548,7 +554,7 @@ public class Drive extends SubsystemBase {
         sb_speedX.setDouble(xSpeed);
         sb_speedY.setDouble(ySpeed);
         sb_speedR.setDouble(rSpeed);
-        sb_robotTargetAngle.setDouble(targetAngle.getDegrees());
+        sb_robotTargetAngle.setDouble(robotTargetAngle);
 
         field2d.setRobotPose(swerveDrivePoseEstimator.getEstimatedPosition());
         field2d.getObject("fieldTargetPoint").setPose(targetPoint.getX(), targetPoint.getY(), Rotation2d.fromDegrees(0));
@@ -616,6 +622,8 @@ public class Drive extends SubsystemBase {
                 this // Reference to this subsystem to set requirements
         );
     }
+
+    
 
     /**
      * Static Initializer

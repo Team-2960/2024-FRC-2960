@@ -173,6 +173,7 @@ public class OperatorInterface extends SubsystemBase {
         }
 
 
+
         if (driverController.getRawButton(6)) {
             IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT);
         }
