@@ -515,9 +515,11 @@ public class Drive extends SubsystemBase {
         return speed;
         */
         
-        Rotation2d angleDiff = currentAngle.minus(targetAngle);
+        Rotation2d error = currentAngle.minus(targetAngle);
+        Rotation2d compError = Rotation2d.fromDegrees(360).minus(error);
+        double minError = Math.min(error.getRadians(), compError.getRadians());
         Rotation2d tarAngle;
-        if(angleDiff.getDegrees() > 180){
+        if(error.getDegrees() > 180){
             tarAngle = targetAngle.rotateBy(Rotation2d.fromDegrees(360));
         }else{
             tarAngle = targetAngle;

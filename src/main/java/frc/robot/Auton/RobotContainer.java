@@ -26,7 +26,7 @@ public class RobotContainer {
     
     // Load the path you want to follow using its name in the GUI
     // Create a path following command using AutoBuilder. This will also trigger event markers.
-    return Drive.getInstance().autoBuilder.buildAuto("SS 3 Note");
+    return Drive.getInstance().autoBuilder.buildAuto("AS 4 Note");
     
   }
 
