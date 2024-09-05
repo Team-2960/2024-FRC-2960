@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Auton.Commands.Arm.armToPreset;
+import frc.robot.Auton.Commands.Arm.autoAlignArm;
 import frc.robot.Auton.Commands.Pizzabox.intakeNote;
 import frc.robot.Auton.Commands.Pizzabox.prepShootNote;
 import frc.robot.Auton.Commands.Pizzabox.shootNote;
@@ -23,6 +24,8 @@ public class RobotContainer {
     NamedCommands.registerCommand("intakeNote", new intakeNote());
     NamedCommands.registerCommand("shootNote", new shootNote());
     NamedCommands.registerCommand("prepShoot", new prepShootNote());
+    NamedCommands.registerCommand("armAutoAlign", new autoAlignArm());
+
     
     // Load the path you want to follow using its name in the GUI
     // Create a path following command using AutoBuilder. This will also trigger event markers.
