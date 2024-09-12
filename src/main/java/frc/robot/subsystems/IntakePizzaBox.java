@@ -63,7 +63,6 @@ public class IntakePizzaBox extends SubsystemBase {
         shooterTop = new CANSparkFlex(Constants.shooterTop, MotorType.kBrushless);
         shooterBot = new CANSparkFlex(Constants.shooterBot, MotorType.kBrushless);
         shooterTop.setInverted(true);
-        shooterBot.follow(shooterTop, true);
 
         // Initialize Shooter Encoders
         shootEncoder1 = shooterTop.getEncoder();
@@ -117,7 +116,12 @@ public class IntakePizzaBox extends SubsystemBase {
      * 
      * @return true if a gamepiece is present, false otherwise
      */
-    public boolean isNotePresent() {
+    public void runShooter(double voltage){
+        shooterTop.setVoltage(voltage);
+        shooterBot.setVoltage(voltage);
+    }
+    
+     public boolean isNotePresent() {
         return shooterPhotoeye.get();
     }
 
@@ -142,9 +146,9 @@ public class IntakePizzaBox extends SubsystemBase {
             }
             
         } else if (state == PizzaboxState.SHOOT_PREP) {
-            shooterTop.set(Constants.shooterPrepPower); // Turn shooter to idle speed
+            runShooter(Constants.shooterPrepPower); // Turn shooter to idle speed
         } else if (state == PizzaboxState.SHOOT) {
-            shooterTop.setVoltage(Constants.shooterShootVoltage); // Turn shooter to max Voltage
+            runShooter(Constants.shooterShootVoltage);// Turn shooter to max Voltage
 
             // Check if shooter is ready to shoot
             if (shootEncoder1.getVelocity() > Constants.shooterMinShootSpeed
@@ -155,7 +159,7 @@ public class IntakePizzaBox extends SubsystemBase {
             }
 
         } else if (state == PizzaboxState.FAST_SHOOT) {
-            shooterTop.setVoltage(Constants.shooterShootVoltage); // Turn shooter to max Voltage
+            runShooter(Constants.shooterShootVoltage); // Turn shooter to max Voltage
 
             // Check if shooter is ready to shoot
             if (shootEncoder1.getVelocity() > Constants.shooterFastShootSpeed
@@ -167,11 +171,11 @@ public class IntakePizzaBox extends SubsystemBase {
 
         } else if (state == PizzaboxState.REVERSE) {
             // Reverse shooter and intake
-            shooterTop.setVoltage(-Constants.shooterRevVoltage * 0.5);
+            runShooter(-Constants.shooterRevVoltage * 0.5);
             intakeRollers.setVoltage(-Constants.intakeOutVoltage);
         } else {
             // Turn shooter and intake off
-            shooterTop.setVoltage(0);
+            runShooter(0);
             intakeRollers.setVoltage(0);
         }
 
