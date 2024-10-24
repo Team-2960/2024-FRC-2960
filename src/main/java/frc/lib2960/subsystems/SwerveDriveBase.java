@@ -43,7 +43,7 @@ public abstract class SwerveDriveBase extends SubsystemBase {
     /**
      * Command to run swerve drive by controlling the angle rate of the robot
      */
-    public class AngleRateCommand extends Command {
+    private class AngleRateCommand extends Command {
         private final SwerveDriveBase dt;   /**< Drivetrain object reference */
 
         /**
@@ -69,7 +69,7 @@ public abstract class SwerveDriveBase extends SubsystemBase {
     /**
      * Command to track a desired angle
      */
-    public class AngleTrackCommand extends Command {
+    private class AngleTrackCommand extends Command {
         private final SwerveDriveBase dt;
         private final Rotation2d target;
         private final boolean is_field_relative;
@@ -106,7 +106,7 @@ public abstract class SwerveDriveBase extends SubsystemBase {
     /**
      * Command to track a desired position
      */
-    public class PointTrackCommand extends Command {
+    private class PointTrackCommand extends Command {
         private final SwerveDriveBase dt;
         private final Rotation2d target;
         private final boolean is_field_relative;
@@ -423,11 +423,38 @@ public abstract class SwerveDriveBase extends SubsystemBase {
     }
 
 
+    /**************************/
+    /* Command Access Methods */
+    /**************************/
+
+    /**
+     * Creates an Angle Tracking Command
+     * @param   target              Target angle
+     * @param   is_field_relative   sets if the linear motions are field relative
+     */
+    public AngleTrackCommand getAngleTrackCommand(Rotation2d target, boolean is_field_relative) {
+        return new AngleTrackCommand(this, target, is_field_relative);
+    }
+
+    /**
+     * Creates an Point Tracking Command
+     * @param   target              Target point
+     * @param   offset              Offset angle
+     * @param   is_field_relative   sets if the linear motions are field relative
+     */
+    public PointTrackCommand getPointTrackCommand(Translation2d target, Rotation2d offset, boolean is_field_relative) {
+        return new PointTrackCommand(this, target, offset, is_field_relative);
+    }
+
+
     /*********************************/
     /* Angle Tracking Helper Methods */
     /*********************************/
+
     /**
      * Calculates the angle rate for tracking an angle
+     * @param   target  Target angle
+     * @return  Angle rate to track the target angle
      */
     public double getAngleTrackingRate(Rotation2d target) {
         double cur_pos = getAngle().getDegrees();
@@ -435,6 +462,7 @@ public abstract class SwerveDriveBase extends SubsystemBase {
 
         return angle_tracker.update(cur_pos, cur_rate, target.getDegrees())
     }
+
 
     /*********************/
     /* Subsystem Methods */
