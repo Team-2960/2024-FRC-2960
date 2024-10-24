@@ -73,6 +73,15 @@ public class PPCommandChooser {
             .withSize(1, 4);
         layout.add("Auton Selector", autoChooser)
     }
+
+    /**
+     * Registers commands with the PathPlanner system
+     * @param   name    Name of the command to register
+     * @param   command Command object to register
+     */
+    public static registerCommand(String name, Command command) {
+         NamedCommands.registerCommand(name, command);
+    }
     
     /**
      * Converts PIDParam to PIDConstants values
