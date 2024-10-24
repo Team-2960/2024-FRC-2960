@@ -24,6 +24,9 @@ public abstract class SwerveDriveBase extends SubsystemBase {
         public String name;                 /**< Human friendly module name */
         public Translation2d translation;   /**< Module translation */
 
+        public final double drive_ratio;    /**< Module drive gear ratio */
+        public final double wheel_radius;   /**< Module drive wheel radius in meters */
+
         PositionController.Settings anglePosCtrl;   /**< Module Angle Pos Controller */
         RateController.Settings angleRateCtrl;      /**< Module Angle Rate Controller */
         RateController.Settings driveRateCtrl;      /**< Module Drive Rate controller */
@@ -32,17 +35,22 @@ public abstract class SwerveDriveBase extends SubsystemBase {
          * Constructor
          * @param   name            Module name
          * @param   translation     Module Translation
+         * @param   drive_ratio     Drive gear ratio
+         * @param   wheel_radius    Drive wheel radius
          * @param   anglePosCtrl    Module Angle Pos Controller Settings
          * @param   angleRateCtrl   Module Angle Rate Controller Settings
          * @param   driveCtrl       Module Drive Rate Controller Settings
          */
         public Settings(String name, Translation2d translation, 
+                        double drive_ratio, double wheel_radius,
                         PositionController.Settings anglePosCtrl, 
                         RateController.Settings angleRateCtrl, 
                         RateController.Settings driveRateCtrl) {
 
             this.name = name;
             this.translation = translation;
+            this.drive_ratio = drive_ratio;
+            this.wheel_radius = wheel_radius;
             this.anglePosCtrl = anglePosCtrl;
             this.angleRateCtrl = angleRateCtrl;
             this.driveRateCtrl = driveRateCtrl;
@@ -157,6 +165,14 @@ public abstract class SwerveDriveBase extends SubsystemBase {
     }
 
     /**
+     * Calculates the motor rotation to distance ratio
+     * @return  motor rotation to distance ratio
+     */
+    public double motorToDistRatio() {
+        return settings.drive_ratio * 2 * settings.wheel_radius * Math.PI;
+    }
+
+    /**
      * Periodic Method
      */
     @Override
@@ -212,7 +228,7 @@ public abstract class SwerveDriveBase extends SubsystemBase {
 
     
 
-    public abstract double getAnglePos();
+    public abstract Rotation2d getAnglePos();
     public abstract double getAngleRate();
     public abstract double getAngleVolt();
     public abstract double getDrivePos();
