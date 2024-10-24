@@ -16,7 +16,7 @@ import frc.lib2960.util.*;
 /**
  * Initializes the PathPlanner system and 
  */
-public class PPCommandChooser {
+public class PathPlanner {
 
     /**
      * PathPlanner settings
@@ -26,20 +26,14 @@ public class PPCommandChooser {
         public final PIDParam rotation;     /**< Rotation PID Parameters */
     }
 
-    private final SwerveDriveBase dt;   /**< Drivetrain object reference */
-    private final Settings settings;    /**< PPCommandGen settings */
-
-    private final SendableChooser<Command> autoChooser; /**< Auton Selector */
+    private static SendableChooser<Command> autoChooser = null; /**< Auton Selector */
 
     /**
      * Constructor
      * @param   dt          drivetrain object reference
      * @param   settings    PPCommandGen settings
      */
-    public PPCommandChooser(SwerveDriveBase dt, Settings settings) {
-        this.dt = dt;
-        this.settings = settings;
-
+    public static init(SwerveDriveBase dt, Settings settings) {
         // Initialize robot config from GUI Settings
         RobotConfig config;
         try{
@@ -72,6 +66,14 @@ public class PPCommandChooser {
             .getLayout("Auton", BuiltInLayouts.kList)
             .withSize(1, 4);
         layout.add("Auton Selector", autoChooser)
+    }
+
+    /**
+     * Returns the selected auton command
+     * @return the selected auton command
+     */
+    public static Command getSelectedAuto() {
+        return autoChooser.getSelected();
     }
 
     /**

@@ -11,9 +11,13 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Relay.Value;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Auton.RobotContainer;
-//import frc.robot.Auton.AutonList;
+
 import frc.robot.subsystems.*;
+import frc.robot.auton.commands.arm.*;
+import frc.robot.auton.commands.pizzabox.*;
+
+import frc.lib2960.commands.PPCommandGen;
+import frc.lib2960.util.PIDParam;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -44,6 +48,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void robotInit() {
+        // Get instance of all core subsystems
         drive = Drive.getInstance();
         oi = OperatorInterface.getInstance();
         //camera = Camera.getInstance();
@@ -53,27 +58,39 @@ public class Robot extends TimedRobot {
         pneumatics = Pneumatics.getInstance();
         robotContainer = new RobotContainer();
 
+        // Start Camera Feedback
         CameraServer.startAutomaticCapture();
-        //autonCommand = AutonList.getDefaultCommands();
-
         
+        // Initialize Path Planner
+        PathPlanner.init(
+            drive, 
+            new PathPlanner.Settings(           // TODO Move to Constants
+                new PIDParam(5.0, 0.0, 0.0),
+                new PIDParam(5.0, 0.0, 0.0)
+            )
+        )
 
+        // Add named commands
+        PathPlanner.registerCommand("armIntake", new armToPreset("Intake"));        // TODO Register in Arm class
+        PathPlanner.registerCommand("armHome", new armToPreset("home"));            // TODO Register in Arm class
+        PathPlanner.registerCommand("armSpeaker", new armToPreset("Speaker"));      // TODO Register in Arm class
+        PathPlanner.registerCommand("intakeNote", new intakeNote());                // TODO Register in Pizzabox Class
+        PathPlanner.registerCommand("shootNote", new shootNote());                  // TODO Register in Pizzabox Class
+        PathPlanner.registerCommand("prepShoot", new prepShootNote());              // TODO Register in Pizzabox Class
+        PathPlanner.registerCommand("armAutoAlign", new autoAlignArm());            // TODO Register in Pizzabox Class
     }
 
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
-
     }
 
     @Override
     public void autonomousInit() {
         //if (autonCommand.isPresent()) autonCommand.get().schedule();
-        autonomousCommand = robotContainer.getAutonomousCommand();
+        autonomousCommand = PathPlanner.getSelectedAuto();
 
-        if(autonomousCommand != null){
-            autonomousCommand.schedule();
-        }
+        if(autonomousCommand != null) autonomousCommand.schedule();
     }
 
     @Override
@@ -83,9 +100,7 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopInit() {
         drive.ignoreCamera(false);
-        if (autonomousCommand != null) {
-            autonomousCommand.cancel();
-        }
+        if (autonomousCommand != null) autonomousCommand.cancel();
     }
 
     @Override
