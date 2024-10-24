@@ -13,8 +13,9 @@ public class PositionController {
      * Position Controller Settings
      */
     public class Settings {
-        public final double ramp_rate;       /**< Maximum rate change per second */
-        public final double max_rate;        /**< Maximum rate */
+        public final double max_accel;      /**< Maximum acceleration rate */
+        public final double max_decel;      /**< Maximum deceleration rate */
+        public final double max_rate;       /**< Maximum rate */
 
         public final double min_pos;        /**< Minimum allowed position */
         public final double max_pos;        /**< Maximum allowed position */
