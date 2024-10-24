@@ -2,7 +2,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -49,67 +49,98 @@ public class Drive extends SwerveDriveBase {
         double x_pos = (Constants.robotLength / 2 - Constants.wheelInset);
         double y_pos = (Constants.robotWidth / 2 - Constants.wheelInset);
 
+        // Setup Swerve Drive control settings
+        // TODO Move to Constants
+        PositionControl.Settings angle_pos_settings = new PositionControl.Settings(
+            Constants.maxSwerveAngularSpeed * 10,                   // Maximum Acceleration
+            math.pow(Constants.maxSwerveAngularSpeed,2) /           // Maximum Deceleration
+                (2 * Constants.swerveAngleRampDist.getDegrees()),   
+            Constants.maxSwerveAngularSpeed,                        // Maximum Rate
+            0,                                                      // Minimum Angle
+            360,                                                    // Maximum Angle
+            true                                                    // Is Continuous
+        )
+
+        RateControl.Settings angle_rate_settings = new RateControl.Settings(
+            Constants.driveAngPID,
+            Constants.driveAngFF
+        )
+
+        RateControl.Settings drive_rate_settings = new RateControl.Settings(
+            Constants.drivePID,
+            Constants.driveFF
+        )
+
+        // TODO Move Swerve settings to constants
         // Front Left Swerve
         Swerve fl_swerve = new Swerve(
             new Swerve.Settings(
-                "Front Left",
-                new Translation2d(x_pos, y_pos),
-                Constants.drive_ratio,
-                Constants.wheel_radius,
-                Constants.swerveAnglePosSettings,
-                Constants.swerveAngleRateSettings,
-                Constants.swerveDriveRateSettings,
-                Constants.frontLeftAngleM,
-                Constants.frontLeftDriveM,
-                true, true, true
+                "Front Left",                       // Module Name
+                new Translation2d(x_pos, y_pos),    // Module Translation
+                Constants.drive_ratio,              // Drive gear ratio
+                Constants.wheel_radius,             // Drive wheel radius in meters
+                angle_pos_settings,                 // Swerve angle position control settings
+                angle_rate_settings,                // Swerve angle rate control settings
+                drive_rate_settings,                // Swerve drive rate control settings
+                Constants.frontLeftAngleM,          // Angle motor CAN ID
+                Constants.frontLeftDriveM,          // Drive Motor CAN ID
+                true,                               // Invert Angle Motor
+                true,                               // Invert Drive Motor
+                true                                // Invert Angle Encoder
             )
         );
 
         // Front Right Swerve
         Swerve fr_swerve = new Swerve(
             new Swerve.Settings(
-                "Front Right",
-                new Translation2d(x_pos, -y_pos),
-                Constants.drive_ratio,
-                Constants.wheel_radius,
-                Constants.swerveAnglePosSettings,
-                Constants.swerveAngleRateSettings,
-                Constants.swerveDriveRateSettings,
-                Constants.frontRightAngleM,
-                Constants.frontRightDriveM,
-                true, false, true
+                "Front Right",                      // Module Name
+                new Translation2d(x_pos, -y_pos),   // Module Translation
+                Constants.drive_ratio,              // Drive gear ratio
+                Constants.wheel_radius,             // Drive wheel radius in meters
+                angle_pos_settings,                 // Swerve angle position control settings
+                angle_rate_settings,                // Swerve angle rate control settings
+                drive_rate_settings,                // Swerve drive rate control settings
+                Constants.frontRightAngleM,         // Angle motor CAN ID
+                Constants.frontRightDriveM,         // Drive Motor CAN ID
+                true,                               // Invert Angle Motor
+                false,                              // Invert Drive Motor
+                true                                // Invert Angle Encoder
             )
         );
 
         // Rear Left Swerve
         Swerve rl_swerve = new Swerve(
             new Swerve.Settings(
-                "Rear Left",
-                new Translation2d(-x_pos, y_pos),
-                Constants.drive_ratio,
-                Constants.wheel_radius,
-                Constants.swerveAnglePosSettings,
-                Constants.swerveAngleRateSettings,
-                Constants.swerveDriveRateSettings,
-                Constants.backLeftAngleM,
-                Constants.backLeftDriveM,
-                true, true, true
+                "Rear Left",                        // Module Name
+                new Translation2d(-x_pos, y_pos),   // Module Translation
+                Constants.drive_ratio,              // Drive gear ratio
+                Constants.wheel_radius,             // Drive wheel radius in meters
+                angle_pos_settings,                 // Swerve angle position control settings
+                angle_rate_settings,                // Swerve angle rate control settings
+                drive_rate_settings,                // Swerve drive rate control settings
+                Constants.backLeftAngleM,           // Angle motor CAN ID
+                Constants.backLeftDriveM,           // Drive Motor CAN ID
+                true,                               // Invert Angle Motor
+                true,                               // Invert Drive Motor
+                true                                // Invert Angle Encoder
             )
         );
 
         // Rear Right Swerve
         Swerve rr_swerve = new Swerve(
             new Swerve.Settings(
-                "Rear Right",
-                new Translation2d(-x_pos, -y_pos),
-                Constants.drive_ratio,
-                Constants.wheel_radius,
-                Constants.swerveAnglePosSettings,
-                Constants.swerveAngleRateSettings,
-                Constants.swerveDriveRateSettings,
-                Constants.backRightAngleM,
-                Constants.backRightDriveM,
-                true, false, true
+                "Rear Right",                       // Module Name
+                new Translation2d(-x_pos, -y_pos),  // Module Translation
+                Constants.drive_ratio,              // Drive gear ratio
+                Constants.wheel_radius,             // Drive wheel radius in meters
+                angle_pos_settings,                 // Swerve angle position control settings
+                angle_rate_settings,                // Swerve angle rate control settings
+                drive_rate_settings,                // Swerve drive rate control settings
+                Constants.frontRightAngleM,         // Angle motor CAN ID
+                Constants.frontRightDriveM,         // Drive Motor CAN ID
+                true,                               // Invert Angle Motor
+                false,                              // Invert Drive Motor
+                true                                // Invert Angle Encoder
             )
         );
 
