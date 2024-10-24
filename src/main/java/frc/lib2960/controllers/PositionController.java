@@ -20,6 +20,7 @@ public class PositionController {
         public final double max_pos;        /**< Maximum allowed position */
         public final boolean is_cont;       /**< Continuous position range  */
 
+        // TODO Move to global settings
         public final double period;         /**< Update period */
         
         /**
