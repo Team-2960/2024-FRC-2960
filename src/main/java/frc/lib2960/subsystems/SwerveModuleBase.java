@@ -21,8 +21,8 @@ public abstract class SwerveDriveBase extends SubsystemBase {
      */
     public class Settings {
         
-        public String name;             /**< Human friendly module name */
-        public Transform2d transform;   /**< Module position transform */
+        public String name;                 /**< Human friendly module name */
+        public Translation2d translation;   /**< Module translation */
 
         PositionController.Settings anglePosCtrl;   /**< Module Angle Pos Controller */
         RateController.Settings angleRateCtrl;      /**< Module Angle Rate Controller */
@@ -31,18 +31,18 @@ public abstract class SwerveDriveBase extends SubsystemBase {
         /**
          * Constructor
          * @param   name            Module name
-         * @param   transform       Module Position Transform
+         * @param   translation     Module Translation
          * @param   anglePosCtrl    Module Angle Pos Controller Settings
          * @param   angleRateCtrl   Module Angle Rate Controller Settings
          * @param   driveCtrl       Module Drive Rate Controller Settings
          */
-        public Settings(String name, Transform2d transform, 
+        public Settings(String name, Translation2d translation, 
                         PositionController.Settings anglePosCtrl, 
                         RateController.Settings angleRateCtrl, 
                         RateController.Settings driveRateCtrl) {
 
             this.name = name;
-            this.transform = transform;
+            this.translation = translation;
             this.anglePosCtrl = anglePosCtrl;
             this.angleRateCtrl = angleRateCtrl;
             this.driveRateCtrl = driveRateCtrl;
@@ -52,7 +52,7 @@ public abstract class SwerveDriveBase extends SubsystemBase {
     /**
      * Automatic Swerve Drive Module Control Command
      */
-    public class AutoCommand extends CommandBase {
+    public class AutoCommand extends Command {
         private final SwerveDriveBase module;   /**< Module to control */
         
         /**
@@ -114,8 +114,8 @@ public abstract class SwerveDriveBase extends SubsystemBase {
 
         // Setup Shuffleboard
         var layout = Shuffleboard.getTab("Drive")
-        .getLayout(settings.name + " Swerve", BuiltInLayouts.kList)
-        .withSize(1, 4);
+            .getLayout(settings.name + " Swerve", BuiltInLayouts.kList)
+            .withSize(1, 4);
 
         sb_anglePosTarget = layout.add("Angle Target", 0).getEntry();
         sb_anglePosCurrent = layout.add("Angle Current", 0).getEntry();
