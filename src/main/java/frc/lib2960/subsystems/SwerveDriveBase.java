@@ -62,8 +62,9 @@ public abstract class SwerveDriveBase extends SubsystemBase {
          */
         @Override
         public void execute() {
-            dt.update_kinematics(dt.desired_speeds, dt.is_field_relative);
+            dt.updateKinematics(dt.desired_speeds);
         }
+
     }
 
     /**
@@ -71,19 +72,16 @@ public abstract class SwerveDriveBase extends SubsystemBase {
      */
     private class AngleTrackCommand extends Command {
         private final SwerveDriveBase dt;
-        private final Rotation2d target;
-        private final boolean is_field_relative;
+        private Rotation2d target;
         
         /**
          * Constructor
          * @param   dt                  Drivetrain object reference
          * @param   target              Target angle to track
-         * @param   is_field_relative   sets if the linear motions are field relative
          */
-        public AngleTrackCommand(SwerveDriveBase dt, Rotation2d target, boolean is_field_relative) {
+        public AngleTrackCommand(SwerveDriveBase dt, Rotation2d target) {
             this.dt = dt;
             this.target = target;
-            this.is_field_relative = is_field_relative;
         } 
 
 
@@ -98,9 +96,16 @@ public abstract class SwerveDriveBase extends SubsystemBase {
                 dt.getAngleTrackingRate(target)
             );
 
-            dt.update_kinematics(speeds, dt.is_field_relative);
+            dt.updateKinematics(speeds);
         }
-        
+
+        /**
+         * Updates the target angle
+         * @param   target  New target angle
+         */
+        public void updateTarget(Rotation2d target) {
+            this.target = target;
+        }
     }
 
     /**
@@ -108,8 +113,17 @@ public abstract class SwerveDriveBase extends SubsystemBase {
      */
     private class PointTrackCommand extends Command {
         private final SwerveDriveBase dt;
-        private final Rotation2d target;
-        private final boolean is_field_relative;
+        private final Translation2d target;
+        private final Rotation2d offset;
+        
+        /**
+         * Constructor. Offset is set to 0 degrees.
+         * @param   dt                  Drivetrain object reference
+         * @param   target              Target point to track
+         */
+        public PointTrackCommand(SwerveDriveBase dt, Translation2d target) {
+            PointTrackCommand(dt, target, new Rotation2d());
+        } 
         
         /**
          * Constructor
@@ -118,11 +132,10 @@ public abstract class SwerveDriveBase extends SubsystemBase {
          * @param   offset              Robot angle offset from target point
          * @param   is_field_relative   sets if the linear motions are field relative
          */
-        public PointTrackCommand(SwerveDriveBase dt, Translation2d target, Rotation2d offset, boolean is_field_relative) {
+        public PointTrackCommand(SwerveDriveBase dt, Translation2d target, Rotation2d offset) {
             this.dt = dt;
             this.target = target;
             this.offset = offset;
-            this.is_field_relative = is_field_relative;
         } 
 
 
@@ -143,7 +156,23 @@ public abstract class SwerveDriveBase extends SubsystemBase {
                 dt.getAngleTrackingRate(target_angle)
             );
 
-            dt.update_kinematics(speeds, dt.is_field_relative);
+            dt.updateKinematics(speeds);
+        }
+
+        /**
+         * Updates the target point
+         * @param   target  New target point
+         */
+        public void updateTarget(Translation2d target) {
+            this.target = target;
+        }
+
+        /**
+         * Updates the target offset angle
+         * @param   offset  New target offset angle
+         */
+        public void updateOffset(Rotation2d offset) {
+            this.offset = offset;
         }
         
     }
@@ -165,6 +194,10 @@ public abstract class SwerveDriveBase extends SubsystemBase {
     private final SwerveDrivePoseEstimator pose_est;    /**< Swerve Drive Pose Estimator object */
 
     private final PositionController angle_tracker;     /**< Position tracker for angle tracking */
+
+    private final AngleRateCommand angle_rate_cmd;      /**< Internal Angle Rate command */
+    private final AngleTrackCommand angle_track_cmd;    /**< Internal Angle Tracking command */
+    private final PointTrackCommand point_track_cmd;    /**< Internal Point Tracking command */
 
     // Shuffleboard
     private GenericEntry sb_posEstX;
@@ -238,9 +271,13 @@ public abstract class SwerveDriveBase extends SubsystemBase {
 
         sb_field2d = Shuffleboard.getTab("Drive").add(field2d).withWidget("Field");
 
+        // Initialize internal commands
+        angle_rate_cmd = new AngleRateCommand(this);
+        angle_track_cmd = new AngleTrackCommand(this, new Rotation2d());
+        point_track_cmd = new PointTrackCommand(this, new Translation2d);
 
         // Set default command
-        setDefaultCommand(new AngleRateCommand(this));
+        setDefaultCommand(angle_rate_cmd);
     } 
 
 
@@ -330,6 +367,7 @@ public abstract class SwerveDriveBase extends SubsystemBase {
     public void setFieldRelativeSpeeds(ChassisSpeeds speeds) {
         this.setFieldRelative(true);
         this.desired_speeds = speeds;
+        runAngleRateCmd();
     }
 
     /**
@@ -339,25 +377,51 @@ public abstract class SwerveDriveBase extends SubsystemBase {
     public void setRobotRelativeSpeeds(ChassisSpeeds speeds) {
         this.setFieldRelative(false);
         this.desired_speeds = speeds;
+        runAngleRateCmd();
     }
 
     /**
-     * Sets the angular rate of the robot and sets the robot to AngleRate
-     * angle control mode.
-     * 
+     * Sets the angular rate of the robot
      * @param rSpeed angle rate for the robot
      */
     public void setAngleRate(double rSpeed) {
         desired_speeds.omegaRadiansPerSecond = rSpeed;
-        this.angleMode = AngleControlMode.AngleRate;
+        runAngleRateCmd();
+    }
+
+    /**
+     * Sets the robot to track a field relative angle
+     * @param   target  target angle
+     */
+    public void setAngleTracking(Rotation2d target) {
+        angle_track_cmd.updateTarget(target);
+        runAngleTrackCmd();
+    }
+
+    /**
+     * Sets the robot to track a point relative to the field
+     * @param   target  target point
+     * @param   offset  angle offset from the target point
+     */
+    public void setPointTracking(Translation2d target, Rotation2d offset) {
+        point_track_cmd.updateTarget(target);
+        point_track_cmd.updateOffset(offset);
+        runPointTrackCmd();
+    }
+
+    /**
+     * Sets the robot to track a point relative to the field. Angle offset is set to 0
+     * @param   target  target point
+     */
+    public void setPointTracking(Translation2d target) {
+        setPointTracking(target, new Rotation2d());
     }
 
     /**
      * Cancels any of the non-default commands
      */
     public void disableAutoTracking() {
-        Command cur_command = getCurrentCommand();
-        if(cur_command != getDefaultCommand()) cur_command.cancel();
+        runAngleRateCmd()
     }
 
     /*****************************/
@@ -430,20 +494,26 @@ public abstract class SwerveDriveBase extends SubsystemBase {
     /**
      * Creates an Angle Tracking Command
      * @param   target              Target angle
-     * @param   is_field_relative   sets if the linear motions are field relative
      */
-    public AngleTrackCommand getAngleTrackCommand(Rotation2d target, boolean is_field_relative) {
-        return new AngleTrackCommand(this, target, is_field_relative);
+    public AngleTrackCommand getAngleTrackCommand(Rotation2d target) {
+        return new AngleTrackCommand(this, target);
+    }
+
+    /**
+     * Creates an Point Tracking Command
+     * @param   target              Target point
+     */
+    public PointTrackCommand getPointTrackCommand(Translation2d target) {
+        return new PointTrackCommand(this, target);
     }
 
     /**
      * Creates an Point Tracking Command
      * @param   target              Target point
      * @param   offset              Offset angle
-     * @param   is_field_relative   sets if the linear motions are field relative
      */
-    public PointTrackCommand getPointTrackCommand(Translation2d target, Rotation2d offset, boolean is_field_relative) {
-        return new PointTrackCommand(this, target, offset, is_field_relative);
+    public PointTrackCommand getPointTrackCommand(Translation2d target, Rotation2d offset) {
+        return new PointTrackCommand(this, target, offset);
     }
 
 
@@ -510,10 +580,8 @@ public abstract class SwerveDriveBase extends SubsystemBase {
     /**
      * Updates the robot kinematics
      * @param   speeds              Chassis speeds to use for the robot
-     * @param   is_field_relative   Chassis speeds are field relative if true, 
-     *                                  robot relative if false
      */
-    private void update_kinematics(ChassisSpeeds speeds, boolean is_field_relative) {
+    private void updateKinematics(ChassisSpeeds speeds) {
         // Convert chassis speeds from field relative to robot relative if in field relative mode
         if(is_field_relative) {
             speeds = ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getEstimatedPos().getRotation());
@@ -528,6 +596,33 @@ public abstract class SwerveDriveBase extends SubsystemBase {
         SwerveDriveKinematics.desaturateWheelSpeeds(module_states, Constants.max_drive_speed);
 
         for(int i = 0; i < modules.size(); i++) modules[i].setDesiredState(module_states[i]);
+    }
+
+            
+    /****************************/
+    /* Protected Helper Methods */
+    /****************************/
+
+    /**
+     * Sets the current command to angle_rate_cmd if it is not already running
+     */
+    protected void runAngleRateCmd() {
+        Command cur_command = getCurrentCommand();
+        if(cur_command != getDefaultCommand()) cur_command.cancel();
+    }
+
+    /**
+     * Sets the current command to angle_track_cmd if it is not already running
+     */
+    protected void runAngleTrackCmd() {
+        if(getCurrentCommand() != angle_track_cmd) angle_track_cmd.schedule();
+    }
+
+    /**
+     * Sets the current command to point_track_cmd if it is not already running
+     */
+    protected void runPointTrackCmd() {
+        if(getCurrentCommand() != point_track_cmd) point_track_cmd.schedule();
     }
             
     /***************************/
