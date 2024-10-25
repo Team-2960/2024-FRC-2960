@@ -1,4 +1,4 @@
-package frc.lib2960.commands;
+package frc.lib2960_pathplanner;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
