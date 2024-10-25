@@ -38,7 +38,7 @@ public class Robot extends TimedRobot {
 
     private Drive drive;
     private OperatorInterface oi;
-    private Camera camera;
+    private Vision vision;
     private Arm arm;
     private Climber climber;
     private IntakePizzaBox intake;
@@ -51,7 +51,7 @@ public class Robot extends TimedRobot {
         // Get instance of all core subsystems
         drive = Drive.getInstance();
         oi = OperatorInterface.getInstance();
-        //camera = Camera.getInstance();
+        vision = vision.getInstance();
         arm = Arm.getInstance();
         climber = Climber.getInstance();
         intake = IntakePizzaBox.getInstance();
