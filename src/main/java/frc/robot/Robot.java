@@ -16,7 +16,7 @@ import frc.robot.subsystems.*;
 import frc.robot.auton.commands.arm.*;
 import frc.robot.auton.commands.pizzabox.*;
 
-import frc.lib2960.commands.PPCommandGen;
+import frc.lib2960_pathplanner.PathPlanner;
 import frc.lib2960.util.PIDParam;
 
 /**
