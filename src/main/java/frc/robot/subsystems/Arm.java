@@ -1,8 +1,5 @@
 package frc.robot.subsystems;
 
-import frc.robot.Constants;
-import frc.robot.Util.FieldLayout;
-
 import java.util.Map;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -17,8 +14,14 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Command;
 
 import frc.lib2960_ctre.MotorMech_TalonFX;
+
+import frc.lib2960_pathplanner.PathPlanner;
+
+import frc.robot.Constants;
+import frc.robot.Util.FieldLayout;
 
 public class Arm extends SubsystemBase {
     private static Arm arm;
@@ -41,6 +44,106 @@ public class Arm extends SubsystemBase {
             this.extState = Math.max(0, Math.min(2, extState));
         }
     }
+
+    /**
+     * Goto Named Preset command
+     */
+    public class GotoNamedPreset extends Command {
+        private final Arm arm;                /**< Reference to the arm object */
+        private final String preset_name;     /**< Name of the preset to goto */
+
+        /**
+         * Constructor
+         * @param   arm             Reference to the arm object
+         * @param   preset_name     Name of the preset to goto
+         */
+        public GotoNamedPreset(Arm arm, String preset_name) {
+            this.arm = arm;
+            this.preset_name = preset_name;
+        }
+        
+        /**
+         * initialize method. Set arm to preset state
+         */
+        @Override
+        public void initialize() {
+            arm.setState(preset_name);
+        }
+
+        /**
+         * isFinished method. Check if arm is at the target position
+         */
+        @Override
+        public boolean isFinished() {
+            return arm.atTarget();
+        }
+    }
+
+    /**
+     * Goto Preset command
+     */
+    public class GotoPreset extends Command {
+        private final Arm arm;                /**< Reference to the arm object */
+        private final ArmStateValues preset;  /**< preset to goto */
+
+        /**
+         * Constructor
+         * @param   arm             Reference to the arm object
+         * @param   preset          preset to goto
+         */
+        public GotoNamedPreset(Arm arm, String preset) {
+            this.arm = arm;
+            this.preset = preset;
+        }
+        
+        /**
+         * initialize method. Set arm to preset state
+         */
+        @Override
+        public void initialize() {
+            arm.setState(preset);
+        }
+
+        /**
+         * isFinished method. Check if arm is at the target position
+         */
+        @Override
+        public boolean isFinished() {
+            return arm.atTarget();
+        }
+    }
+    
+    /**
+     * Auto Align command
+     */
+    public class AutoAlign extends Command {
+        private final Arm arm;  /**< Reference to the arm object */
+
+        /**
+         * Constructor
+         * @param   arm     Reference to the arm object
+         */
+        public AutoAlign(Arm arm){
+            this.arm = arm;
+        }
+
+        /**
+         * initialize method. Start arm auto alignment
+         */
+        @Override
+        public void initialize(){
+            arm.armAutoAlign();
+        }
+        
+        /**
+         * isFinished method. Checks if arm is at aligned to target.
+         */
+        @Override
+        public boolean isFinished() {
+            return arm.atTarget();
+        }
+    }
+
 
     public final MotorMech_TalonFX shoulder_joint;
     public final Limits climber_zone;
@@ -157,7 +260,17 @@ public class Arm extends SubsystemBase {
         sb_atAngle = layout.add("At Angle", false).getEntry();
         sb_atExt = layout.add("At Extension", false).getEntry();
         sb_atTarget = layout.add("At Target", false).getEntry();
+
+        // Initialize PathPlanner named commands
+        PathPlanner.registerCommand("Arm Intake Position", createGotoNamedPresetCmd("Intake"));
+        PathPlanner.registerCommand("Arm Home Position", createGotoNamedPresetCmd("Home"));
+        PathPlanner.registerCommand("Arm Speaker Position", createGotoNamedPresetCmd("Speaker"));
     }
+
+
+    /*************************/
+    /* Public Access Methods */
+    /*************************/
 
     /**
      * Gets the current arm angle
@@ -197,6 +310,46 @@ public class Arm extends SubsystemBase {
 
         return state;
     }
+
+    /**
+     * Check if the arm is at its target angle
+     * 
+     * @return true if the angle are at their target
+     */
+    public boolean atAngle() {
+        shoulder_joint.atTarget();
+    }
+
+    /**
+     * Check if the arm is at its target extension
+     * 
+     * @return true if the extension are at their target
+     */
+    public boolean atExtention() {
+        return getArmExtension() == targetState.extState;
+    }
+
+    /**
+     * Check if the arm is at its target angle and extension
+     * 
+     * @return true if the angle and extension are at their targets
+     */
+    public boolean atTarget() {
+        return atAngle() && atExtention();
+    }
+
+    /**
+     * Checks if the arm is an safe position to extend the climber
+     * @return true if the arm is in a safe position to extend the climber
+     */
+    public boolean isInClimberZone() {
+        return climber_zone.inRange(currentAngle.getDegrees());
+    }
+
+
+    /**************************/
+    /* Public Control Methods */
+    /**************************/
 
     /**
      * Sets the arm's output voltage to the motor. Puts the arm into manual
@@ -246,41 +399,6 @@ public class Arm extends SubsystemBase {
     }
 
     /**
-     * Check if the arm is at its target angle
-     * 
-     * @return true if the angle are at their target
-     */
-    public boolean atAngle() {
-        shoulder_joint.atTarget();
-    }
-
-    /**
-     * Check if the arm is at its target extension
-     * 
-     * @return true if the extension are at their target
-     */
-    public boolean atExtention() {
-        return getArmExtension() == targetState.extState;
-    }
-
-    /**
-     * Check if the arm is at its target angle and extension
-     * 
-     * @return true if the angle and extension are at their targets
-     */
-    public boolean atTarget() {
-        return atAngle() && atExtention();
-    }
-
-    /**
-     * Checks if the arm is an safe position to extend the climber
-     * @return true if the arm is in a safe position to extend the climber
-     */
-    public boolean isInClimberZone() {
-        return climber_zone.inRange(currentAngle.getDegrees());
-    }
-
-    /**
      * Looks up a standard target state
      * 
      * @param Name of the standard state. If an unknown name is supplied,
@@ -300,6 +418,41 @@ public class Arm extends SubsystemBase {
         shoulder_joint.setPosition(targetAngle.getDegrees());
     }
 
+
+    /******************************/
+    /* Command Generation Methods */
+    /******************************/
+    
+    /**
+     * Generates a GotoNamedPreset command
+     * @param   name    name of the preset to goto
+     * @return  new GotoNamedPreset command
+     */
+    public Command getGotoNamedPresetCmd(String name) {
+        return new GotoNamedPreset(this, name);
+    }
+    
+    /**
+     * Generates a GotoPreset command
+     * @param   preset  preset to goto
+     * @return  new GotoPreset command
+     */
+    public Command getGotoPresetCmd(ArmStateValues preset) {
+        return new GotoPreset(this, preset);
+    }
+    
+    /**
+     * Generates a AutoAlign command
+     * @return  new AutoAlign command
+     */
+    public Command getAutoAlignCmd() {
+        return new AutoAlign(this);
+    }
+
+    /*********************/
+    /* Subsystem Methods */
+    /*********************/
+
     /**
      * Subsystem periodic method
      */
@@ -312,6 +465,11 @@ public class Arm extends SubsystemBase {
         updateUI(targetArmRate, voltage);
         SmartDashboard.putNumber("SpeakerPosition", FieldLayout.getSpeakerPose().getX());
     }
+    
+
+    /****************************/
+    /* Subsystem Helper Methods */
+    /****************************/
 
     // TODO update armAutoAlign to work with MotorMechanismBase
     /*
@@ -393,6 +551,11 @@ public class Arm extends SubsystemBase {
         sb_atExt.setBoolean(atExtention());
         sb_atTarget.setBoolean(atTarget());
     }
+    
+
+    /****************************/
+    /* Static Singleton Methods */
+    /****************************/
 
     /**
      * Static initializer for the arm class

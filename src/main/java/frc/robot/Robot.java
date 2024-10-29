@@ -57,9 +57,6 @@ public class Robot extends TimedRobot {
         intake = IntakePizzaBox.getInstance();
         pneumatics = Pneumatics.getInstance();
         robotContainer = new RobotContainer();
-
-        // Start Camera Feedback
-        CameraServer.startAutomaticCapture();
         
         // Initialize Path Planner
         PathPlanner.init(
@@ -70,10 +67,10 @@ public class Robot extends TimedRobot {
             )
         )
 
+        // Start Camera Feedback
+        CameraServer.startAutomaticCapture();
+
         // Add named commands
-        PathPlanner.registerCommand("armIntake", new armToPreset("Intake"));        // TODO Register in Arm class
-        PathPlanner.registerCommand("armHome", new armToPreset("home"));            // TODO Register in Arm class
-        PathPlanner.registerCommand("armSpeaker", new armToPreset("Speaker"));      // TODO Register in Arm class
         PathPlanner.registerCommand("intakeNote", new intakeNote());                // TODO Register in Pizzabox Class
         PathPlanner.registerCommand("shootNote", new shootNote());                  // TODO Register in Pizzabox Class
         PathPlanner.registerCommand("prepShoot", new prepShootNote());              // TODO Register in Pizzabox Class
