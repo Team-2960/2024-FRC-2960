@@ -510,8 +510,12 @@ public abstract class MotorMechanismBase extends SubsystemBase {
      * @param   rate    target rate
      */
     public void setRate(double rate) {
-        set_rate_cmd.setRate(rate);
-        if(getCurrentCommand() != set_rate_cmd) set_rate_cmd.schedule();
+        if(rate != 0) {
+            set_rate_cmd.setRate(rate);
+            if(getCurrentCommand() != set_rate_cmd) set_rate_cmd.schedule();
+        } else {
+            holdPosition();
+        }
     }
 
     /**
