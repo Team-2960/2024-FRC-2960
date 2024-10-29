@@ -146,7 +146,6 @@ public class Arm extends SubsystemBase {
 
 
     public final MotorMech_TalonFX shoulder_joint;
-    public final Limits climber_zone;
     
     // TODO Create subsystem to manage arm extension
     private final DoubleSolenoid armExtender1;
@@ -189,49 +188,22 @@ public class Arm extends SubsystemBase {
      */
     private Arm() {
         // Initialize Shoulder Joint
-        shoulder_joint = new MotorMech_TalonFX(
-            new MotorMech_TalonFX.Settings(
-                "Shoulder Joint",
-                "Arm",
-                new PositionController.Settings(    // Position Controller Settings
-                    Constants.armRampDownDist.getDegrees() * Constants.maxArmAutoSpeed,
-                    Constants.armRampDownDist.getDegrees() * Constants.maxArmAutoSpeed,
-                    Constants.maxArmAutoSpeed,
-                    true,
-                    new Limits(0,360)
-                ),
-                {   // Rate Controller Settings
-                    new RateController.Settings(Constants.armFFS0, Constants.armPIDS0),
-                    new RateController.Settings(Constants.armFFS1, Constants.armPIDS0),
-                    new RateController.Settings(Constants.armFFS2, Constants.armPIDS0)
-                },
-                { // Soft Limits
-                    new Limits(Constants.LowerEncLimitS0, Constants.upperEncLimit),
-                    new Limits(Constants.lowerEncLimit, Constants.upperEncLimit),
-                    new Limits(Constants.lowerEncLimitS2, Constants.upperEncLimit)
-                }
-                new Limits(-1,1), // Default Position Tolerance
-                {Constants.armMotor1, Constants.armMotor2},     // Motor CAN IDs
-                {false, false},                                 // Invert Motors
-                Constants.armQuadEncoderAPort,                  // Quadrature Encoder Digital Input A 
-                Constants.armQuadEncoderBPort,                  // Quadrature Encoder Digital Input B
-                false,                                          // Quadrature Encoder Digital Input Inverted
-                Constants.armDCEncoderPort,                     // Absolute Encoder Digital Input
-                true,                                           // Absolute Encoder Inverted
-                Constants.armEncAnglePerRot.getDegrees() /      // Encoder Distance per Pulse
-                    Constants.revTBEncCountPerRev,                  
-                Constants.armEncAngleOffset.getDegrees()        // Absolute Encoder Offset
-            )
-        );
-        
-        climber_zone = new Limits(Constants.climberZoneLowerAngle.getDegrees(), Constants.climberZoneUpperAngle.getDegrees());
-
+        shoulder_joint = new MotorMech_TalonFX(Constants.shoulder_joint_settings);
         
         // TODO Move initialization to Pneumatics class
-        armExtender1 = new DoubleSolenoid(Constants.phCANID, PneumaticsModuleType.REVPH, Constants.armExt1Rev,
-                Constants.armExt1For);
-        armExtender2 = new DoubleSolenoid(Constants.phCANID, PneumaticsModuleType.REVPH, Constants.armExt2Rev,
-                Constants.armExt2For);
+        armExtender1 = new DoubleSolenoid(
+            Constants.phCANID, 
+            PneumaticsModuleType.REVPH, 
+            Constants.armExt1Rev,
+            Constants.armExt1For
+        );
+
+        armExtender2 = new DoubleSolenoid(
+            Constants.phCANID, 
+            PneumaticsModuleType.REVPH, 
+            Constants.armExt2Rev,
+            Constants.armExt2For
+        );
 
         brakeModeDisableBtn = new DigitalInput(Constants.armBrakeModeBtn);
 
@@ -343,7 +315,7 @@ public class Arm extends SubsystemBase {
      * @return true if the arm is in a safe position to extend the climber
      */
     public boolean isInClimberZone() {
-        return climber_zone.inRange(currentAngle.getDegrees());
+        return Constants.climber_zone.inRange(currentAngle.getDegrees());
     }
 
 
