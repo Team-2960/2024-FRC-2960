@@ -15,10 +15,7 @@ public class Vision  {
      * Constructor
      */
     private Vision() {
-        camera = new AprilTagPipeline(
-            new AprilTagPipeline.Settings("Camera_Module_v1", Constants.robotToCamera),
-            Drive.getInstance()
-        );
+        camera = new AprilTagPipeline(Constants.vision_settings, Drive.getInstance());
     }
 
     /**

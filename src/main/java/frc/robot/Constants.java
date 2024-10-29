@@ -360,6 +360,10 @@ public class Constants {
         new Rotation3d(36 * Math.PI / 180, 0, Math.PI)
     ); 
 
+    public static final AprilTagPipeline.Settings vision_settings = new AprilTagPipeline.Settings(
+        "Camera_Module_v1",         // Camera Name
+        Constants.robotToCamera     // Robot to Camera Transform
+    )
 
     /***********************/
     /* Pneumatics Settings */
