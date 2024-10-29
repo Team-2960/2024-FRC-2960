@@ -17,9 +17,8 @@ public class PositionController {
         public final double max_decel;      /**< Maximum deceleration rate */
         public final double max_rate;       /**< Maximum rate */
 
-        public final double min_pos;        /**< Minimum allowed position */
-        public final double max_pos;        /**< Maximum allowed position */
         public final boolean is_cont;       /**< Continuous position range  */
+        public final Limits cont_range;     /**< Range of a continuous position controller */
 
         // TODO Move to global settings
         public final double period;         /**< Update period */
@@ -29,13 +28,13 @@ public class PositionController {
          * @param   max_accel   Maximum acceleration rate
          * @param   max_decel   Maximum deceleration rate
          * @param   max_rate    Maximum rate
-         * @param   min_pos     Minimum position for continuous roll over
-         * @param   max_pos     Maximum position for continuous roll over
          * @param   is_cont     Continuous position roll over flag. Set to true to allow roll over 
-         *                          at Minimum amd Maximum positions. Limits ignored if False.
-         * @param   Param
+         *                          at lower and upper limits set in cont_range. Limits ignored if
+         *                          False.
+         * @param   cont_range  Range of a continuous position controller
+         * @param   period      Update period of the controller
          */
-        public Settings(double max_accel, double max_decel, double max_rate, double min_pos, double max_pos, boolean is_cont, double period) {
+        public Settings(double max_accel, double max_decel, double max_rate, boolean is_cont, Limits cont_range, double period) {
             this.max_accel = max_accel;
             this.max_decel = max_decel;
             this.max_rate = maxRate;
@@ -50,13 +49,25 @@ public class PositionController {
          * @param   max_accel   Maximum acceleration rate
          * @param   max_decel   Maximum deceleration rate
          * @param   max_rate    Maximum rate
-         * @param   min_pos     Minimum position for continuous roll over
-         * @param   max_pos     Maximum position for continuous roll over
          * @param   is_cont     Continuous position roll over flag. Set to true to allow roll over 
          *                          at Minimum amd Maximum positions. Limits ignored if False.
+         * @param   cont_range  Range of a continuous position controller
          */
-        public Settings(double max_accel, double max_decel, double max_rate, double min_pos, double max_pos, boolean is_cont) {
+        public Settings(double max_accel, double max_decel, double max_rate, boolean is_cont, Limits cont_range) {
             Settings(max_accel, max_decel, max_rate, min_pos, max_pos, is_cont, TimeRobot.kDefaultPeriod)
+        }
+        
+        /**
+         * Constructor. 
+         *      - cont_range is set to (0, 0)
+         *      - is_cont is set to False
+         *      - period set to TimeRobot.kDefaultPeriod.
+         * @param   max_accel   Maximum acceleration rate
+         * @param   max_decel   Maximum deceleration rate
+         * @param   max_rate    Maximum rate
+         */
+        public Settings(double max_accel, double max_decel, double max_rate) {
+            Settings(max_accel, max_decel, max_rate, false, new Limit(0,0), TimeRobot.kDefaultPeriod)
         }
     }
 
@@ -82,7 +93,7 @@ public class PositionController {
         double error = target_pos - current_pos;
 
         if(settings.is_cont) {
-            double range = settings.max_pos - settings.min_pos;
+            double range = cont_range.getRange();
             double error_low = target_pos - range - current_pos;
             double error_high = target_pos + range - current_pos;
             
