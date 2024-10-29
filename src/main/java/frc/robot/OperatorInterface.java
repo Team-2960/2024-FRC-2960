@@ -24,15 +24,57 @@ import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 
+import frc.lib2960.oi.*;
+
 public class OperatorInterface extends SubsystemBase {
     // INSTANCE
     public static OperatorInterface oi = null;
 
     // JOYSTICKS
-    private Joystick driverController;
-    private Joystick operatorController;
+    private Joystick driver_ctrl;
+    private Joystick op_ctrl;
 
     private int lastOpPOV;
+
+    // Joystick Button Objects
+    private ButtonBase slow_speed_btn = new JoystickButton(driver_ctrl, 5);
+
+    private ButtonBase track_speaker_btn = new JoystickButton(driver_ctrl, 1);
+    private ButtonBase align_speaker_btn = new JoystickButton(driver_ctrl, 2);
+    private ButtonBase center_robot_btn = new JoystickButton(driver_ctrl, 3);
+
+    private ButtonBase zero_pose_btn = new JoystickPOVToButton(driver_ctrl, JoystickPOVToButton.UP);
+
+    private ButtonBase speaker_preset_btn = new JoystickButton(op_ctrl, 1);
+    private ButtonBase line_speaker_preset_btn = new JoystickButton(op_ctrl, 2);
+    private ButtonBase amp_preset_btn = new JoystickButton(op_ctrl, 3);
+    private ButtonBase intake_preset_btn = new JoystickButton(op_ctrl, 4);
+    private ButtonBase arm_auto_align_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.RIGHT);
+    private ButtonBase home_preset_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.LEFT);
+
+    private ButtonBase manual_extend_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.UP);
+    private ButtonBase manual_retract_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.DOWN);
+
+    private ButtonBase fast_shoot_btn = new JoystickButton(driver_ctrl, 6);
+    private ButtonBase shoot_btn = new ButtonOrGroup(
+        new JoystickButton(driver_ctrl, 6),
+        new JoystickAxisToButton(op_ctrl, 3, .1)
+    );
+    private ButtonBase intake_btn = new ButtonOrGroup(
+        new JoystickAxisToButton(driver_ctrl, 3, .1),
+        new JoystickButton(op_ctrl, 5)
+    );
+    private ButtonBase intake_rev_btn = new JoystickAxisToButton(op_ctrl, 2, .2);
+    private ButtonBase shoot_prep_btn = new JoystickAxisToButton(op_ctrl, 5, .1);
+
+    private ButtonBase climb_start_btn = new ButtonOrGroup(
+        new JoystickButton(driver_ctrl, 7),
+        new JoystickButton(op_ctrl, 7)
+    );
+    private ButtonBase climb_btn = new ButtonOrGroup(
+        new JoystickButton(driver_ctrl, 8),
+        new JoystickButton(op_ctrl, 8)
+    );
 
     // LED Control
     int led_count = 69;
@@ -66,8 +108,8 @@ public class OperatorInterface extends SubsystemBase {
      */
     private OperatorInterface() {
         // Create Joysticks
-        driverController = new Joystick(0);
-        operatorController = new Joystick(1);
+        driver_ctrl = new Joystick(0);
+        op_ctrl = new Joystick(1);
 
         lastOpPOV = -1;
 
@@ -119,9 +161,6 @@ public class OperatorInterface extends SubsystemBase {
         sb_rumblePower = rumble_layout.add("Rumble Power", 0).getEntry();
         sb_rumbleTimer = rumble_layout.add("Rumble Timer", 0).getEntry();
         sb_isEndGame = rumble_layout.add("Is End Game", false).getEntry();
-
-        
-        
     }
     
 
@@ -145,47 +184,36 @@ public class OperatorInterface extends SubsystemBase {
     private void updateDrive() {
         Drive drive = Drive.getInstance();
 
-        boolean slowSpeed = driverController.getRawButton(5);
-        double maxSpeed = (slowSpeed ? .5 : 1) * Constants.maxSpeed;
-        double maxAngleRate = (slowSpeed ? .5 : 1) * Constants.maxAngularSpeed;
+        double maxSpeed = (slow_speed_btn.pressed() ? .5 : 1) * Constants.maxSpeed;
+        double maxAngleRate = (slow_speed_btn.pressed() ? .5 : 1) * Constants.maxAngularSpeed;
 
         boolean fieldRelative = true;// !driverController.getRawButton(1);
         var alliance = DriverStation.getAlliance();
         double alliance_dir = alliance.isPresent() && alliance.get() == Alliance.Red ? 1 : -1;
 
-        double xSpeed = MathUtil.applyDeadband(driverController.getRawAxis(1), 0.05) * maxSpeed * alliance_dir;
-        double ySpeed = MathUtil.applyDeadband(driverController.getRawAxis(0), 0.05) * maxSpeed * alliance_dir;
-        double rSpeed = MathUtil.applyDeadband(driverController.getRawAxis(4), 0.05) * maxAngleRate * -1;
-        if (driverController.getRawButton(1)) {
+        double xSpeed = MathUtil.applyDeadband(driver_ctrl.getRawAxis(1), 0.05) * maxSpeed * alliance_dir;
+        double ySpeed = MathUtil.applyDeadband(driver_ctrl.getRawAxis(0), 0.05) * maxSpeed * alliance_dir;
+        double rSpeed = MathUtil.applyDeadband(driver_ctrl.getRawAxis(4), 0.05) * maxAngleRate * -1;
+        
+        if (track_speaker_btn.pressed()) {
             drive.setTargetAngle(Rotation2d.fromDegrees(-90));
-        } else if (driverController.getRawButton(2)) {
-            drive.setTargetPoint(FieldLayout.getSpeakerPose().getTranslation(), FieldLayout.getSpeakerPose().getRotation());
-        } else if (driverController.getRawButton(3)){
+        } else if (align_speaker_btn.pressed()) {
+            drive.setTargetPoint(
+                FieldLayout.getSpeakerPose().getTranslation(), 
+                FieldLayout.getSpeakerPose().getRotation()
+            );
+        } else if (center_robot_btn.pressed()){
             drive.setTargetPoint(new Translation2d(0,0), Rotation2d.fromDegrees(180));
         } else {
             drive.setAngleRate(rSpeed);
         }
 
-        Climber climber = Climber.getInstance();
 
-        if (driverController.getPOV() == 0){
+        if (zero_pose_btn.pressed()) {
             drive.presetPosition(new Pose2d(0.0, 0.0, new Rotation2d()));
         }
-
-
-
-        if (driverController.getRawButton(6)) {
-            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.SHOOT);
-        }
-        if (driverController.getRawButton(8)) {
-            climber.setClimbState(ClimberStates.CLIMB);
-        }
-        if (driverController.getRawAxis(3) > .1) {
-            IntakePizzaBox.getInstance().setState(IntakePizzaBox.PizzaboxState.INTAKE);
-        }
-
         
-        climber.setRatchet(driverController.getRawButton((5)));
+        climber.setRatchet(slow_speed_btn.pressed());
 
         drive.setfieldRelative(fieldRelative);
         drive.setSpeed(xSpeed, ySpeed);
@@ -204,44 +232,25 @@ public class OperatorInterface extends SubsystemBase {
         Arm arm = Arm.getInstance();
 
         // Set Arm Presets
-        if (operatorController.getRawButton(1)) {
-            arm.setState("Speaker");
-        } else if (operatorController.getRawButton(2)) {
-            arm.setState("lineSpeaker");
-        } else if (operatorController.getRawButton(3)) {
-            arm.setState("Amp");// amp
-        } else if (operatorController.getRawButton(4)) {
-            arm.setState("Intake");
-        } else if (operatorController.getPOV() == 90 && operatorController.getPOV() != 270) {
-            arm.armAutoAlign();
-        } else if (operatorController.getPOV() == 270 && operatorController.getPOV() != 90) {
-            arm.setState("home");
-        }
-
-        // TODO Map Podium shot preset
-
+        if (speaker_preset_btn.risingEdge()) arm.setState("Speaker");
+        if (line_speaker_preset_btn.risingEdge()) arm.setState("lineSpeaker");
+        if (amp_preset_btn.risingEdge()) arm.setState("Amp");
+        if (intake_preset_btn.risingEdge()) arm.setState("Intake");
+        if (arm_auto_align_btn.risingEdge()) arm.armAutoAlign();
+        if (home_preset_btn.risingEdge()) arm.setState("home");
+        
         // Manual Arm Angle Control
-        double armManual = operatorController.getRawAxis(1);
+        double armManual = MathUtil.applyDeadband(op_ctrl.getRawAxis(1), 0.1);
         double armManualRate = armManual * Constants.maxArmSpeed;
-
-        if (Math.abs(armManual) > .1) {
-            arm.setArmRate(armManualRate);
-        } else if (arm.getControlMode() == Arm.ArmControlMode.MANUAL_RATE) {
-            arm.setArmRate(0);
-        } else if (arm.getControlMode() == Arm.ArmControlMode.MANUAL_VOLT) {
-            arm.setArmVolt(0);
-        }
-
+        
+        arm.setArmRate(armManualRate);
+        
         sb_armRate.setDouble(armManualRate);
 
         // Manual Arm Extension control
-        int opPOVAngle = operatorController.getPOV();
-        if (opPOVAngle == 0 && lastOpPOV != 0)
-            arm.stepExtOut();
-        if (opPOVAngle == 180 && lastOpPOV != 180)
-            arm.stepExtIn();
+        if (manual_extend_btn.risingEdge()) arm.stepExtOut();
+        if (manual_retract_btn.risingEdge()) arm.stepExtIn();
 
-        lastOpPOV = opPOVAngle;
 
         // Update shuffleboard
         sb_armExtendManual.setInteger(opPOVAngle);
@@ -253,16 +262,15 @@ public class OperatorInterface extends SubsystemBase {
     private void updatePizzabox() {
         IntakePizzaBox intakePB = IntakePizzaBox.getInstance();
 
-        if (operatorController.getRawButton(6)) {
+        if (fast_shoot_btn.pressed()) {
             intakePB.setState(IntakePizzaBox.PizzaboxState.FAST_SHOOT);
-        } else if (operatorController.getRawAxis(3) > .1) {
+        } else if (shoot_btn.pressed()) {
             intakePB.setState(IntakePizzaBox.PizzaboxState.SHOOT);
-        } else if (operatorController.getRawButton(5)) {
+        } else if (intake_btn.pressed()) {
             intakePB.setState(IntakePizzaBox.PizzaboxState.INTAKE);
-        } else if (operatorController.getRawAxis(2) > .2) {
-
+        } else if (intake_rev_btn.pressed()) {
             intakePB.setState(IntakePizzaBox.PizzaboxState.REVERSE);
-        } else if (operatorController.getRawAxis(5) > .1) {
+        } else if (shoot_prep_btn.pressed()) {
             intakePB.setState(IntakePizzaBox.PizzaboxState.SHOOT_PREP);
         } else {
             intakePB.setState(IntakePizzaBox.PizzaboxState.IDLE);
@@ -274,15 +282,14 @@ public class OperatorInterface extends SubsystemBase {
      */
     private void updateClimber() {
         Climber climber = Climber.getInstance();
-        // TODO implement climber controls
-        if (operatorController.getRawButton(7) || driverController.getRawButton(7)) {
+        
+        if (climb_start_btn.pressed()) {
             climber.setClimbState(ClimberStates.CLIMB_START);
-        } else if (operatorController.getRawButton(8) || driverController.getRawButton(8)) {
+        } else if (climb_button.pressed()) {
             climber.setClimbState(ClimberStates.CLIMB);
         } else {
             climber.setClimbState(ClimberStates.IDLE);
         }
-
     }
 
     /**
