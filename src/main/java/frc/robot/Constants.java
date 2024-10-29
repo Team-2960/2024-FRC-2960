@@ -8,11 +8,16 @@ import com.pathplanner.lib.util.PIDConstants;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.geometry.*;
 import frc.robot.Util.*;
+import frc.robot.*;
+import frc.lib2960.controllers.*;
 
 public class Constants {
     public static final Transform2d fieldCenterOffset = new Transform2d(8.270875, 4.105275, new Rotation2d(0.0));
 
-    // Robot constants
+    
+    /****************************/
+    /* Robot Constants Settings */
+    /****************************/
     // TODO Convert constants to units library for clarity
     public static final double updatePeriod = 0.02;//seconds
     
@@ -20,6 +25,10 @@ public class Constants {
     public static final double robotLength = 29.5 * .0254;  // Meters 
     public static final double wheelInset = 1.75 * .0254;   // Meters
     public static final double robotDiag = Math.sqrt(Math.pow(robotWidth, 2) + Math.pow(robotLength, 2)); // Meters
+
+    // Calculate swerve drive module offset from center of robot
+    public static final double swerve_x_offset = (robotLength / 2 - wheelInset);
+    public static final double swerve_y_offset = (robotWidth / 2 - wheelInset);
 
     public static final double autoClearance = .25; // Meters
 
@@ -37,7 +46,9 @@ public class Constants {
 
     public static final int revTBEncCountPerRev = 4096;
 
-    // CAN IDs
+    /*******************/
+    /* CAN ID Settings */
+    /*******************/
     public static final int shooterTop = 14;
     public static final int shooterBot = 13;
 
@@ -61,14 +72,20 @@ public class Constants {
 
     public static final int phCANID = 20;
 
-    // Digital Input Ports
+
+    /***********************/
+    /* Digital Input Ports */
+    /***********************/
     public static final int armDCEncoderPort = 0;
     public static final int armQuadEncoderAPort = 1;
     public static final int armQuadEncoderBPort = 2;
     public static final int pbPhotoeyePort = 3;
     public static final int armBrakeModeBtn = 4;
 
-    // PH Solenoid Port
+    
+    /*********************/
+    /* PH Solenoid Ports */
+    /*********************/
     public static final int armExt1Rev = 8;
     public static final int armExt1For = 9;
     public static final int armExt2Rev = 7;
@@ -76,7 +93,10 @@ public class Constants {
     public static final int climbRatchetRev = 4;
     public static final int climbRatchetFor = 5;
 
-    // Auton
+
+    /******************/
+    /* Auton Settings */
+    /******************/
     public static double autonRampDownSpeed = 0.5;  
     public static double minSpeed = 2;              // m/s
 
@@ -89,30 +109,119 @@ public class Constants {
     public static final Pose2d blueAmpSide = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
 
 
+    /***********************/
+    /* Drivetrain Settings */
+    /***********************/
+    // Swerve Base Settings
+    public static final ServeDriveBase.Settings drive_base_settings = new SwerveDriveBase.Settings(
+        4.5,            // Max linear speed (meter/s)
+        1.5 * 360,      // Max angle rate (degrees/s)
+        1.5 * 360,      // Max angle tracking acceleration (degrees/s^2)
+        1.5 * 360       // Max angle tracking deceleration (degrees/s^2)
+    )
 
-    // Drive
-    public static PIDParam drivePID = new PIDParam(.5, 0.0, 0.0);
-    public static PIDConstants drivePIDConstants = new PIDConstants(.5, 0.0, 0.0);
-    public static FFParam driveFF = FFParam.simpleMotor(0.0, 2.25, 0.0);
+    // Swerve Module Angle Position Control Settings
+    public static final PositionControl.Settings angle_pos_settings = new PositionControl.Settings(
+        360 * 5,    // Maximum Acceleration (degrees/s^2)
+        360 * 5,    // Maximum Deceleration (degrees/s^2)
+        360 * 2,    // Maximum Rate (degrees/s)
+        0,          // Minimum Angle
+        360,        // Maximum Angle
+        true        // Is Continuous
+    )
 
-    public static PIDParam driveAngPID = new PIDParam(0.05, 0.0, 0.001);
-    public static PIDConstants driveAngPIDConstants = new PIDConstants(0.05, 0.0, 0.001);
-    public static FFParam driveAngFF = FFParam.simpleMotor(0.1, 0.1, 0);
+    // Swerve Module Angle Rate Control Settings
+    public static final RateControl.Settings angle_rate_settings = new RateControl.Settings(
+        new PIDParam(0.05, 0.0, 0.001),
+        FFParam.simpleMotor(0.1, 0.1, 0)
+    )
 
-    public static final double maxSpeed = 4.5;
-    public static final double maxAngularSpeed = 1.5 * 2 * Math.PI;
-    public static final double maxAutoAngularSpeed = 0.5 * 2 * Math.PI;
+    // Swerve Module Drive Rate Control Settings
+    public static final RateControl.Settings drive_rate_settings = new RateControl.Settings(
+        new PIDParam(.5, 0.0, 0.0),
+        FFParam.simpleMotor(0.0, 2.25, 0.0)
+    )
 
-    public static final double swerveAngleRampRate = 7; 
-    public static final Rotation2d swerveAngleRampDist = Rotation2d.fromDegrees(30);
+    // Front Left Swerve Module Settings
+    public static final Swerve fl_swerve_settings = new Swerve.Settings(
+        "Front Left",           // Module Name
+        new Translation2d(      // Module Translation
+            swerve_x_offset, 
+            swerve_y_offset
+        ),    
+        drive_ratio,            // Drive gear ratio
+        wheel_radius,           // Drive wheel radius in meters
+        angle_pos_settings,     // Swerve angle position control settings
+        angle_rate_settings,    // Swerve angle rate control settings
+        drive_rate_settings,    // Swerve drive rate control settings
+        frontLeftAngleM,        // Angle motor CAN ID
+        frontLeftDriveM,        // Drive Motor CAN ID
+        true,                   // Invert Angle Motor
+        true,                   // Invert Drive Motor
+        true                    // Invert Angle Encoder
+    );
 
-    public static final double maxSwerveAngularSpeed = Math.PI * 4;     //Rad per second
-    public static final double maxSwerveAngularAccel = Math.PI * 10;    //Rad per second ^ 2
+    // Front Right Swerve Module Settings
+    public static final Swerve fr_swerve_settings = new Swerve.Settings(
+        "Front Right",          // Module Name
+        new Translation2d(      // Module Translation
+            swerve_x_offset, 
+            -swerve_y_offset
+        ),    
+        drive_ratio,            // Drive gear ratio
+        wheel_radius,           // Drive wheel radius in meters
+        angle_pos_settings,     // Swerve angle position control settings
+        angle_rate_settings,    // Swerve angle rate control settings
+        drive_rate_settings,    // Swerve drive rate control settings
+        frontRightAngleM,       // Angle motor CAN ID
+        frontRightDriveM,       // Drive Motor CAN ID
+        true,                   // Invert Angle Motor
+        false,                  // Invert Drive Motor
+        true                    // Invert Angle Encoder
+    );
 
-    public static final Rotation2d driveAngleRampDistance = Rotation2d.fromDegrees(10);
-    public static final PIDParam angleAlignPID = new PIDParam(4, 0, 0.3);
+    // Rear Left Swerve Module Settings
+    public static final Swerve rl_swerve_settings = new Swerve.Settings(
+        "Rear Left",            // Module Name
+        new Translation2d(      // Module Translation
+            -swerve_x_offset, 
+            swerve_y_offset
+        ),    
+        drive_ratio,            // Drive gear ratio
+        wheel_radius,           // Drive wheel radius in meters
+        angle_pos_settings,     // Swerve angle position control settings
+        angle_rate_settings,    // Swerve angle rate control settings
+        drive_rate_settings,    // Swerve drive rate control settings
+        backLeftAngleM,         // Angle motor CAN ID
+        backLeftDriveM,         // Drive Motor CAN ID
+        true,                   // Invert Angle Motor
+        true,                   // Invert Drive Motor
+        true                    // Invert Angle Encoder
+    );
 
-    // Arm
+    // Rear Right Swerve Module Settings
+    public static final Swerve rr_swerve_settings = new Swerve.Settings(
+        "Rear Right",           // Module Name
+        new Translation2d(      // Module Translation
+            -swerve_x_offset, 
+            -swerve_y_offset
+        ),    
+        drive_ratio,            // Drive gear ratio
+        wheel_radius,           // Drive wheel radius in meters
+        angle_pos_settings,     // Swerve angle position control settings
+        angle_rate_settings,    // Swerve angle rate control settings
+        drive_rate_settings,    // Swerve drive rate control settings
+        frontRightAngleM,       // Angle motor CAN ID
+        frontRightDriveM,       // Drive Motor CAN ID
+        true,                   // Invert Angle Motor
+        false,                  // Invert Drive Motor
+        true                    // Invert Angle Encoder
+    );
+
+
+    /****************/
+    /* Arm Settings */
+    /****************/
     public static PIDParam armPIDS0 = new PIDParam(0.01, 0.0, 0.0);
     public static FFParam armFFS0 = FFParam.arm(.1, 2, 0.25, 0.0);
 
@@ -159,7 +268,10 @@ public class Constants {
     public static final double LowerEncLimitS0 = .42 - 16/360;
     public static final double lowerEncLimitS2 = .2;
 
-    // Pizzabox
+
+    /*********************/
+    /* Pizzabox Settings */
+    /*********************/
     public static final double intakeInVoltage = 8.3;
     public static final double intakeShootVoltage = 8.3;
     public static final double intakeOutVoltage = 8.3;
@@ -172,13 +284,18 @@ public class Constants {
     public static final double shooterMinShootSpeed = 4000 ;     // rpm
     public static final double shooterFastShootSpeed = 5500;//rpm
 
-    // Climber
+    
+    /********************/
+    /* Climber Settings */
+    /********************/
     public static final double winchMaxExtension = 88;   // in.
     public static final double winchMinLimit = 1.5; //in
-    public static final double 
-    winchRatchedDelay = .25;  // seconds
+    public static final double winchRatchedDelay = .25;  // seconds
 
-    // Pneumatics
+
+    /***********************/
+    /* Pneumatics Settings */
+    /***********************/
     public static final double minPressure = 100;
     public static final double maxPressure = 120;
 }
