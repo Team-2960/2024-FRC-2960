@@ -25,6 +25,8 @@
 import frc.lib2960.util.*;
 import frc.lib2960.controllers.*;
 
+import frc.lib2960_pathplanner.PathPlanner;
+
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.math.kinematics.*;
@@ -199,6 +201,31 @@ public abstract class SwerveDriveBase extends SubsystemBase {
         
     }
 
+    /**
+     * Command to set the modules to point toward center of the robot to prevent the robot from 
+     * rolling freely.
+     */
+    public class CrossWheelsCommand extends Command {
+        private final SwerveDriveBase dt;   /**< Drivetrain object reference */
+
+        /**
+         * Constructor
+         * @param   dt      Drivetrain object reference
+         */
+        public CrossWheelsCommand(SwerveDriveBase dt) {
+            this.dt = dt;
+        }
+
+        /**
+         * Initialize method. Set drivetrain to crossed wheels
+         */
+        @Override
+        public void initialize() {
+            dt.updateCrossWheels();
+        }
+
+    }
+
     // TODO implement TargetTrackCommand
 
     private final Settings settings;                    /**< Drivetrain settings */
@@ -220,6 +247,7 @@ public abstract class SwerveDriveBase extends SubsystemBase {
     private final AngleRateCommand angle_rate_cmd;      /**< Internal Angle Rate command */
     private final AngleTrackCommand angle_track_cmd;    /**< Internal Angle Tracking command */
     private final PointTrackCommand point_track_cmd;    /**< Internal Point Tracking command */
+    private final CrossWheelsCommand cross_wheels_cmd;  /**< Internal Cross Wheels command */
 
     // Shuffleboard
     private GenericEntry sb_posEstX;
@@ -296,10 +324,14 @@ public abstract class SwerveDriveBase extends SubsystemBase {
         // Initialize internal commands
         angle_rate_cmd = new AngleRateCommand(this);
         angle_track_cmd = new AngleTrackCommand(this, new Rotation2d());
-        point_track_cmd = new PointTrackCommand(this, new Translation2d);
+        point_track_cmd = new PointTrackCommand(this, new Translation2d());
+        cross_wheels_cmd = new CrossWheelsCommand(this);
 
         // Set default command
         setDefaultCommand(angle_rate_cmd);
+
+        // Register Named Command with PathPlanner
+        PathPlanner.registerCommand("Cross Wheels", cross_wheels_cmd);
     } 
 
 
@@ -440,6 +472,13 @@ public abstract class SwerveDriveBase extends SubsystemBase {
     }
 
     /**
+     * Sets the robot to have crossed wheels
+     */
+    public void setCrossedWheels() {
+        runCrossWheelsCmd();
+    }
+
+    /**
      * Cancels any of the non-default commands
      */
     public void disableAutoTracking() {
@@ -516,6 +555,7 @@ public abstract class SwerveDriveBase extends SubsystemBase {
     /**
      * Creates an Angle Tracking Command
      * @param   target              Target angle
+     * @return  new getAngleTrackCommand
      */
     public AngleTrackCommand getAngleTrackCommand(Rotation2d target) {
         return new AngleTrackCommand(this, target);
@@ -524,6 +564,7 @@ public abstract class SwerveDriveBase extends SubsystemBase {
     /**
      * Creates an Point Tracking Command
      * @param   target              Target point
+     * @return  new getPointTrackCommand
      */
     public PointTrackCommand getPointTrackCommand(Translation2d target) {
         return new PointTrackCommand(this, target);
@@ -533,11 +574,19 @@ public abstract class SwerveDriveBase extends SubsystemBase {
      * Creates an Point Tracking Command
      * @param   target              Target point
      * @param   offset              Offset angle
+     * @return  new getPointTrackCommand
      */
     public PointTrackCommand getPointTrackCommand(Translation2d target, Rotation2d offset) {
         return new PointTrackCommand(this, target, offset);
     }
 
+    /**
+     * Creates CrossWheels Command
+     * @return  new CrossWheelsCommand
+     */
+    public CrossWheelsCommand getCrossWheelsCommand() {
+        return new CrossWheelsCommand(this);
+    }
 
     /*********************************/
     /* Angle Tracking Helper Methods */
@@ -620,6 +669,16 @@ public abstract class SwerveDriveBase extends SubsystemBase {
         for(int i = 0; i < modules.size(); i++) modules[i].setDesiredState(module_states[i]);
     }
 
+    /**
+     * Sets the swerve drive wheels to all point toward the center of the robot so the robot 
+     * won't roll freely
+     */
+    private void updateCrossWheels() {
+        for(var module: modules) {
+            Rotation2d angle = module.settings.translation.getAngle();
+            module.setDesiredState(new SwerveModuleState(0,angle));
+        }
+    }
             
     /****************************/
     /* Protected Helper Methods */
@@ -645,6 +704,13 @@ public abstract class SwerveDriveBase extends SubsystemBase {
      */
     protected void runPointTrackCmd() {
         if(getCurrentCommand() != point_track_cmd) point_track_cmd.schedule();
+    }
+
+    /**
+     * Sets the current command to point_track_cmd if it is not already running
+     */
+    protected void runCrossWheelsCmd() {
+        if(getCurrentCommand() != cross_wheels_cmd) cross_wheels_cmd.schedule();
     }
             
     /***************************/
