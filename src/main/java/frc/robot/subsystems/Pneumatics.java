@@ -23,9 +23,7 @@ public class Pneumatics {
             )
         )
 
-            
-        compressor = new Compressor(Constants.phCANID, PneumaticsModuleType.REVPH);
-        compressor.enableAnalog(Constants.minPressure, Constants.maxPressure);
+        ph.enableCompressor(true);
     }
 
     /**
