@@ -31,6 +31,7 @@
     "Brushless",
     "decel",
     "Feedforward",
+    "Holonomic",
     "navx",
     "Odometry",
     "Pizzabox"

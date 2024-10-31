@@ -146,7 +146,7 @@ public class AprilTagPipeline extends SubsystemBase {
     private double last_timestamp;                  /**< Timestamp of the most recent pose estimation */
 
     // TODO Make DrivetrainBase class to as parent to SwerveDriveBase
-    private SwerveDriveBase dt;                     /**< Drivetrain object to update */
+    private Drivetrain dt;                     /**< Drivetrain object to update */
 
     // Shuffleboard 
     private GenericEntry sb_PoseX;
@@ -160,7 +160,7 @@ public class AprilTagPipeline extends SubsystemBase {
      * @param   settings    Pipeline settings
      * @param   dt          Drivetrain object to update
      */
-    public AprilTagPipeline(Settings settings, SwerveDriveBase dt) {
+    public AprilTagPipeline(Settings settings, Drivetrain dt) {
         this.settings = settings;
         this.dt = dt;
 

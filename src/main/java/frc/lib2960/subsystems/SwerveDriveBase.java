@@ -25,8 +25,6 @@
 import frc.lib2960.util.*;
 import frc.lib2960.controllers.*;
 
-import frc.lib2960_pathplanner.PathPlanner;
-
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.math.kinematics.*;
@@ -34,7 +32,7 @@ import edu.wpi.first.networktables.*;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 
-public abstract class SwerveDriveBase extends SubsystemBase {
+public abstract class SwerveDriveBase extends SubsystemBase implements Drivetrain {
     /**
      * Robot drivetrain settings
      */
