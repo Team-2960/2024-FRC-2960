@@ -32,7 +32,7 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.commands.PathPLannerAuto;
 import com.pathplanner.lib.util.*;
 
-import frc.lib2960.subsystems.SwerveDriveBase;
+import frc.lib2960.subsystems.*;
 import frc.lib2960.util.*;
 
 /**
@@ -40,22 +40,44 @@ import frc.lib2960.util.*;
  */
 public class PathPlanner {
 
-    /**
-     * PathPlanner settings
-     */
-    public class Settings {
-        public final PIDParam translation;  /**< Translation PID parameters */
-        public final PIDParam rotation;     /**< Rotation PID Parameters */
-    }
-
     private static SendableChooser<Command> autoChooser = null; /**< Auton Selector */
 
     /**
      * Constructor
-     * @param   dt          drivetrain object reference
-     * @param   settings    PPCommandGen settings
+     * @param   dt          Differential drivetrain object reference
+     * @param   delta_t     Update period
      */
-    public static init(SwerveDriveBase dt, Settings settings) {
+    public static init(DiffDriveBase dt, double delta_t){
+        // TODO Allow other implementations
+        PPLTVController controller = new PPLTVController(delta_t);
+        
+        init(dt, controller);
+    }
+
+
+    /**
+     * Constructor
+     * @param   dt          Swerve drivetrain object reference
+     * @param   translation Translation PID parameters
+     * @param   rotation    Rotation PID parameters
+     */
+    public static init(SwerveDriveBase dt, PIDParam translation, PIDParam rotation) {
+        // Create Holonomic controller
+        PPHolonomicDriveController controller =  new PPHolonomicDriveController(
+            toPIDConstants(translation),
+            toPIDConstants(rotation)
+        );
+
+        // Finish initializing PathPlanner
+        init(dt, controller);
+    }
+
+    /**
+     * Constructor
+     * @param   dt          drivetrain object reference
+     * @param   controller  PathPlanner controller object
+     */
+    public static init(Drivetrain dt, PathFollowingController controller) {
         // Initialize robot config from GUI Settings
         RobotConfig config;
         try{
@@ -71,14 +93,11 @@ public class PathPlanner {
             dt::resetPoseEst,
             dt::getRobotRelativeSpeeds,
             dt::setRobotRelativeSpeeds,
-            new PPHolonomicDriveController(
-                toPIDConstants(settings.translation),
-                toPIDConstants(settings.rotation)
-            ),
+            controller,
             config,
             this::isRedAlliance,
             dt
-        )
+        );
 
         // Initialize Shuffleboard
         // TODO Allow a default auton to be set
