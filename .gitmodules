@@ -7,3 +7,6 @@
 [submodule "src/main/java/frc/lib2960_pathplanner"]
 	path = src/main/java/frc/lib2960_pathplanner
 	url = https://github.com/Team-2960/lib2960_pathplanner.git
+[submodule "src/main/java/frc/lib2960_photonvision"]
+	path = src/main/java/frc/lib2960_photonvision
+	url = https://github.com/Team-2960/lib2960_photonvision.git
