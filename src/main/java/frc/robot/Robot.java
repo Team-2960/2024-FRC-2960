@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 import frc.robot.subsystems.*;
-import frc.robot.auton.commands.arm.*;
 import frc.robot.auton.commands.pizzabox.*;
 
 import frc.lib2960_pathplanner.PathPlanner;
@@ -43,7 +42,6 @@ public class Robot extends TimedRobot {
     private Climber climber;
     private IntakePizzaBox intake;
     private Pneumatics pneumatics;
-    private RobotContainer robotContainer;
     private Command autonomousCommand;
 
     @Override
@@ -51,7 +49,7 @@ public class Robot extends TimedRobot {
         // Get instance of all core subsystems
         drive = Drive.getInstance();
         oi = OperatorInterface.getInstance();
-        vision = vision.getInstance();
+        vision = Vision.getInstance();
         arm = Arm.getInstance();
         climber = Climber.getInstance();
         intake = IntakePizzaBox.getInstance();
@@ -65,7 +63,7 @@ public class Robot extends TimedRobot {
                 new PIDParam(5.0, 0.0, 0.0),
                 new PIDParam(5.0, 0.0, 0.0)
             )
-        )
+        );
 
         // Start Camera Feedback
         CameraServer.startAutomaticCapture();

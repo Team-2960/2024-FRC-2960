@@ -31,7 +31,7 @@ import edu.wpi.first.math.kinematics.*;
 public interface Drivetrain {
     public void setRobotRelativeSpeeds(ChassisSpeeds speeds);
     public ChassisSpeeds getRobotRelativeSpeeds();
-    public Pose2d getEstimatedPos() 
+    public Pose2d getEstimatedPos(); 
     public void resetPoseEst(Pose2d new_pose);
     public void addVisionPose(Pose2d pose, double time_stamp);
     public void addVisionPose(Pose2d pose, double time_stamp, Matrix<N3,​N1> std_dev);

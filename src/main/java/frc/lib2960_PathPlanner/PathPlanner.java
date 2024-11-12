@@ -95,7 +95,7 @@ public class PathPlanner {
             dt::setRobotRelativeSpeeds,
             controller,
             config,
-            this::isRedAlliance,
+            PathPlanner::isRedAlliance,
             dt
         );
 
@@ -106,7 +106,7 @@ public class PathPlanner {
         var layout = Shuffleboard.getTab("Main")
             .getLayout("Auton", BuiltInLayouts.kList)
             .withSize(1, 4);
-        layout.add("Auton Selector", autoChooser)
+        layout.add("Auton Selector", autoChooser);
     }
 
     /**
@@ -141,7 +141,7 @@ public class PathPlanner {
      */
     public static boolean isRedAlliance() {
         boolean result = false;
-        var alliance = DriverStation.getAlliance
+        var alliance = DriverStation.getAlliance();
 
         if(alliance.is_present()) result = alliance.get() == DriverStation.Alliance.Red;
 

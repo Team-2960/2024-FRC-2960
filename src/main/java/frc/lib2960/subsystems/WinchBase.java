@@ -22,8 +22,6 @@
 
  package ftc.lib2960.subsystems;
 
- package ftc.lib2960.subsystems;
-
  import frc.lib2960.util.*;
  import frc.lib2960.controllers.*;
  

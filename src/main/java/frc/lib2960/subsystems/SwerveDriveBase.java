@@ -273,7 +273,7 @@ public abstract class SwerveDriveBase extends SubsystemBase implements Drivetrai
         this.modules = modules;
 
         // Get Module Positions
-        Translation2d module_positions[] = getModuleTranslation()
+        Translation2d module_positions[] = getModuleTranslation();
 
         // Get Module States
         SwerveModuleState module_states[] = new SwerveModuleStates[modules.size()];
@@ -297,7 +297,7 @@ public abstract class SwerveDriveBase extends SubsystemBase implements Drivetrai
             0,
             360,
             true
-        )
+        );
 
         angle_tracker = new PositionController(angle_tracker_settings);
 
@@ -480,7 +480,7 @@ public abstract class SwerveDriveBase extends SubsystemBase implements Drivetrai
      * Cancels any of the non-default commands
      */
     public void disableAutoTracking() {
-        runAngleRateCmd()
+        runAngleRateCmd();
     }
 
     /*****************************/
@@ -599,7 +599,7 @@ public abstract class SwerveDriveBase extends SubsystemBase implements Drivetrai
         double cur_pos = getAngle().getDegrees();
         double cur_rate = getAngleRate();
 
-        return angle_tracker.update(cur_pos, cur_rate, target.getDegrees())
+        return angle_tracker.update(cur_pos, cur_rate, target.getDegrees());
     }
 
 

@@ -9,10 +9,10 @@ import com.kauailabs.navx.frc.AHRS;
 
 import frc.robot.Constants;
 
-import frc.lib2960.subsystem.SwerveDriveBase;
+import frc.lib2960.subsystems.SwerveDriveBase;
 
 public class Drive extends SwerveDriveBase {
-    private static Drive drive = null; // Statically initialized instance
+    private static Drive instance = null; // Statically initialized instance
 
     private final AHRS navx;
 
@@ -20,20 +20,19 @@ public class Drive extends SwerveDriveBase {
      * Constructor
      */
     private Drive() {
+        super(
+            Constants.drive_base_settings, 
+            new Swerve[]{
+                new Swerve(Constants.fl_swerve_settings), 
+                new Swerve(Constants.fr_swerve_settings), 
+                new Swerve(Constants.rl_swerve_settings), 
+                new Swerve(Constants.rr_swerve_settings)
+            }
+        );
 
         // Initialize NavX
         navx = new AHRS(SPI.Port.kMXP);
         navx.reset(); 
-
-        // Create Module List
-        Swerve[] modules = {
-            new Swerve(Constants.fl_swerve_settings), 
-            new Swerve(Constants.fr_swerve_settings), 
-            new Swerve(Constants.rl_swerve_settings), 
-            new Swerve(Constants.rr_swerve_settings)
-        };
-                
-        super(Constants.drive_base_settings, modules);
     }
 
     /**
@@ -52,5 +51,11 @@ public class Drive extends SwerveDriveBase {
     @Override
     public double getAngleRate() {
         // TODO Re-implement using Units library
-        return return navx.getRate();
+        return navx.getRate();
     }
+
+    public static Drive getInstance() {
+        if(instance == null) instance = new Drive();
+        return instance;
+    }
+}

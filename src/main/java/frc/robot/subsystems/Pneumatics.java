@@ -21,7 +21,7 @@ public class Pneumatics {
                 Constants.minPressure,
                 Constants.maxPressure
             )
-        )
+        );
 
         ph.enableCompressor(true);
     }

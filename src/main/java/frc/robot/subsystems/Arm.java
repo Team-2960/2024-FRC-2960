@@ -342,7 +342,7 @@ public class Arm extends SubsystemBase {
      * @param rate new arm rate
      */
     public void setArmRate(double rate) {
-        shoulder_joint.setRate(rate)
+        shoulder_joint.setRate(rate);
     }
 
     /**

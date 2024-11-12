@@ -72,7 +72,7 @@ public class DiffDriveBase extends SubSystemBase implements Drivetrain {
         // TODO Implement
     }
 
-    public void addVisionPose(Pose2d pose, double time_stamp, Matrix<N3,​N1> std_dev {
+    public void addVisionPose(Pose2d pose, double time_stamp, Matrix<N3,​N1> std_dev) {
         // TODO Implement
     }
 }

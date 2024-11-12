@@ -173,7 +173,7 @@ public abstract class RateController {
         self.settings = settings;
 
         // Initialize PID Controller
-        pidControl = PIDController(settings.pid.kP, settings.pid.kI, settings.pid.kD)
+        pidControl = PIDController(settings.pid.kP, settings.pid.kI, settings.pid.kD);
         
         // Initialize Feedforward controller
         if(settings.ff.type == FFParam.FFType.SIMPLE) {

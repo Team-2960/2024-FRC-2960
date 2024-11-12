@@ -105,7 +105,7 @@ public abstract class MotorMechanismBase extends SubsystemBase {
          */
         @Override
         public void execute() {
-            mechanism.getPosTrackingRate(target)
+            mechanism.getPosTrackingRate(target);
         }
     }
 
@@ -121,7 +121,7 @@ public abstract class MotorMechanismBase extends SubsystemBase {
          * @param   mechanism       Mechanism object reference
          * @param   target_voltage  Target voltage for the mechanism
          */
-        public SetVoltageCommand(MotorMechanismBase mechanism, double voltage) {
+        public SetVoltageCommand(MotorMechanismBase mechanism, double target_voltage) {
             this.mechanism = mechanism;
             this.target_voltage = target_voltage;
         }
@@ -330,7 +330,7 @@ public abstract class MotorMechanismBase extends SubsystemBase {
         // Initialize Controllers
         pos_ctrl = new PositionController(settings.pos_ctrl);
 
-        int rate_ctrl_count = settings.rate_ctrls.size();
+        int rate_ctrl_count = settings.rate_ctrls.length;
         rate_ctrls = new RateController[rate_ctrl_count];
 
         for(int i = 0; i < rate_ctrl_count; i++) {
@@ -456,7 +456,7 @@ public abstract class MotorMechanismBase extends SubsystemBase {
      * @return  true if at limit
      */
     public boolean atLimit() {
-        return atLowerLimitSwitch()
+        return atLowerLimitSwitch();
     }
 
     /**
@@ -485,7 +485,7 @@ public abstract class MotorMechanismBase extends SubsystemBase {
      * @param   index   new rate controller index
      */
     public void setRateCtrlIndex(int index) {
-        if(0 <= index && index < rate_ctrls.size()) cur_rate_ctrl = index;
+        if(0 <= index && index < rate_ctrls.length) cur_rate_ctrl = index;
     }
 
     /**
@@ -670,8 +670,8 @@ public abstract class MotorMechanismBase extends SubsystemBase {
     public abstract double getMotorVoltage();
     public abstract double getMotorCurrent();
 
-    public boolean atLowerLimitSensor() { return false }
-    public boolean atUpperLimitSensor() { return false }
+    public boolean atLowerLimitSensor() { return false; }
+    public boolean atUpperLimitSensor() { return false; }
 
     public abstract void setMotorVoltage(double voltage);
 }

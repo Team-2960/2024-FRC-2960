@@ -52,7 +52,8 @@ public class Swerve extends SwerveModuleBase {
             boolean invert_angle_motor,
             boolean invert_angle_enc
         ) {
-            super(name, translation, drive_ratio, wheel_radius, anglePosCtrl, angleRateCtrl, driveRateCtrl)
+            super(name, translation, drive_ratio, wheel_radius, anglePosCtrl, angleRateCtrl, driveRateCtrl);
+
             this.drive_motor_id = drive_motor_id;
             this.angle_motor_id = angle_motor_id;
             this.invert_drive_motor = invert_drive_motor;
@@ -72,6 +73,9 @@ public class Swerve extends SwerveModuleBase {
      * @param   settings    Swerve module settings
      */
     public Swerve(Settings settings) {
+        // Initialize parent class
+        super(settings);
+
         // Initialize Angle Motor
         angle_motor = new CANSparkMax(settings.angle_motor_id, MotorType.kBrushless);
         angle_motor.setInverted(settings.invert_angle_motor);
@@ -83,9 +87,6 @@ public class Swerve extends SwerveModuleBase {
         // Initialize Angle Sensor
         encAngle = angle_motor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
         encAngle.setInverted(settings.invert_angle_enc);
-
-        // Initialize parent class
-        super(settings)
     }
 
     /**

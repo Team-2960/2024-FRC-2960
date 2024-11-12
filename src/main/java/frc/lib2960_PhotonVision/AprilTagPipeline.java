@@ -245,16 +245,16 @@ public class AprilTagPipeline extends SubsystemBase {
                 }
             }
         }
+    }
 
-        /**
-         * Updates Shuffleboard
-         */
-        private void updateUI() {
-            sb_PoseX.setDouble(last_pose.getX());
-            sb_PoseY.setDouble(last_pose.getY());
-            sb_PoseR.setDouble(last_pose.getRotation().getDegrees());
-            sb_lastTimestamp.setDouble(last_timestamp);
-            sb_lastUpdatePeriod.setDouble(Timer.getFPGATimestamp() - last_timestamp);
-        }
+    /**
+     * Updates Shuffleboard
+     */
+    private void updateUI() {
+        sb_PoseX.setDouble(last_pose.getX());
+        sb_PoseY.setDouble(last_pose.getY());
+        sb_PoseR.setDouble(last_pose.getRotation().getDegrees());
+        sb_lastTimestamp.setDouble(last_timestamp);
+        sb_lastUpdatePeriod.setDouble(Timer.getFPGATimestamp() - last_timestamp);
     }
 }

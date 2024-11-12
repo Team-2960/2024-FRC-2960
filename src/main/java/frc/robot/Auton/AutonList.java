@@ -12,9 +12,8 @@ import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
-import frc.robot.Auton.Commands.Drive.*;
-import frc.robot.Auton.Commands.Arm.*;
-import frc.robot.Auton.Commands.Pizzabox.*;
+import frc.robot.auton.commands.drive.*;
+import frc.robot.auton.commands.pizzabox.*;
 import frc.robot.Util.FieldLayout;
 import frc.robot.subsystems.Drive;
 /*

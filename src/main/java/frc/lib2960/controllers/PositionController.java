@@ -24,7 +24,6 @@ package frc.lib2960.controllers;
 
 import frc.lib2960.util.*;
 
-import edu.wpi.first.math.controller.*;
 import edu.wpi.first.wpilibj.TimedRobot;
 
 /**
@@ -59,10 +58,9 @@ public class PositionController {
         public Settings(double max_accel, double max_decel, double max_rate, boolean is_cont, Limits cont_range, double period) {
             this.max_accel = max_accel;
             this.max_decel = max_decel;
-            this.max_rate = maxRate;
-            this.min_pos = min_pos;
-            this.max_pos = max_pos;
+            this.max_rate = max_rate;
             this.is_cont = is_cont;
+            this.cont_range = cont_range;
             this.period = period;
         }
         
@@ -76,7 +74,12 @@ public class PositionController {
          * @param   cont_range  Range of a continuous position controller
          */
         public Settings(double max_accel, double max_decel, double max_rate, boolean is_cont, Limits cont_range) {
-            Settings(max_accel, max_decel, max_rate, min_pos, max_pos, is_cont, TimeRobot.kDefaultPeriod)
+            this.max_accel = max_accel;
+            this.max_decel = max_decel;
+            this.max_rate = max_rate;
+            this.is_cont = is_cont;
+            this.cont_range = cont_range;
+            this.period = TimedRobot.kDefaultPeriod;
         }
         
         /**
@@ -89,11 +92,16 @@ public class PositionController {
          * @param   max_rate    Maximum rate
          */
         public Settings(double max_accel, double max_decel, double max_rate) {
-            Settings(max_accel, max_decel, max_rate, false, new Limit(0,0), TimeRobot.kDefaultPeriod)
+            this.max_accel = max_accel;
+            this.max_decel = max_decel;
+            this.max_rate = max_rate;
+            this.is_cont = false;
+            this.cont_range = new Limits(0,0);
+            this.period = TimedRobot.kDefaultPeriod;
         }
     }
 
-    private final Settings settings;    /**< Position Controller Settings */
+    public final Settings settings;    /**< Position Controller Settings */
 
     /**
      * Constructor
@@ -115,12 +123,12 @@ public class PositionController {
         double error = target_pos - current_pos;
 
         if(settings.is_cont) {
-            double range = cont_range.getRange();
+            double range = this.settings.cont_range.getRange();
             double error_low = target_pos - range - current_pos;
             double error_high = target_pos + range - current_pos;
             
-            if(Math.abs(error) > abs(error_low)) error = error_low;
-            if(Math.abs(error) > abs(error_high)) error = error_high;
+            if(Math.abs(error) > Math.abs(error_low)) error = error_low;
+            if(Math.abs(error) > Math.abs(error_high)) error = error_high;
         }
 
         double dir = error > 0 ? 1 : -1;
@@ -129,7 +137,7 @@ public class PositionController {
         double rate = dir * settings.max_rate;
         double accel_rate = dir * settings.max_accel * settings.period + current_rate;
         
-        double decel_dist = Math.pow(max_speed , 2) / (2 * settings.max_decel);
+        double decel_dist = Math.pow(settings.max_rate, 2) / (2 * settings.max_decel);
         double decel_rate = error / decel_dist  * settings.max_decel;
         
         if(Math.abs(rate - accel_rate) > settings.max_rate) rate = accel_rate;

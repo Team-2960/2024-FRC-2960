@@ -46,16 +46,8 @@ public class Limits {
      * @param   upper_bound     Acceptable distance above nominal value
      */
     public Limits(double nominal, double lower_bound, double upper_bound) {
-        Limit(nominal - lower_bound, nominal + upper_bound);
-    }
-    
-    /**
-     * Constructor
-     * @param   nominal         Nominal value
-     * @param   tolerance       Acceptable range around nominal value
-     */
-    public Limits(double nominal, double tolerance) {
-        Limits(nominal, tolerance, tolerance);
+        this.lower = nominal - lower_bound;
+        this.upper = nominal + upper_bound;
     }
 
     /**

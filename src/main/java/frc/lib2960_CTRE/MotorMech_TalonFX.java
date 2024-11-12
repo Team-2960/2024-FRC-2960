@@ -99,8 +99,10 @@ class MotorMech_TalonFX extends MotorMechanismBase {
      * @param   settings    Settings object
      */
     public MotorMech_TalonFX(Settings settings) {
+        super(settings, settings.motor_ids.length);
+
         // Initialize Motors
-        int motor_count = settings.motor_ids.size();
+        int motor_count = settings.motor_ids.length;
         motors = new TalonFX[motor_count];
 
         for(int i = 0; i < motor_count; i++) {
@@ -117,7 +119,6 @@ class MotorMech_TalonFX extends MotorMechanismBase {
         quadArmEncoder.setDistancePerPulse(settings.enc_dpp);
 
         // Initialize parent class
-        super(settings, motor_count);
     }
 
     /**
