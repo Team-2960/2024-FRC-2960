@@ -20,7 +20,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
- package frc.lib2960_ctre;
+package frc.lib2960_ctre;
 
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Encoder;

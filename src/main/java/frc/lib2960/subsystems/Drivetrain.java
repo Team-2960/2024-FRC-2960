@@ -22,8 +22,10 @@
 
 package ftc.lib2960.subsystems;
 
-import edu.wpi.first.math.geometry.*;
-import edu.wpi.first.math.kinematics.*;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 /**
  * Interface for all drivetrain objects
@@ -34,5 +36,5 @@ public interface Drivetrain {
     public Pose2d getEstimatedPos(); 
     public void resetPoseEst(Pose2d new_pose);
     public void addVisionPose(Pose2d pose, double time_stamp);
-    public void addVisionPose(Pose2d pose, double time_stamp, Matrix<N3,​N1> std_dev);
+    public void addVisionPose(Pose2d pose, double time_stamp, Vector<N3> std_dev);
 }

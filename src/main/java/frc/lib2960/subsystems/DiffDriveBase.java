@@ -25,10 +25,13 @@ package ftc.lib2960.subsystems;
 import frc.lib2960.util.*;
 import frc.lib2960.controllers.*;
 
-import edu.wpi.first.math.geometry.*;
-import edu.wpi.first.wpilibj2.command.*;
-import edu.wpi.first.math.kinematics.*;
-import edu.wpi.first.networktables.*;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj2.command.SubSystemBase;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.networktables.GenericEntry;
 
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 
@@ -72,7 +75,7 @@ public class DiffDriveBase extends SubSystemBase implements Drivetrain {
         // TODO Implement
     }
 
-    public void addVisionPose(Pose2d pose, double time_stamp, Matrix<N3,​N1> std_dev) {
+    public void addVisionPose(Pose2d pose, double time_stamp, Vector<N3> std_dev) {
         // TODO Implement
     }
 }

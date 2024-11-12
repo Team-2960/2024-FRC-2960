@@ -25,6 +25,7 @@
 import frc.lib2960.util.*;
 import frc.lib2960.controllers.*;
 
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.math.kinematics.*;
@@ -537,7 +538,7 @@ public abstract class SwerveDriveBase extends SubsystemBase implements Drivetrai
      * @param time_stamp    Timestamp of when the pose was captured
      * @param std_dev       Standard deviation values to use for the pose estimation
      */
-    public void addVisionPose(Pose2d pose, double time_stamp, Matrix<N3,​N1> std_dev) {
+    public void addVisionPose(Pose2d pose, double time_stamp, Vector<N3> std_dev) {
         // TODO Adjust standard deviations based on distance from target
         if (!ignoreCamera) {
             pose_est.addVisionMeasurement(pose, time_stamp, std_dev);
