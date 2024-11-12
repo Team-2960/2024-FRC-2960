@@ -4,3 +4,6 @@
 [submodule "src/main/java/frc/lib2960_ctre"]
 	path = src/main/java/frc/lib2960_ctre
 	url = https://github.com/Team-2960/lib2960_ctre.git
+[submodule "src/main/java/frc/lib2960_pathplanner"]
+	path = src/main/java/frc/lib2960_pathplanner
+	url = https://github.com/Team-2960/lib2960_pathplanner.git
