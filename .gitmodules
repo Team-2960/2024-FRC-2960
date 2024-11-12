@@ -1,3 +1,6 @@
 [submodule "src/main/java/frc/lib2960"]
 	path = src/main/java/frc/lib2960
 	url = https://github.com/Team-2960/lib2960.git
+[submodule "src/main/java/frc/lib2960_ctre"]
+	path = src/main/java/frc/lib2960_ctre
+	url = https://github.com/Team-2960/lib2960_ctre.git
