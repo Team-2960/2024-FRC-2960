@@ -34,8 +34,10 @@
     "decel",
     "Feedforward",
     "Holonomic",
+    "Infeed",
     "navx",
     "Odometry",
+    "Outfeed",
     "pathplanner",
     "photonvision",
     "Pizzabox"
