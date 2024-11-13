@@ -10,3 +10,6 @@
 [submodule "src/main/java/frc/lib2960_photonvision"]
 	path = src/main/java/frc/lib2960_photonvision
 	url = https://github.com/Team-2960/lib2960_photonvision.git
+[submodule "src/main/java/frc/lib2960_rev"]
+	path = src/main/java/frc/lib2960_rev
+	url = https://github.com/Team-2960/lib2960_rev.git
