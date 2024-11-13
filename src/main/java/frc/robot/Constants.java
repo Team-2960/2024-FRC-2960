@@ -111,7 +111,7 @@ public class Constants {
         1.5 * 360,      // Max angle rate (degrees/s)
         1.5 * 360,      // Max angle tracking acceleration (degrees/s^2)
         1.5 * 360       // Max angle tracking deceleration (degrees/s^2)
-    )
+    );
     
 
     /**************************/
@@ -125,19 +125,19 @@ public class Constants {
         0,          // Minimum Angle
         360,        // Maximum Angle
         true        // Is Continuous
-    )
+    );
 
     // Swerve Module Angle Rate Control Settings
     public static final RateControl.Settings angle_rate_settings = new RateControl.Settings(
         new PIDParam(0.05, 0.0, 0.001),
         FFParam.simpleMotor(0.1, 0.1, 0)
-    )
+    );
 
     // Swerve Module Drive Rate Control Settings
     public static final RateControl.Settings drive_rate_settings = new RateControl.Settings(
         new PIDParam(.5, 0.0, 0.0),
         FFParam.simpleMotor(0.0, 2.25, 0.0)
-    )
+    );
 
     // Front Left Swerve Module Settings
     public static final Swerve.Settings fl_swerve_settings = new Swerve.Settings(
@@ -267,7 +267,7 @@ public class Constants {
             true,                                       // Continuous Rotation
             new Limits(0,360)                           // Control Range
         ),
-        {                                           // Rate Controller Settings
+        new RateController[]{                      // Rate Controller Settings
             new RateController.Settings(                // Stage 0 Rate Controller
                 FFParam.arm(0.1, 2.0, 0.25, 0.0),           // Stage 0 Feed Forward Parameters
                 new PIDParam(0.01, 0.0, 0.0)                // Stage 0 PID Parameters
@@ -281,29 +281,29 @@ public class Constants {
                 new PIDParam(0.01, 0.0, 0.0)                // Stage 2 PID Parameters
             )
         },
-        {                                           // Shoulder Joint Soft Limits
-            new Limits(                                 // Stage 0 Soft Limits
-                LowerEncLimitS0,                            // Stage 0 Lower Soft Limit (Rotations)
-                upperEncLimit                               // Stage 0 Upper Soft Limit (Rotations)
+        new Limits[] {                                  // Shoulder Joint Soft Limits
+            new Limits(                                     // Stage 0 Soft Limits
+                LowerEncLimitS0,                                // Stage 0 Lower Soft Limit (Rotations)
+                upperEncLimit                                   // Stage 0 Upper Soft Limit (Rotations)
             ),
-            new Limits(                                 // Stage 1 Soft Limits
-                lowerEncLimit,                              // Stage 1 Lower Soft Limit (Rotations)
-                upperEncLimit                               // Stage 1 Upper Soft Limit (Rotations)
+            new Limits(                                     // Stage 1 Soft Limits
+                lowerEncLimit,                                  // Stage 1 Lower Soft Limit (Rotations)
+                upperEncLimit                                   // Stage 1 Upper Soft Limit (Rotations)
             ),
-            new Limits(                                 // Stage 2 Soft Limits
-                lowerEncLimitS2,                            // Stage 2 Lower Soft Limit (Rotations)
-                upperEncLimit                               // Stage 2 Upper Soft Limit (Rotations)
+            new Limits(                                     // Stage 2 Soft Limits
+                lowerEncLimitS2,                                // Stage 2 Lower Soft Limit (Rotations)
+                upperEncLimit                                   // Stage 2 Upper Soft Limit (Rotations)
             ),
-        }
+        },
         new Limits(                                     // Default Position Tolerance
             -1,                                             // Default Tolerance Lower Bound (Degrees)
             1                                               // Default Tolerance Upper Bound (Degrees)
         ),                               
-        {                                               // Motor CAN IDs
+        new int[] {                                     // Motor CAN IDs
             Constants.armMotor1,                            // Motor 0 CAN ID
             Constants.armMotor2                             // Motor 1 CAN ID
         },    
-        {                                               // Invert Motors
+        new boolean[] {                                 // Invert Motors
             false,                                          // Motor 0 Inverted
             false                                           // Motor 1 Inverted
         },                                 
@@ -318,7 +318,7 @@ public class Constants {
     );
 
     // Climber Zone Limit
-    public static final cilmber_zone = new Limits(
+    public static final Limits climber_zone = new Limits(
         46,         // Climber Zone Lower Limit (Degrees)
         70          // Climber zone upper Limit (Degrees)
     );
@@ -363,7 +363,7 @@ public class Constants {
     public static final AprilTagPipeline.Settings vision_settings = new AprilTagPipeline.Settings(
         "Camera_Module_v1",         // Camera Name
         Constants.robotToCamera     // Robot to Camera Transform
-    )
+    );
 
     /***********************/
     /* Pneumatics Settings */
