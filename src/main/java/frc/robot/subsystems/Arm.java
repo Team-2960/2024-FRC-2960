@@ -1,65 +1,47 @@
 package frc.robot.subsystems;
 
-import java.util.Map;
+import java.util.HashMap;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.math.MathUtil;
 
-import frc.lib2960_ctre.MotorMech_TalonFX;
+import frc.lib2960_ctre.MotorMechTalonFX;
 
-import frc.lib2960_pathplanner.PathPlanner;
+import frc.lib2960.pathplanner.PathPlanner;
 
 import frc.robot.Constants;
 import frc.robot.Util.FieldLayout;
 
 public class Arm extends SubsystemBase {
-    private static Arm arm;
+    private static Arm arm;     /**< Singalton Instance */
 
     /**
-     * Defines an arm position state
+     * Goto an arm state command
      */
-    public class ArmStateValues {
-        public Rotation2d targetAngle;
-        public Rotation2d angleTol;
-        public int extState;
-
-        public ArmStateValues(Rotation2d targetAngle, int extState) {
-            this(targetAngle, Rotation2d.fromDegrees(2), extState);
-        }
-
-        public ArmStateValues(Rotation2d targetAngle, Rotation2d angleTol, int extState) {
-            this.targetAngle = targetAngle;
-            this.angleTol = angleTol;
-            this.extState = Math.max(0, Math.min(2, extState));
-        }
-    }
-
-    /**
-     * Goto Named Preset command
-     */
-    public class GotoNamedPreset extends Command {
-        private final Arm arm;                /**< Reference to the arm object */
-        private final String preset_name;     /**< Name of the preset to goto */
+    public class GotoArmStateCommand extends Command {
+        private final Rotation2d angle; /**< Target arm angle */
+        private final int ext_state;    /**< Target extension state */
 
         /**
          * Constructor
-         * @param   arm             Reference to the arm object
-         * @param   preset_name     Name of the preset to goto
+         * @param   angle       Target arm angle
+         * @param   ext_state   Target extension state 
          */
-        public GotoNamedPreset(Arm arm, String preset_name) {
-            this.arm = arm;
-            this.preset_name = preset_name;
+        public GotoArmStateCommand(Rotation2d angle, int ext_state) {
+            this.angle = angle;
+            this.ext_state = Math.max(0, Math.min(2, ext_state));
+
+            addRequirements(Arm.this);
         }
         
         /**
@@ -67,7 +49,7 @@ public class Arm extends SubsystemBase {
          */
         @Override
         public void initialize() {
-            arm.setState(preset_name);
+            setState(angle, ext_state);
         }
 
         /**
@@ -75,56 +57,19 @@ public class Arm extends SubsystemBase {
          */
         @Override
         public boolean isFinished() {
-            return arm.atTarget();
-        }
-    }
-
-    /**
-     * Goto Preset command
-     */
-    public class GotoPreset extends Command {
-        private final Arm arm;                /**< Reference to the arm object */
-        private final ArmStateValues preset;  /**< preset to goto */
-
-        /**
-         * Constructor
-         * @param   arm             Reference to the arm object
-         * @param   preset          preset to goto
-         */
-        public GotoNamedPreset(Arm arm, String preset) {
-            this.arm = arm;
-            this.preset = preset;
-        }
-        
-        /**
-         * initialize method. Set arm to preset state
-         */
-        @Override
-        public void initialize() {
-            arm.setState(preset);
-        }
-
-        /**
-         * isFinished method. Check if arm is at the target position
-         */
-        @Override
-        public boolean isFinished() {
-            return arm.atTarget();
+            return atTarget();
         }
     }
     
     /**
      * Auto Align command
      */
-    public class AutoAlign extends Command {
-        private final Arm arm;  /**< Reference to the arm object */
-
+    public class AutoAlignCommand extends Command {
         /**
          * Constructor
-         * @param   arm     Reference to the arm object
          */
-        public AutoAlign(Arm arm){
-            this.arm = arm;
+        public AutoAlignCommand(){
+            addRequirements(Arm.this);
         }
 
         /**
@@ -132,53 +77,32 @@ public class Arm extends SubsystemBase {
          */
         @Override
         public void initialize(){
-            arm.armAutoAlign();
-        }
-        
-        /**
-         * isFinished method. Checks if arm is at aligned to target.
-         */
-        @Override
-        public boolean isFinished() {
-            return arm.atTarget();
+            updateAutoAlignCommand();
         }
     }
-
-
-    public final MotorMech_TalonFX shoulder_joint;
     
-    // TODO Create subsystem to manage arm extension
-    private final DoubleSolenoid armExtender1;
-    private final DoubleSolenoid armExtender2;
+    public final ArmSettings settings;
 
-    private final int target_ext;
+    public final MotorMechTalonFX shoulder_joint;
+    
+    private final DoubleSolenoid arm_ext_1;
+    private final DoubleSolenoid arm_ext_2;
+
+    private int target_ext;
     private final Timer extenderTimer;
 
     private final DigitalInput brakeModeDisableBtn;
-    
 
-    private Map<String, ArmStateValues> armStates = Map.of(
-            "Match Start", new ArmStateValues(Rotation2d.fromDegrees(60), 0),
-            "Home", defaultState,
-            "Intake", new ArmStateValues(Rotation2d.fromDegrees(7), 1),
-            "Speaker", new ArmStateValues(Rotation2d.fromDegrees(46), 0),
-            "lineSpeaker", new ArmStateValues(Rotation2d.fromDegrees(56), 0),
-            "longShot", new ArmStateValues(Rotation2d.fromDegrees(67.5), 0),
-            "Amp", new ArmStateValues(Rotation2d.fromDegrees(102), 1),
-            "Climb", new ArmStateValues(Rotation2d.fromDegrees(97.38), 0),
-            "AmpSideShoot", new ArmStateValues(Rotation2d.fromDegrees(47), 0),
-            "home", new ArmStateValues(Rotation2d.fromDegrees(23), 0)
-            //"Climb Balance", new ArmStateValues(Rotation2d.fromDegrees(97.38), 0),
-            //"Trap Score", new ArmStateValues(Rotation2d.fromDegrees(70), 2)
-        );
+    private final HashMap<String, GotoArmStateCommand> preset_list;
+    private final AutoAlignCommand auto_align_cmd;
 
+    // Shuffleboard
     private GenericEntry sb_armMode;
     private GenericEntry sb_extStage1;
     private GenericEntry sb_extStage2;
     private GenericEntry sb_extState;
     private GenericEntry sb_brakeModeDisabled;
     private GenericEntry sb_armClearOfClimber;
-    private GenericEntry sb_errorOverTime;
     private GenericEntry sb_atAngle;
     private GenericEntry sb_atExt;
     private GenericEntry sb_atTarget;
@@ -186,59 +110,82 @@ public class Arm extends SubsystemBase {
     /**
      * Constructor
      */
-    private Arm() {
+    private Arm(ArmSettings settings) {
+        this.settings = settings;
+
         // Initialize Shoulder Joint
-        shoulder_joint = new MotorMech_TalonFX(Constants.shoulder_joint_settings);
+        shoulder_joint = new MotorMechTalonFX(settings.joint_settings);
         
         // TODO Move initialization to Pneumatics class
-        armExtender1 = new DoubleSolenoid(
-            Constants.phCANID, 
-            PneumaticsModuleType.REVPH, 
-            Constants.armExt1Rev,
-            Constants.armExt1For
+        arm_ext_1 = new DoubleSolenoid(
+            settings.ext_1_settings.ph_can_id, 
+            settings.ext_1_settings.module_type, 
+            settings.ext_1_settings.fwd_port,
+            settings.ext_1_settings.rev_port
         );
 
-        armExtender2 = new DoubleSolenoid(
-            Constants.phCANID, 
-            PneumaticsModuleType.REVPH, 
-            Constants.armExt2Rev,
-            Constants.armExt2For
+        arm_ext_2 = new DoubleSolenoid(
+            settings.ext_1_settings.ph_can_id, 
+            settings.ext_1_settings.module_type, 
+            settings.ext_1_settings.fwd_port,
+            settings.ext_1_settings.rev_port
         );
 
         brakeModeDisableBtn = new DigitalInput(Constants.armBrakeModeBtn);
 
-        //Auton Positions
-        // TODO Set abs encoder offset
+        // Initialize presets
+        preset_list = new HashMap<String, GotoArmStateCommand>();
 
-        // Set target state to current state
-        targetState = new ArmStateValues(getArmAngle(), getArmExtension());
+        preset_list.put("Match Start", new GotoArmStateCommand(Rotation2d.fromDegrees(60), 0));
+        preset_list.put("Home", new GotoArmStateCommand(Rotation2d.fromDegrees(15), 0));
+        preset_list.put("Intake", new GotoArmStateCommand(Rotation2d.fromDegrees(7), 1));
+        preset_list.put("Speaker", new GotoArmStateCommand(Rotation2d.fromDegrees(46), 0));
+        preset_list.put("lineSpeaker", new GotoArmStateCommand(Rotation2d.fromDegrees(56), 0));
+        preset_list.put("longShot", new GotoArmStateCommand(Rotation2d.fromDegrees(67.5), 0));
+        preset_list.put("Amp", new GotoArmStateCommand(Rotation2d.fromDegrees(102), 1));
+        preset_list.put("Climb", new GotoArmStateCommand(Rotation2d.fromDegrees(97.38), 0));
+        preset_list.put("AmpSideShoot", new GotoArmStateCommand(Rotation2d.fromDegrees(47), 0));
+        preset_list.put("home", new GotoArmStateCommand(Rotation2d.fromDegrees(23), 0));
+        preset_list.put("Climb Balance", new GotoArmStateCommand(Rotation2d.fromDegrees(97.38), 0));
+        preset_list.put("Trap Score", new GotoArmStateCommand(Rotation2d.fromDegrees(70), 2));
+
+        // Initialize auto align command
+        auto_align_cmd = new AutoAlignCommand();
+
+        
+        // TODO Set abs encoder offset
 
         // Initialize Timer
         extenderTimer = new Timer();
 
         // Setup Shuffleboard
-        var layout = Shuffleboard.getTab("Arm")
-                .getLayout("Main Arm", BuiltInLayouts.kList)
-                .withSize(2, 6);
+        init_ui();
 
-        sb_armMode = layout.add("Arm Control Mode", control_mode.name()).getEntry();
-        sb_extStage1 = layout.add("Ext Stage 1 State", armExtender1.get().name()).getEntry();
-        sb_extStage2 = layout.add("Ext Stage 2 State", armExtender2.get().name()).getEntry();
-        sb_extState = layout.add("Ext State", manual_ext).getEntry();
+        // Initialize PathPlanner named commands
+        for(var preset: preset_list.entrySet()) {
+            PathPlanner.registerCommand("Arm Goto " + preset.getKey(), preset.getValue());
+        } 
+    }
+
+    /**
+     * Initialize Shuffleboard
+     */
+    private void init_ui() {
+        var layout = Shuffleboard.getTab("Arm")
+            .getLayout("Main Arm", BuiltInLayouts.kList)
+            .withSize(2, 6);
+
+        sb_armMode = layout.add("Arm Control Mode", getCurrentCommand().getName()).getEntry();
+        sb_extStage1 = layout.add("Ext Stage 1 State", arm_ext_1.get().name()).getEntry();
+        sb_extStage2 = layout.add("Ext Stage 2 State", arm_ext_2.get().name()).getEntry();
+        sb_extState = layout.add("Ext State", getArmExtension()).getEntry();
         sb_brakeModeDisabled = layout.add("Brake Mode Disabled", brakeModeDisableBtn.get()).getEntry();
         sb_armClearOfClimber = layout.add("Arm clear of climber", false).getEntry();
-        sb_errorOverTime = layout.add("Error Over Time", 0).getEntry();
-        
+
         sb_atAngle = layout.add("At Angle", false).getEntry();
         sb_atExt = layout.add("At Extension", false).getEntry();
         sb_atTarget = layout.add("At Target", false).getEntry();
-
-        // Initialize PathPlanner named commands
-        PathPlanner.registerCommand("Arm Intake Position", createGotoNamedPresetCmd("Intake"));
-        PathPlanner.registerCommand("Arm Home Position", createGotoNamedPresetCmd("Home"));
-        PathPlanner.registerCommand("Arm Speaker Position", createGotoNamedPresetCmd("Speaker"));
     }
-
 
     /*************************/
     /* Public Access Methods */
@@ -268,8 +215,8 @@ public class Arm extends SubsystemBase {
      * @return current extension state
      */
     public int getArmExtension() {
-        boolean isLowerExt = armExtender1.get() == DoubleSolenoid.Value.kForward;
-        boolean isUpperExt = armExtender2.get() == DoubleSolenoid.Value.kForward;
+        boolean isLowerExt = arm_ext_1.get() == DoubleSolenoid.Value.kForward;
+        boolean isUpperExt = arm_ext_2.get() == DoubleSolenoid.Value.kForward;
         int state = 0;
 
         if (isLowerExt) {
@@ -289,7 +236,7 @@ public class Arm extends SubsystemBase {
      * @return true if the angle are at their target
      */
     public boolean atAngle() {
-        shoulder_joint.atTarget();
+        return shoulder_joint.atTarget();
     }
 
     /**
@@ -298,7 +245,7 @@ public class Arm extends SubsystemBase {
      * @return true if the extension are at their target
      */
     public boolean atExtention() {
-        return getArmExtension() == targetState.extState;
+        return getArmExtension() == target_ext;
     }
 
     /**
@@ -315,13 +262,21 @@ public class Arm extends SubsystemBase {
      * @return true if the arm is in a safe position to extend the climber
      */
     public boolean isInClimberZone() {
-        return Constants.climber_zone.inRange(currentAngle.getDegrees());
+        return Constants.climber_zone.inRange(shoulder_joint.getPosition());
     }
 
 
     /**************************/
     /* Public Control Methods */
     /**************************/
+
+    /**
+     * Sets the target arm angle
+     * @param angle     target arm angle
+     */
+    public void setArmAngle(Rotation2d angle) {
+        shoulder_joint.setPosition(angle.getDegrees());
+    }
 
     /**
      * Sets the arm's output voltage to the motor. Puts the arm into manual
@@ -352,7 +307,7 @@ public class Arm extends SubsystemBase {
      * @param state extension state
      */
     public void setExtState(int state) {
-        manual_ext = Math.max(0, Math.min(2, state));
+        target_ext = Math.max(0, Math.min(2, state));
         shoulder_joint.holdPosition();
     }
 
@@ -371,56 +326,34 @@ public class Arm extends SubsystemBase {
     }
 
     /**
-     * Looks up a standard target state
-     * 
-     * @param Name of the standard state. If an unknown name is supplied,
-     *             the state will be set to the home position
+     * Sets the arm target angle and extension state
+     * @param angle         target arm angle
+     * @param ext_state     target arm extension
      */
-    public void setState(String name) {
-        setState(getTargetValues(name));
+    public void setState(Rotation2d angle, int ext_state) {
+        setArmAngle(angle);
+        setExtState(ext_state);
     }
 
     /**
-     * Sets the target state for the arm
-     * 
-     * @param targetState Current targetState value for the arm
+     * Executes a command to go to a named preset. If the named preset does not exist, no changes 
+     * are made.
+     * @param name  name of the preset
      */
-    public void setState(ArmStateValues targetState) {
-        setExtState(targetState.extState);
-        shoulder_joint.setPosition(targetAngle.getDegrees());
+    public void gotoPreset(String name) {
+        if(preset_list.containsKey(name)){
+            Command preset_cmd = preset_list.get(name);
+            if(getCurrentCommand() != preset_cmd) preset_cmd.schedule();
+        }
     }
 
-
-    /******************************/
-    /* Command Generation Methods */
-    /******************************/
-    
     /**
-     * Generates a GotoNamedPreset command
-     * @param   name    name of the preset to goto
-     * @return  new GotoNamedPreset command
+     * Start the auto align command
      */
-    public Command getGotoNamedPresetCmd(String name) {
-        return new GotoNamedPreset(this, name);
+    public void startAutoAlign() {
+        if(getCurrentCommand() != auto_align_cmd) auto_align_cmd.schedule();
     }
     
-    /**
-     * Generates a GotoPreset command
-     * @param   preset  preset to goto
-     * @return  new GotoPreset command
-     */
-    public Command getGotoPresetCmd(ArmStateValues preset) {
-        return new GotoPreset(this, preset);
-    }
-    
-    /**
-     * Generates a AutoAlign command
-     * @return  new AutoAlign command
-     */
-    public Command getAutoAlignCmd() {
-        return new AutoAlign(this);
-    }
-
     /*********************/
     /* Subsystem Methods */
     /*********************/
@@ -434,7 +367,7 @@ public class Arm extends SubsystemBase {
         updateShoulderControl();
         updateExtension();
 
-        updateUI(targetArmRate, voltage);
+        updateUI();
         SmartDashboard.putNumber("SpeakerPosition", FieldLayout.getSpeakerPose().getX());
     }
     
@@ -442,26 +375,28 @@ public class Arm extends SubsystemBase {
     /****************************/
     /* Subsystem Helper Methods */
     /****************************/
+    private void updateAutoAlignCommand(){
+        // TODO update armAutoAlignCommand to work with MotorMechanismBase
+        
+        // Get field position
+        Translation2d cur_pos = Drive.getInstance().getEstimatedPos().getTranslation();
+        Translation2d goal_pos = FieldLayout.getShootSpeakerPose().getTranslation();
+        double goal_dist = cur_pos.getDistance(goal_pos);
 
-    // TODO update armAutoAlign to work with MotorMechanismBase
-    /*
-    public void armAutoAlign(){
-        Drive drive = Drive.getInstance();
-        double distance = Math.abs(FieldLayout.getShootSpeakerPose().getX() - drive.getEstimatedPos().getX()) + 
-            ((Math.cos(getArmAngle().minus(Rotation2d.fromDegrees(11)).getRadians()) * Constants.armLength) + 0.2413);
-        double height =  FieldLayout.stageHeight - Constants.armHeightOffset - (Math.sin(getArmAngle().minus(Rotation2d.fromDegrees(11)).getRadians()) * Constants.armLength);
-        double desiredAngle = 90 - Math.toDegrees(Math.atan2(height, distance));
-        control_mode = ArmControlMode.AUTOMATIC;
-        if(desiredAngle < 23){
-            desiredAngle = 23;
-        }else if(desiredAngle > 100 ){
-            desiredAngle = 100;
-        }
-        new Rotation2d();
-        ArmStateValues targetState = new ArmStateValues(Rotation2d.fromDegrees(desiredAngle), 0);
-        setState(targetState); 
+        // Calculate arm offset distance
+        Rotation2d arm_angle = getArmAngle().minus(Rotation2d.fromDegrees(11));   // TODO Move to settings
+        double arm_pos_offset = 0.2413; // TODO Move to settings
+        double arm_offset = ((arm_angle.getCos() * Constants.armLength) + arm_pos_offset);
+
+        // Calculate Distance 
+        double shooter_distance = goal_dist + arm_offset;
+        double shooter_height =  FieldLayout.stageHeight - Constants.armHeightOffset - (arm_angle.getSin() * Constants.armLength);
+        double target_angle = 90 - Math.toDegrees(Math.atan2(shooter_height, shooter_distance));
+        
+        target_angle = MathUtil.clamp(target_angle, 23, 100);
+          
+        setState(Rotation2d.fromDegrees(target_angle), 0); 
     }
-    */
 
 
     /**
@@ -477,9 +412,8 @@ public class Arm extends SubsystemBase {
     private void updateShoulderControl() {
         int current_ext = getArmExtension();
 
-        // Update Shoulder Joint rate controller and limits
-        shoulder_joint.setRateCtrlIndex(current_ext);
-        shoulder_joint.setSoftLimitsIndex(current_ext);
+        // Update Shoulder Joint rate stage
+        shoulder_joint.setStageIndex(current_ext);
     }
 
     /**
@@ -487,35 +421,30 @@ public class Arm extends SubsystemBase {
      */
     private void updateExtension() {
         int currentState = getArmExtension();
-        int targetState = target_ext;
-
-        boolean aboveState2Angle = getArmAngle().getDegrees() > Constants.armMinState2Angle.getDegrees();
 
         // Set target extension valve state
-        if (targetState == 2 && getArmAngle().getDegrees() > Constants.minArmS2Angle.getDegrees()) {
-            armExtender1.set(DoubleSolenoid.Value.kForward);
-            armExtender2.set(DoubleSolenoid.Value.kForward);
-        } else if (targetState == 1) {
-            armExtender1.set(DoubleSolenoid.Value.kForward);
-            armExtender2.set(DoubleSolenoid.Value.kReverse);
+        if (target_ext == 2 && getArmAngle().getDegrees() > Constants.minArmS2Angle.getDegrees()) {
+            arm_ext_1.set(DoubleSolenoid.Value.kForward);
+            arm_ext_2.set(DoubleSolenoid.Value.kForward);
+        } else if (target_ext == 1) {
+            arm_ext_1.set(DoubleSolenoid.Value.kForward);
+            arm_ext_2.set(DoubleSolenoid.Value.kReverse);
         } else {
-            armExtender1.set(DoubleSolenoid.Value.kReverse);
-            armExtender2.set(DoubleSolenoid.Value.kReverse);
+            arm_ext_1.set(DoubleSolenoid.Value.kReverse);
+            arm_ext_2.set(DoubleSolenoid.Value.kReverse);
         }
 
         // Reset extension timer of the extension state has chanced
-        if (currentState != targetState)
-            extenderTimer.restart();
-
+        if (currentState != target_ext) extenderTimer.restart();
     }
 
     /**
      * Updates shuffleboard
      */
-    private void updateUI(double targetRate, double targetVolt) {
-        sb_armMode.setString(control_mode.name());
-        sb_extStage1.setString(armExtender1.get().name());
-        sb_extStage2.setString(armExtender2.get().name());
+    private void updateUI() {
+        sb_armMode.setString(getCurrentCommand().getName());
+        sb_extStage1.setString(arm_ext_1.get().name());
+        sb_extStage2.setString(arm_ext_2.get().name());
         sb_extState.setInteger(target_ext);
         sb_brakeModeDisabled.setBoolean(!brakeModeDisableBtn.get());
         sb_armClearOfClimber.setBoolean(!isInClimberZone());
@@ -534,7 +463,7 @@ public class Arm extends SubsystemBase {
      */
     public static Arm getInstance() {
         if (arm == null) {
-            arm = new Arm();
+            arm = new Arm(Constants.arm_settings);
         }
         return arm;
     }

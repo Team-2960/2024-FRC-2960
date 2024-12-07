@@ -1,8 +1,6 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.SPI;
 
 import com.kauailabs.navx.frc.AHRS;
@@ -14,21 +12,20 @@ import frc.lib2960.subsystems.SwerveDriveBase;
 public class Drive extends SwerveDriveBase {
     private static Drive instance = null; // Statically initialized instance
 
+    public final DriveSettings settings;
+
     private final AHRS navx;
 
     /**
      * Constructor
      */
-    private Drive() {
+    private Drive(DriveSettings settings) {
         super(
-            Constants.drive_base_settings, 
-            new Swerve[]{
-                new Swerve(Constants.fl_swerve_settings), 
-                new Swerve(Constants.fr_swerve_settings), 
-                new Swerve(Constants.rl_swerve_settings), 
-                new Swerve(Constants.rr_swerve_settings)
-            }
+            settings.drive_settings,
+            createModules(settings.module_settings)
         );
+
+        this.settings = settings;
 
         // Initialize NavX
         navx = new AHRS(SPI.Port.kMXP);
@@ -54,8 +51,25 @@ public class Drive extends SwerveDriveBase {
         return navx.getRate();
     }
 
+    /**
+     * Creates swerve module objects
+     * @param module_settings
+     * @return
+     */
+    private static Swerve[] createModules(SwerveSettings[] module_settings) {
+        Swerve[] modules = new Swerve[module_settings.length];
+
+        for(int i = 0; i < module_settings.length; i++) modules[i] = new Swerve(module_settings[i]);
+
+        return modules;
+    }
+
+    /**
+     * Singleton Intiailizer
+     * @return  Singleton instance
+     */
     public static Drive getInstance() {
-        if(instance == null) instance = new Drive();
+        if(instance == null) instance = new Drive(Constants.drive_settings);
         return instance;
     }
 }

@@ -1,15 +1,18 @@
 package frc.robot;
 
-import edu.wpi.first.units.*;
-import edu.wpi.first.wpilibj2.command.PIDCommand;
-
-import com.pathplanner.lib.util.PIDConstants;
-
-import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.geometry.*;
-import frc.robot.Util.*;
-import frc.robot.*;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import frc.robot.subsystems.ArmSettings;
+import frc.robot.subsystems.ClimberSettings;
+import frc.robot.subsystems.DriveSettings;
+import frc.robot.subsystems.IntakePizzaboxSettings;
+import frc.robot.subsystems.SwerveSettings;
+
 import frc.lib2960.controllers.*;
+import frc.lib2960.photonvision.*;
+import frc.lib2960.subsystems.*;
+import frc.lib2960.util.*;
+import frc.lib2960_ctre.*;
 
 public class Constants {
     public static final Transform2d fieldCenterOffset = new Transform2d(8.270875, 4.105275, new Rotation2d(0.0));
@@ -98,15 +101,17 @@ public class Constants {
     /***********************/
     // Drivetrain Constants
     public static final double driveGearRatio = 5.08;
-    public static final double wheelCirc = 2.95 * .0254 * Math.PI; // Meters
-    public static final double driveRatio =  Constants.wheelCirc / Constants.driveGearRatio;   // Meters 
+    public static final double wheelDiam = 2.95 * .0254;                    // Meters      
+    public static final double wheelRadius = wheelDiam / 2;                 // Meters      
+    public static final double wheelCirc = wheelDiam  * Math.PI;            // Meters
+    public static final double driveRatio =  wheelCirc / driveGearRatio;    // Meters 
 
     // Calculate swerve drive module offset from center of robot
     public static final double swerve_x_offset = (robotLength / 2 - wheelInset);    // Meters
     public static final double swerve_y_offset = (robotWidth / 2 - wheelInset);     // Meters
 
     // Swerve Base Settings
-    public static final ServeDriveBase.Settings drive_base_settings = new SwerveDriveBase.Settings(
+    public static final SwerveDriveBaseSettings drive_base_settings = new SwerveDriveBaseSettings(
         4.5,            // Max linear speed (meter/s)
         1.5 * 360,      // Max angle rate (degrees/s)
         1.5 * 360,      // Max angle tracking acceleration (degrees/s^2)
@@ -118,103 +123,92 @@ public class Constants {
     /* Swerve Module Settings */
     /**************************/
     // Swerve Module Angle Position Control Settings
-    public static final PositionControl.Settings angle_pos_settings = new PositionControl.Settings(
+    public static final PositionControllerSettings angle_pos_settings = new PositionControllerSettings(
         360 * 5,    // Maximum Acceleration (degrees/s^2)
         360 * 5,    // Maximum Deceleration (degrees/s^2)
         360 * 2,    // Maximum Rate (degrees/s)
-        0,          // Minimum Angle
-        360,        // Maximum Angle
-        true        // Is Continuous
+        true,
+        new Limits(0, 360)
     );
 
     // Swerve Module Angle Rate Control Settings
-    public static final RateControl.Settings angle_rate_settings = new RateControl.Settings(
-        new PIDParam(0.05, 0.0, 0.001),
-        FFParam.simpleMotor(0.1, 0.1, 0)
+    public static final RateControllerSettings angle_rate_settings = new RateControllerSettings(
+        FFParam.simpleMotor(0.1, 0.1, 0),
+        new PIDParam(0.05, 0.0, 0.001)
     );
 
     // Swerve Module Drive Rate Control Settings
-    public static final RateControl.Settings drive_rate_settings = new RateControl.Settings(
-        new PIDParam(.5, 0.0, 0.0),
-        FFParam.simpleMotor(0.0, 2.25, 0.0)
+    public static final RateControllerSettings drive_rate_settings = new RateControllerSettings(
+        FFParam.simpleMotor(0.0, 2.25, 0.0),
+        new PIDParam(.5, 0.0, 0.0)
     );
 
     // Front Left Swerve Module Settings
-    public static final Swerve.Settings fl_swerve_settings = new Swerve.Settings(
-        "Front Left",           // Module Name
-        new Translation2d(      // Module Translation
-            swerve_x_offset, 
-            swerve_y_offset
-        ),    
-        drive_ratio,            // Drive gear ratio
-        wheel_radius,           // Drive wheel radius in meters
-        angle_pos_settings,     // Swerve angle position control settings
-        angle_rate_settings,    // Swerve angle rate control settings
-        drive_rate_settings,    // Swerve drive rate control settings
-        frontLeftAngleM,        // Angle motor CAN ID
-        frontLeftDriveM,        // Drive Motor CAN ID
-        true,                   // Invert Angle Motor
-        true,                   // Invert Drive Motor
-        true                    // Invert Angle Encoder
+    public static final SwerveSettings fl_swerve_settings = new SwerveSettings(
+        "Front Left",
+        new Translation2d(swerve_x_offset, swerve_y_offset),
+        driveRatio,             
+        wheelRadius,
+        angle_pos_settings,
+        angle_rate_settings,
+        drive_rate_settings,
+        new MotorSettings("Front Left Angle", frontLeftAngleM, true),
+        new MotorSettings("Front Left Drive", frontLeftDriveM, true),
+        true
     );
 
     // Front Right Swerve Module Settings
-    public static final Swerve.Settings fr_swerve_settings = new Swerve.Settings(
-        "Front Right",          // Module Name
-        new Translation2d(      // Module Translation
-            swerve_x_offset, 
-            -swerve_y_offset
-        ),    
-        drive_ratio,            // Drive gear ratio
-        wheel_radius,           // Drive wheel radius in meters
-        angle_pos_settings,     // Swerve angle position control settings
-        angle_rate_settings,    // Swerve angle rate control settings
-        drive_rate_settings,    // Swerve drive rate control settings
-        frontRightAngleM,       // Angle motor CAN ID
-        frontRightDriveM,       // Drive Motor CAN ID
-        true,                   // Invert Angle Motor
-        false,                  // Invert Drive Motor
-        true                    // Invert Angle Encoder
+    public static final SwerveSettings fr_swerve_settings = new SwerveSettings(
+        "Front Right",
+        new Translation2d(swerve_x_offset, swerve_y_offset),
+        driveRatio,             
+        wheelRadius,
+        angle_pos_settings,
+        angle_rate_settings,
+        drive_rate_settings,
+        new MotorSettings("Front Right Angle", frontRightAngleM, true),
+        new MotorSettings("Front Right Drive", frontRightDriveM, false),
+        true
     );
 
     // Rear Left Swerve Module Settings
-    public static final Swerve.Settings rl_swerve_settings = new Swerve.Settings(
-        "Rear Left",            // Module Name
-        new Translation2d(      // Module Translation
-            -swerve_x_offset, 
-            swerve_y_offset
-        ),    
-        drive_ratio,            // Drive gear ratio
-        wheel_radius,           // Drive wheel radius in meters
-        angle_pos_settings,     // Swerve angle position control settings
-        angle_rate_settings,    // Swerve angle rate control settings
-        drive_rate_settings,    // Swerve drive rate control settings
-        backLeftAngleM,         // Angle motor CAN ID
-        backLeftDriveM,         // Drive Motor CAN ID
-        true,                   // Invert Angle Motor
-        true,                   // Invert Drive Motor
-        true                    // Invert Angle Encoder
+    public static final SwerveSettings rl_swerve_settings = new SwerveSettings(
+        "Rear Left",
+        new Translation2d(swerve_x_offset, swerve_y_offset),
+        driveRatio,             
+        wheelRadius,
+        angle_pos_settings,
+        angle_rate_settings,
+        drive_rate_settings,
+        new MotorSettings("Rear Left Angle", backLeftAngleM, true),
+        new MotorSettings("Rear Left Drive", backLeftDriveM, true),
+        true
     );
 
     // Rear Right Swerve Module Settings
-    public static final Swerve.Settings rr_swerve_settings = new Swerve.Settings(
-        "Rear Right",           // Module Name
-        new Translation2d(      // Module Translation
-            -swerve_x_offset, 
-            -swerve_y_offset
-        ),    
-        drive_ratio,            // Drive gear ratio
-        wheel_radius,           // Drive wheel radius in meters
-        angle_pos_settings,     // Swerve angle position control settings
-        angle_rate_settings,    // Swerve angle rate control settings
-        drive_rate_settings,    // Swerve drive rate control settings
-        frontRightAngleM,       // Angle motor CAN ID
-        frontRightDriveM,       // Drive Motor CAN ID
-        true,                   // Invert Angle Motor
-        false,                  // Invert Drive Motor
-        true                    // Invert Angle Encoder
+    public static final SwerveSettings rr_swerve_settings = new SwerveSettings(
+        "Rear Right",
+        new Translation2d(swerve_x_offset, swerve_y_offset),
+        driveRatio,             
+        wheelRadius,
+        angle_pos_settings,
+        angle_rate_settings,
+        drive_rate_settings,
+        new MotorSettings("Front Right Angle", backLeftAngleM, true),
+        new MotorSettings("Front Right Drive", backLeftDriveM, false),
+        true
     );
 
+    //Drive Settings
+    public static final DriveSettings drive_settings = new DriveSettings(
+        drive_base_settings, 
+        new SwerveSettings[] {
+            fl_swerve_settings, 
+            fr_swerve_settings, 
+            rl_swerve_settings, 
+            rr_swerve_settings
+        }
+    );
 
     /****************/
     /* Arm Settings */
@@ -257,64 +251,56 @@ public class Constants {
     public static final double lowerEncLimitS2 = .2;
 
     // Shoulder Joint Settings
-    public static final MotorMech_TalonFX shoulder_joint_settings = new MotorMech_TalonFX.Settings(
-        "Shoulder Joint",                           // Mechanism Name
-        "Arm",                                      // Shuffleboard Output Tab
-        new PositionController.Settings(            // Position Controller Settings
-            2.25 * 360,                                 // Maximum Acceleration (degrees/s^2)
-            2.25 * 360,                                 // Maximum Deceleration (degrees/s^2)
-            0.5 * 360,                                  // Maximum Rate (degrees/s)
-            true,                                       // Continuous Rotation
-            new Limits(0,360)                           // Control Range
+    public static final double shoulder_max_rate = 0.5 * 360;       // degrees/s
+    public static final double shoulder_max_accel = 2.25 * 360;     // degrees/s^2
+
+    public static final FFParam arm_ff_param = FFParam.arm(0.1, 2.0, 0.25, 0.0);
+    public static final PIDParam arm_pid_param = new PIDParam(0.01, 0.0, 0.0);
+
+    public static final ArmSettings arm_settings = new ArmSettings (
+        new MotorMechTalonFXSettings(
+            "Shoulder Joint", 
+            "Arm", 
+            new PositionControllerSettings(shoulder_max_accel, shoulder_max_accel, 
+                                        shoulder_max_rate, true, new Limits(0,360) 
+            ), 
+            new MotorMechStageSettings[] {
+                new MotorMechStageSettings(
+                    new RateControllerSettings(arm_ff_param, arm_pid_param), 
+                    new Limits(lowerEncLimitS0, upperEncLimit)
+                ),
+                new MotorMechStageSettings(
+                    new RateControllerSettings(arm_ff_param, arm_pid_param), 
+                    new Limits(lowerEncLimit, upperEncLimit)
+                ),
+                new MotorMechStageSettings(
+                    new RateControllerSettings(arm_ff_param, arm_pid_param), 
+                    new Limits(lowerEncLimitS2, upperEncLimit)
+                )
+            }, 
+            new Limits(-1, 1), 
+            new MotorSettings[] {
+                new MotorSettings("Arm Motor 1", armMotor1, false),
+                new MotorSettings("Arm Motor 2", armMotor2, false),
+            }, 
+            new QuadEncoderSettings("Arm Quad Encoder", armQuadEncoderAPort, armDCEncoderPort, false, armEncAnglePerRot.getDegrees() / revTBEncCountPerRev), 
+            new AbsEncoderSettings("Arm Abs Encoder", armDCEncoderPort, false, armEncAngleOffset.getDegrees())
         ),
-        new RateController[]{                      // Rate Controller Settings
-            new RateController.Settings(                // Stage 0 Rate Controller
-                FFParam.arm(0.1, 2.0, 0.25, 0.0),           // Stage 0 Feed Forward Parameters
-                new PIDParam(0.01, 0.0, 0.0)                // Stage 0 PID Parameters
-            ),
-            new RateController.Settings(                // Stage 1 Rate Controller
-                FFParam.arm(0.1, 2.0, 0.25, 0.0),           // Stage 1 Feed Forward Parameters
-                new PIDParam(0.01, 0.0, 0.0)                // Stage 1 PID Parameters
-            ),
-            new RateController.Settings(                // Stage 2 Rate Controller
-                FFParam.arm(0.1, 2.0, 0.25, 0.0),           // Stage 2 Feed Forward Parameters
-                new PIDParam(0.01, 0.0, 0.0)                // Stage 2 PID Parameters
-            )
-        },
-        new Limits[] {                                  // Shoulder Joint Soft Limits
-            new Limits(                                     // Stage 0 Soft Limits
-                LowerEncLimitS0,                                // Stage 0 Lower Soft Limit (Rotations)
-                upperEncLimit                                   // Stage 0 Upper Soft Limit (Rotations)
-            ),
-            new Limits(                                     // Stage 1 Soft Limits
-                lowerEncLimit,                                  // Stage 1 Lower Soft Limit (Rotations)
-                upperEncLimit                                   // Stage 1 Upper Soft Limit (Rotations)
-            ),
-            new Limits(                                     // Stage 2 Soft Limits
-                lowerEncLimitS2,                                // Stage 2 Lower Soft Limit (Rotations)
-                upperEncLimit                                   // Stage 2 Upper Soft Limit (Rotations)
-            ),
-        },
-        new Limits(                                     // Default Position Tolerance
-            -1,                                             // Default Tolerance Lower Bound (Degrees)
-            1                                               // Default Tolerance Upper Bound (Degrees)
-        ),                               
-        new int[] {                                     // Motor CAN IDs
-            Constants.armMotor1,                            // Motor 0 CAN ID
-            Constants.armMotor2                             // Motor 1 CAN ID
-        },    
-        new boolean[] {                                 // Invert Motors
-            false,                                          // Motor 0 Inverted
-            false                                           // Motor 1 Inverted
-        },                                 
-        Constants.armQuadEncoderAPort,                  // Quadrature Encoder Digital Input A 
-        Constants.armQuadEncoderBPort,                  // Quadrature Encoder Digital Input B
-        false,                                          // Quadrature Encoder Digital Input Inverted
-        Constants.armDCEncoderPort,                     // Absolute Encoder Digital Input
-        true,                                           // Absolute Encoder Inverted
-        Constants.armEncAnglePerRot.getDegrees() /      // Encoder Distance per Pulse (Degrees / Pulse)
-            Constants.revTBEncCountPerRev,                  
-        Constants.armEncAngleOffset.getDegrees()        // Absolute Encoder Offset (Degrees)
+        new DoubleSolinoidSettings(
+            "Arm Extension 1",
+            Constants.phCANID, 
+            PneumaticsModuleType.REVPH, 
+            Constants.armExt1Rev,
+            Constants.armExt1For
+        ),
+        new DoubleSolinoidSettings(
+            "Arm Extension 2",
+            Constants.phCANID, 
+            PneumaticsModuleType.REVPH, 
+            Constants.armExt2Rev,
+            Constants.armExt2For
+        ),
+        armBrakeModeBtn
     );
 
     // Climber Zone Limit
@@ -332,12 +318,30 @@ public class Constants {
     public static final double intakeSlowVoltage = 4;
     public static final double intakeSlowCurrent = 20;
 
-    public static final double shooterPrepPower = .75;    
+    
     public static final double shooterShootVoltage = 10.8;
+    public static final double shooterPrepVoltage = .75 * shooterShootVoltage;    
     public static final double shooterRevVoltage = 10.8;
     public static final double shooterMinShootSpeed = 4000 ;     // rpm
     public static final double shooterFastShootSpeed = 5500;//rpm
 
+    public static final IntakePizzaboxSettings pizzabox_settings = new IntakePizzaboxSettings(
+        new MotorSettings("Intake", intakeRollers, false), 
+        new MotorSettings[] {
+            new MotorSettings("Shooter Top", shooterTop, true),
+            new MotorSettings("Shooter Bottom", shooterBot, false)
+        }, 
+        3, 
+        5,
+        shooterMinShootSpeed,
+        shooterFastShootSpeed,
+        intakeSlowVoltage,
+        intakeInVoltage,
+        intakeOutVoltage,
+        shooterPrepVoltage,
+        shooterShootVoltage,
+        shooterRevVoltage
+    );
     
     /********************/
     /* Climber Settings */
@@ -350,7 +354,26 @@ public class Constants {
     public static final double winchMaxExtension = 88;   // in.
     public static final double winchMinLimit = 1.5; //in
     public static final double winchRatchedDelay = .25;  // seconds
-
+    
+    public static final ClimberSettings climber_settings = new ClimberSettings(
+        new MotorSettings[] {
+            new MotorSettings("Left Winch", winchMotorL, false),
+            new MotorSettings("Right Winch", winchMotorR, true)
+        }, 
+        new DoubleSolinoidSettings(
+            "Ratchet Valve", 
+            phCANID, 
+            PneumaticsModuleType.REVPH, 
+            climbRatchetRev,
+            climbRatchetFor
+        ),
+        winchCircum,
+        0, 
+        1, 
+        true,
+        Constants.winchMaxExtension,
+        winchRatchedDelay
+    );
     
     /*******************/
     /* Vision Settings */
@@ -360,7 +383,7 @@ public class Constants {
         new Rotation3d(36 * Math.PI / 180, 0, Math.PI)
     ); 
 
-    public static final AprilTagPipeline.Settings vision_settings = new AprilTagPipeline.Settings(
+    public static final AprilTagPipelineSettings vision_settings = new AprilTagPipelineSettings(
         "Camera_Module_v1",         // Camera Name
         Constants.robotToCamera     // Robot to Camera Transform
     );

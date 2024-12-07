@@ -5,7 +5,6 @@ import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Drive;
 import frc.robot.subsystems.IntakePizzaBox;
-import frc.robot.subsystems.Climber.ClimberStates;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -34,8 +33,6 @@ public class OperatorInterface extends SubsystemBase {
     private Joystick driver_ctrl;
     private Joystick op_ctrl;
 
-    private int lastOpPOV;
-
     // Joystick Button Objects
     private ButtonBase slow_speed_btn = new JoystickButton(driver_ctrl, 5);
 
@@ -43,17 +40,17 @@ public class OperatorInterface extends SubsystemBase {
     private ButtonBase align_speaker_btn = new JoystickButton(driver_ctrl, 2);
     private ButtonBase center_robot_btn = new JoystickButton(driver_ctrl, 3);
 
-    private ButtonBase zero_pose_btn = new JoystickPOVToButton(driver_ctrl, JoystickPOVToButton.UP);
+    private ButtonBase zero_pose_btn = new JoystickPOVToButton(driver_ctrl, JoystickPOVToButton.Direction.UP);
 
     private ButtonBase speaker_preset_btn = new JoystickButton(op_ctrl, 1);
     private ButtonBase line_speaker_preset_btn = new JoystickButton(op_ctrl, 2);
     private ButtonBase amp_preset_btn = new JoystickButton(op_ctrl, 3);
     private ButtonBase intake_preset_btn = new JoystickButton(op_ctrl, 4);
-    private ButtonBase arm_auto_align_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.RIGHT);
-    private ButtonBase home_preset_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.LEFT);
+    private ButtonBase arm_auto_align_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.Direction.RIGHT);
+    private ButtonBase home_preset_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.Direction.LEFT);
 
-    private ButtonBase manual_extend_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.UP);
-    private ButtonBase manual_retract_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.DOWN);
+    private ButtonBase manual_extend_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.Direction.UP);
+    private ButtonBase manual_retract_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.Direction.DOWN);
 
     private ButtonBase fast_shoot_btn = new JoystickButton(driver_ctrl, 6);
     private ButtonBase shoot_btn = new ButtonOrGroup(
@@ -97,7 +94,6 @@ public class OperatorInterface extends SubsystemBase {
     private GenericEntry sb_driveFR;
 
     private GenericEntry sb_armRate;
-    private GenericEntry sb_armExtendManual;
 
     private GenericEntry sb_rumblePower;
     private GenericEntry sb_rumbleTimer;
@@ -110,8 +106,6 @@ public class OperatorInterface extends SubsystemBase {
         // Create Joysticks
         driver_ctrl = new Joystick(0);
         op_ctrl = new Joystick(1);
-
-        lastOpPOV = -1;
 
         // Setup LEDs
         leds = new AddressableLED(0);
@@ -152,7 +146,6 @@ public class OperatorInterface extends SubsystemBase {
                 .getLayout("Arm", BuiltInLayouts.kList)
                 .withSize(2, 4);
         sb_armRate = arm_layout.add("Arm Manual Rate", 0).getEntry();
-        sb_armExtendManual = arm_layout.add("Arm Extend", 0).getEntry();
 
         var rumble_layout = Shuffleboard.getTab("OI")
                 .getLayout("Rumble", BuiltInLayouts.kList)
@@ -184,8 +177,8 @@ public class OperatorInterface extends SubsystemBase {
     private void updateDrive() {
         Drive drive = Drive.getInstance();
 
-        double maxSpeed = (slow_speed_btn.pressed() ? .5 : 1) * Constants.maxSpeed;
-        double maxAngleRate = (slow_speed_btn.pressed() ? .5 : 1) * Constants.maxAngularSpeed;
+        double maxSpeed = (slow_speed_btn.pressed() ? .5 : 1) * drive.settings.drive_settings.max_drive_speed;
+        double maxAngleRate = (slow_speed_btn.pressed() ? .5 : 1) * drive.settings.drive_settings.max_angle_rate;
 
         boolean fieldRelative = true;// !driverController.getRawButton(1);
         var alliance = DriverStation.getAlliance();
@@ -196,26 +189,23 @@ public class OperatorInterface extends SubsystemBase {
         double rSpeed = MathUtil.applyDeadband(driver_ctrl.getRawAxis(4), 0.05) * maxAngleRate * -1;
         
         if (track_speaker_btn.pressed()) {
-            drive.setTargetAngle(Rotation2d.fromDegrees(-90));
+            drive.setAngleTracking(Rotation2d.fromDegrees(-90));
         } else if (align_speaker_btn.pressed()) {
-            drive.setTargetPoint(
+            drive.setPointTracking(
                 FieldLayout.getSpeakerPose().getTranslation(), 
                 FieldLayout.getSpeakerPose().getRotation()
             );
         } else if (center_robot_btn.pressed()){
-            drive.setTargetPoint(new Translation2d(0,0), Rotation2d.fromDegrees(180));
+            drive.setPointTracking(new Translation2d(0,0), Rotation2d.fromDegrees(180));
         } else {
             drive.setAngleRate(rSpeed);
         }
 
-
         if (zero_pose_btn.pressed()) {
-            drive.presetPosition(new Pose2d(0.0, 0.0, new Rotation2d()));
+            drive.resetPoseEst(new Pose2d(0.0, 0.0, new Rotation2d()));
         }
-        
-        climber.setRatchet(slow_speed_btn.pressed());
 
-        drive.setfieldRelative(fieldRelative);
+        drive.setFieldRelative(fieldRelative);
         drive.setSpeed(xSpeed, ySpeed);
 
         // Update Shuffleboard
@@ -232,12 +222,12 @@ public class OperatorInterface extends SubsystemBase {
         Arm arm = Arm.getInstance();
 
         // Set Arm Presets
-        if (speaker_preset_btn.risingEdge()) arm.setState("Speaker");
-        if (line_speaker_preset_btn.risingEdge()) arm.setState("lineSpeaker");
-        if (amp_preset_btn.risingEdge()) arm.setState("Amp");
-        if (intake_preset_btn.risingEdge()) arm.setState("Intake");
-        if (arm_auto_align_btn.risingEdge()) arm.armAutoAlign();
-        if (home_preset_btn.risingEdge()) arm.setState("home");
+        if (speaker_preset_btn.risingEdge()) arm.gotoPreset("Speaker");
+        if (line_speaker_preset_btn.risingEdge()) arm.gotoPreset("lineSpeaker");
+        if (amp_preset_btn.risingEdge()) arm.gotoPreset("Amp");
+        if (intake_preset_btn.risingEdge()) arm.gotoPreset("Intake");
+        if (arm_auto_align_btn.risingEdge()) arm.startAutoAlign();
+        if (home_preset_btn.risingEdge()) arm.gotoPreset("home");
         
         // Manual Arm Angle Control
         double armManual = MathUtil.applyDeadband(op_ctrl.getRawAxis(1), 0.1);
@@ -250,10 +240,6 @@ public class OperatorInterface extends SubsystemBase {
         // Manual Arm Extension control
         if (manual_extend_btn.risingEdge()) arm.stepExtOut();
         if (manual_retract_btn.risingEdge()) arm.stepExtIn();
-
-
-        // Update shuffleboard
-        sb_armExtendManual.setInteger(opPOVAngle);
     }
 
     /**
@@ -263,17 +249,17 @@ public class OperatorInterface extends SubsystemBase {
         IntakePizzaBox intakePB = IntakePizzaBox.getInstance();
 
         if (fast_shoot_btn.pressed()) {
-            intakePB.setState(IntakePizzaBox.PizzaboxState.FAST_SHOOT);
+            intakePB.shootFast();
         } else if (shoot_btn.pressed()) {
-            intakePB.setState(IntakePizzaBox.PizzaboxState.SHOOT);
+            intakePB.shootSlow();
         } else if (intake_btn.pressed()) {
-            intakePB.setState(IntakePizzaBox.PizzaboxState.INTAKE);
+            intakePB.intake();
         } else if (intake_rev_btn.pressed()) {
-            intakePB.setState(IntakePizzaBox.PizzaboxState.REVERSE);
+            intakePB.reverse();
         } else if (shoot_prep_btn.pressed()) {
-            intakePB.setState(IntakePizzaBox.PizzaboxState.SHOOT_PREP);
+            intakePB.shootPrep();
         } else {
-            intakePB.setState(IntakePizzaBox.PizzaboxState.IDLE);
+            intakePB.stop();
         }
     }
 
@@ -283,12 +269,14 @@ public class OperatorInterface extends SubsystemBase {
     private void updateClimber() {
         Climber climber = Climber.getInstance();
         
+        climber.setRatchet(slow_speed_btn.pressed());
+        
         if (climb_start_btn.pressed()) {
-            climber.setClimbState(ClimberStates.CLIMB_START);
-        } else if (climb_button.pressed()) {
-            climber.setClimbState(ClimberStates.CLIMB);
+            climber.extend();
+        } else if (climb_btn.pressed()) {
+            climber.retract();
         } else {
-            climber.setClimbState(ClimberStates.IDLE);
+            climber.stop();
         }
     }
 
@@ -337,8 +325,8 @@ public class OperatorInterface extends SubsystemBase {
         }
 
         // Update controller rumble
-        driverController.setRumble(RumbleType.kBothRumble, rumblePower);
-        operatorController.setRumble(RumbleType.kBothRumble, rumblePower);
+        driver_ctrl.setRumble(RumbleType.kBothRumble, rumblePower);
+        op_ctrl.setRumble(RumbleType.kBothRumble, rumblePower);
 
         // Update LEDs
         leds.setData(ledColor);

@@ -1,6 +1,6 @@
 package frc.robot.subsystems;
 
-import frc.lib2960_photonvision.AprilTagPipeline;
+import frc.lib2960.photonvision.AprilTagPipeline;
 import frc.robot.Constants;
 
 /**
@@ -21,7 +21,7 @@ public class Vision  {
     /**
      * Static initializer
      */
-    public static Camera getInstance() {
+    public static Vision getInstance() {
         if (vision == null) {
             vision = new Vision();
         }

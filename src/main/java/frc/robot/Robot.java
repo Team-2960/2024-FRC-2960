@@ -4,18 +4,14 @@
 
 package frc.robot;
 
-import java.util.Optional;
-
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Relay.Value;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 import frc.robot.subsystems.*;
-import frc.robot.auton.commands.pizzabox.*;
 
-import frc.lib2960_pathplanner.PathPlanner;
+import frc.lib2960.pathplanner.PathPlanner;
 import frc.lib2960.util.PIDParam;
 
 /**
@@ -33,7 +29,6 @@ public class Robot extends TimedRobot {
      * for any
      * initialization code.
      */
-    private Optional<Command> autonCommand;
 
     private Drive drive;
     private OperatorInterface oi;
@@ -42,6 +37,7 @@ public class Robot extends TimedRobot {
     private Climber climber;
     private IntakePizzaBox intake;
     private Pneumatics pneumatics;
+
     private Command autonomousCommand;
 
     @Override
@@ -54,25 +50,16 @@ public class Robot extends TimedRobot {
         climber = Climber.getInstance();
         intake = IntakePizzaBox.getInstance();
         pneumatics = Pneumatics.getInstance();
-        robotContainer = new RobotContainer();
         
         // Initialize Path Planner
         PathPlanner.init(
             drive, 
-            new PathPlanner.Settings(           // TODO Move to Constants
-                new PIDParam(5.0, 0.0, 0.0),
-                new PIDParam(5.0, 0.0, 0.0)
-            )
+            new PIDParam(5.0, 0.0, 0.0), 
+            new PIDParam(5.0, 0.0, 0.0)
         );
 
         // Start Camera Feedback
         CameraServer.startAutomaticCapture();
-
-        // Add named commands
-        PathPlanner.registerCommand("intakeNote", new intakeNote());                // TODO Register in Pizzabox Class
-        PathPlanner.registerCommand("shootNote", new shootNote());                  // TODO Register in Pizzabox Class
-        PathPlanner.registerCommand("prepShoot", new prepShootNote());              // TODO Register in Pizzabox Class
-        PathPlanner.registerCommand("armAutoAlign", new autoAlignArm());            // TODO Register in Pizzabox Class
     }
 
     @Override
@@ -94,7 +81,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
-        drive.ignoreCamera(false);
         if (autonomousCommand != null) autonomousCommand.cancel();
     }
 

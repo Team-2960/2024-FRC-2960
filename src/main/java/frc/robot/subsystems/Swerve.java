@@ -1,69 +1,27 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfigurator;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.SparkAbsoluteEncoder;
-import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.revrobotics.spark.SparkAbsoluteEncoder;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.config.AbsoluteEncoderConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
 
-import frc.robot.Constants;
+import edu.wpi.first.math.geometry.Rotation2d;
 import frc.lib2960.subsystems.SwerveModuleBase;
 
 /**
  * Defines the swerve module objects
  */
 public class Swerve extends SwerveModuleBase {
+    public final SwerveSettings settings;
 
-    /**
-     * Swerve module settings
-     */
-    public class Settings extends SwerveModuleBase.Settings {
-        public final int angle_motor_id;            /**< CAN ID of the angle motor controller */
-        public final int drive_motor_id;            /**< CAN ID of the drive motor controller */
-        public final boolean invert_angle_motor;    /**< Invert angle motor flag */
-        public final boolean invert_drive_motor;    /**< Invert drive motor flag */
-        public final boolean invert_angle_enc;      /**< Invert angle encoder flag */
-        
-        /**
-         * Constructor
-         * @param name                  Module name
-         * @param translation           Module Translation
-         * @param drive_ratio           Drive gear ratio
-         * @param wheel_radius          Drive wheel radius
-         * @param anglePosCtrl          Module Angle Pos Controller Settings
-         * @param angleRateCtrl         Module Angle Rate Controller Settings
-         * @param driveCtrl             Module Drive Rate Controller Settings
-         * @param angle_motor_id        CAN ID of the angle motor controller 
-         * @param drive_motor_id        CAN ID of the drive motor controller 
-         * @param invert_angle_motor    Invert angle motor flag 
-         * @param invert_drive_motor    Invert drive motor flag 
-         * @param invert_angle_enc      Invert angle encoder flag 
-         */
-        public Settings(
-            String name, 
-            Translation2d translation, 
-            double drive_ratio,
-            double wheel_radius,
-            PositionController.Settings anglePosCtrl, 
-            RateController.Settings angleRateCtrl, 
-            RateController.Settings driveRateCtrl,
-            int drive_motor_id,
-            int angle_motor_id,
-            boolean invert_drive_motor,
-            boolean invert_angle_motor,
-            boolean invert_angle_enc
-        ) {
-            super(name, translation, drive_ratio, wheel_radius, anglePosCtrl, angleRateCtrl, driveRateCtrl);
-
-            this.drive_motor_id = drive_motor_id;
-            this.angle_motor_id = angle_motor_id;
-            this.invert_drive_motor = invert_drive_motor;
-            this.invert_angle_motor = invert_angle_motor;
-            this.invert_angle_enc = invert_angle_enc;
-        }
-    }
-
-
-    private final CANSparkMax angle_motor;          /**< Angle motor controller */
+    private final SparkMax angle_motor;          /**< Angle motor controller */
     private final TalonFX drive_motor;              /**< Drive motor controller */
 
     private final SparkAbsoluteEncoder encAngle;    /**< Angle encoder */
@@ -72,21 +30,36 @@ public class Swerve extends SwerveModuleBase {
      * Constructor
      * @param   settings    Swerve module settings
      */
-    public Swerve(Settings settings) {
+    public Swerve(SwerveSettings settings) {
         // Initialize parent class
         super(settings);
+        this.settings = settings;
 
         // Initialize Angle Motor
-        angle_motor = new CANSparkMax(settings.angle_motor_id, MotorType.kBrushless);
-        angle_motor.setInverted(settings.invert_angle_motor);
+        angle_motor = new SparkMax(settings.angle_motor.id, MotorType.kBrushless);
+        SparkMaxConfig angle_motor_config = new SparkMaxConfig();
+        angle_motor_config.inverted(settings.angle_motor.inverted);
+        
+        AbsoluteEncoderConfig angle_enc_config = new AbsoluteEncoderConfig();
+        angle_enc_config.inverted(settings.invert_angle_enc);
+
+        angle_motor_config.apply(angle_enc_config);
+
+        angle_motor.configure(angle_motor_config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
         // Initialize Drive Motor
-        drive_motor = new TalonFX(settings.drive_motor_id);
-        drive_motor.setInverted(settings.invert_drive_motor);
+        drive_motor = new TalonFX(settings.drive_motor.id);
+
+        TalonFXConfigurator configurator = drive_motor.getConfigurator();
+        MotorOutputConfigs drive_motor_config = new MotorOutputConfigs();
+        configurator.refresh(drive_motor_config);
+        drive_motor_config.Inverted = settings.drive_motor.inverted ? 
+            InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
+
+        configurator.apply(drive_motor_config);
 
         // Initialize Angle Sensor
-        encAngle = angle_motor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
-        encAngle.setInverted(settings.invert_angle_enc);
+        encAngle = angle_motor.getAbsoluteEncoder();
     }
 
     /**
@@ -148,7 +121,7 @@ public class Swerve extends SwerveModuleBase {
      * @param   volt    output voltage
      */
     @Override
-    public double setDriveVolt(double volt) {
+    public void setDriveVolt(double volt) {
         drive_motor.setVoltage(volt);
     }
 
@@ -157,7 +130,7 @@ public class Swerve extends SwerveModuleBase {
      * @param   volt    output voltage
      */
     @Override
-    public double setAngleVolt(double volt) {
+    public void setAngleVolt(double volt) {
         angle_motor.setVoltage(volt);
     }
 }
