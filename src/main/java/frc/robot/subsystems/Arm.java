@@ -92,6 +92,7 @@ public class Arm extends SubsystemBase {
     private final Timer extenderTimer;
 
     private final DigitalInput brakeModeDisableBtn;
+    private boolean last_brake_pressed;
 
     private final HashMap<String, GotoArmStateCommand> preset_list;
     private final AutoAlignCommand auto_align_cmd;
@@ -125,13 +126,15 @@ public class Arm extends SubsystemBase {
         );
 
         arm_ext_2 = new DoubleSolenoid(
-            settings.ext_1_settings.ph_can_id, 
-            settings.ext_1_settings.module_type, 
-            settings.ext_1_settings.fwd_port,
-            settings.ext_1_settings.rev_port
+            settings.ext_2_settings.ph_can_id, 
+            settings.ext_2_settings.module_type, 
+            settings.ext_2_settings.fwd_port,
+            settings.ext_2_settings.rev_port
         );
 
         brakeModeDisableBtn = new DigitalInput(Constants.armBrakeModeBtn);
+        last_brake_pressed = !brakeModeDisableBtn.get();
+        updateBrakeMode();
 
         // Initialize presets
         preset_list = new HashMap<String, GotoArmStateCommand>();
@@ -175,7 +178,11 @@ public class Arm extends SubsystemBase {
             .getLayout("Main Arm", BuiltInLayouts.kList)
             .withSize(2, 6);
 
-        sb_armMode = layout.add("Arm Control Mode", getCurrentCommand().getName()).getEntry();
+        String cmd_name = "";
+        Command cmd = getCurrentCommand();
+        if(cmd != null) cmd_name = cmd.getName();
+
+        sb_armMode = layout.add("Arm Control Mode", cmd_name).getEntry();
         sb_extStage1 = layout.add("Ext Stage 1 State", arm_ext_1.get().name()).getEntry();
         sb_extStage2 = layout.add("Ext Stage 2 State", arm_ext_2.get().name()).getEntry();
         sb_extState = layout.add("Ext State", getArmExtension()).getEntry();
@@ -363,12 +370,29 @@ public class Arm extends SubsystemBase {
      */
     @Override
     public void periodic() {
+        double start_time = Timer.getFPGATimestamp();
+
         updateBrakeMode();
+
+        System.out.print(String.format("Update Brake Mode Time: %f\n", Timer.getFPGATimestamp() - start_time));
+
         updateShoulderControl();
+
+        System.out.print(String.format("Update Shoulder Control Time: %f\n", Timer.getFPGATimestamp() - start_time));
+
         updateExtension();
 
+        System.out.print(String.format("Update Extension Time: %f\n", Timer.getFPGATimestamp() - start_time));
+
         updateUI();
+        
+        System.out.print(String.format("Update UI Time: %f\n", Timer.getFPGATimestamp() - start_time));
+        
+
         SmartDashboard.putNumber("SpeakerPosition", FieldLayout.getSpeakerPose().getX());
+
+        System.out.print(String.format("Update Speaker Position Time: %f\n", Timer.getFPGATimestamp() - start_time));
+
     }
     
 
@@ -403,7 +427,9 @@ public class Arm extends SubsystemBase {
      * Updates the brake mode control of the
      */
     private void updateBrakeMode() {
-        shoulder_joint.setBrakeMode(!brakeModeDisableBtn.get());
+        boolean brake_pressed = brakeModeDisableBtn.get();
+        if(brake_pressed != last_brake_pressed) shoulder_joint.setBrakeMode(!brake_pressed);
+        last_brake_pressed = brake_pressed;
     }
 
     /**
@@ -442,7 +468,11 @@ public class Arm extends SubsystemBase {
      * Updates shuffleboard
      */
     private void updateUI() {
-        sb_armMode.setString(getCurrentCommand().getName());
+        String cmd_name = "";
+        Command cmd = getCurrentCommand();
+        if(cmd != null) cmd_name = cmd.getName();
+
+        sb_armMode.setString(cmd_name);
         sb_extStage1.setString(arm_ext_1.get().name());
         sb_extStage2.setString(arm_ext_2.get().name());
         sb_extState.setInteger(target_ext);

@@ -1,7 +1,14 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.TalonFXConfigurator;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.config.*;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 
@@ -168,7 +175,14 @@ public class IntakePizzaBox extends SubsystemBase {
 
         // Initialize Intake Motor
         intake_motor = new TalonFX(settings.intake_settings.id);
-        intake_motor.setInverted(settings.intake_settings.inverted);    // TODO implement with config system
+        
+        TalonFXConfigurator intake_configurator = intake_motor.getConfigurator();
+        MotorOutputConfigs intake_config = new MotorOutputConfigs();
+        intake_configurator.refresh(intake_config);
+        intake_config.Inverted = settings.intake_settings.inverted ? 
+                InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
+
+        intake_configurator.apply(intake_config);
 
         // Initialize Shooter Motors
         shooter_motors = new SparkFlex[settings.shooter_settings.length];
@@ -176,7 +190,11 @@ public class IntakePizzaBox extends SubsystemBase {
 
         for(int i = 0; i < shooter_motors.length; i++) {
             shooter_motors[i] = new SparkFlex(settings.shooter_settings[i].id, MotorType.kBrushless);
-            shooter_motors[i].setInverted(true);    // TODO implement with config system
+
+            SparkFlexConfig motor_config = new SparkFlexConfig();
+            motor_config.inverted(settings.shooter_settings[i].inverted);
+            shooter_motors[i].configure(motor_config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+            
             shooter_encoders[i] = shooter_motors[i].getEncoder();
         }
 
@@ -234,7 +252,7 @@ public class IntakePizzaBox extends SubsystemBase {
      */
     public void stop() {
         Command current_cmd = getCurrentCommand();
-        if(current_cmd != stop_cmd) current_cmd.cancel();
+        if(current_cmd != null && current_cmd != stop_cmd) current_cmd.cancel();
     }
 
     /**

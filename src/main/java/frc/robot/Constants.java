@@ -194,8 +194,8 @@ public class Constants {
         angle_pos_settings,
         angle_rate_settings,
         drive_rate_settings,
-        new MotorSettings("Front Right Angle", backLeftAngleM, true),
-        new MotorSettings("Front Right Drive", backLeftDriveM, false),
+        new MotorSettings("Front Right Angle", backRightAngleM, true),
+        new MotorSettings("Front Right Drive", backRightDriveM, false),
         true
     );
 
@@ -283,7 +283,7 @@ public class Constants {
                 new MotorSettings("Arm Motor 1", armMotor1, false),
                 new MotorSettings("Arm Motor 2", armMotor2, false),
             }, 
-            new QuadEncoderSettings("Arm Quad Encoder", armQuadEncoderAPort, armDCEncoderPort, false, armEncAnglePerRot.getDegrees() / revTBEncCountPerRev), 
+            new QuadEncoderSettings("Arm Quad Encoder", armQuadEncoderAPort, armQuadEncoderBPort, false, armEncAnglePerRot.getDegrees() / revTBEncCountPerRev), 
             new AbsEncoderSettings("Arm Abs Encoder", armDCEncoderPort, false, armEncAngleOffset.getDegrees())
         ),
         new DoubleSolinoidSettings(

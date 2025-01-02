@@ -133,6 +133,8 @@ public class Climber extends SubsystemBase {
      * Constructor
      */
     private Climber(ClimberSettings settings) {
+        this.settings = settings;
+
         // Initialize Motors
         motors = new SparkMax[settings.motor_settings.length];
 
@@ -149,14 +151,6 @@ public class Climber extends SubsystemBase {
             if(i == settings.limit_index) {
                 LimitSwitchConfig config = new LimitSwitchConfig();
                 config.forwardLimitSwitchType(LimitSwitchConfig.Type.kNormallyOpen);
-                motor_config.apply(config);
-            }
-
-            // Configure encoder
-            if(i == settings.limit_index) {
-                EncoderConfig config = new EncoderConfig();
-                config.positionConversionFactor(settings.winch_circumfrance);
-                config.inverted(settings.encoder_invert);
                 motor_config.apply(config);
             }
 
@@ -204,7 +198,11 @@ public class Climber extends SubsystemBase {
                 .getLayout("Climber", BuiltInLayouts.kList)
                 .withSize(2, 6);
 
-        sb_state = layout.add("State", getCurrentCommand().getName()).getEntry();
+        String cmd_name = "";
+        Command cmd = getCurrentCommand();
+        if(cmd != null) cmd_name = cmd.getName();
+        
+        sb_state = layout.add("State", cmd_name).getEntry();
         sb_isDown = layout.add("Is Down", false).getEntry();
         sb_isClearOfArm = layout.add("Is Clear of Arm", false).getEntry();
         
@@ -224,7 +222,11 @@ public class Climber extends SubsystemBase {
      * @return distance the climber is extended
      */
     public double getExtension() {
-        return winch_encoder.getPosition();
+        double distance = winch_encoder.getPosition() * settings.winch_circumfrance;
+
+        if(settings.encoder_invert) distance *= -1;
+
+        return distance;
     }
 
     /**
@@ -347,7 +349,11 @@ public class Climber extends SubsystemBase {
      * Updates Shuffleboard
      */
     private void updateUI() {
-        sb_state.setString(getDefaultCommand().getName());
+        String cmd_name = "";
+        Command cmd = getCurrentCommand();
+        if(cmd != null) cmd_name = cmd.getName();
+
+        sb_state.setString(cmd_name);
         sb_isDown.setBoolean(isRetracted());
         sb_isClearOfArm.setBoolean(isClearOfArm());
 

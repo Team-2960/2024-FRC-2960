@@ -34,44 +34,32 @@ public class OperatorInterface extends SubsystemBase {
     private Joystick op_ctrl;
 
     // Joystick Button Objects
-    private ButtonBase slow_speed_btn = new JoystickButton(driver_ctrl, 5);
+    private ButtonBase slow_speed_btn;
 
-    private ButtonBase track_speaker_btn = new JoystickButton(driver_ctrl, 1);
-    private ButtonBase align_speaker_btn = new JoystickButton(driver_ctrl, 2);
-    private ButtonBase center_robot_btn = new JoystickButton(driver_ctrl, 3);
+    private ButtonBase track_speaker_btn;
+    private ButtonBase align_speaker_btn;
+    private ButtonBase center_robot_btn;
 
-    private ButtonBase zero_pose_btn = new JoystickPOVToButton(driver_ctrl, JoystickPOVToButton.Direction.UP);
+    private ButtonBase zero_pose_btn;
 
-    private ButtonBase speaker_preset_btn = new JoystickButton(op_ctrl, 1);
-    private ButtonBase line_speaker_preset_btn = new JoystickButton(op_ctrl, 2);
-    private ButtonBase amp_preset_btn = new JoystickButton(op_ctrl, 3);
-    private ButtonBase intake_preset_btn = new JoystickButton(op_ctrl, 4);
-    private ButtonBase arm_auto_align_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.Direction.RIGHT);
-    private ButtonBase home_preset_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.Direction.LEFT);
+    private ButtonBase speaker_preset_btn;
+    private ButtonBase line_speaker_preset_btn;
+    private ButtonBase amp_preset_btn;
+    private ButtonBase intake_preset_btn;
+    private ButtonBase arm_auto_align_btn;
+    private ButtonBase home_preset_btn;
 
-    private ButtonBase manual_extend_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.Direction.UP);
-    private ButtonBase manual_retract_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.Direction.DOWN);
+    private ButtonBase manual_extend_btn;
+    private ButtonBase manual_retract_btn;
 
-    private ButtonBase fast_shoot_btn = new JoystickButton(driver_ctrl, 6);
-    private ButtonBase shoot_btn = new ButtonOrGroup(
-        new JoystickButton(driver_ctrl, 6),
-        new JoystickAxisToButton(op_ctrl, 3, .1)
-    );
-    private ButtonBase intake_btn = new ButtonOrGroup(
-        new JoystickAxisToButton(driver_ctrl, 3, .1),
-        new JoystickButton(op_ctrl, 5)
-    );
-    private ButtonBase intake_rev_btn = new JoystickAxisToButton(op_ctrl, 2, .2);
-    private ButtonBase shoot_prep_btn = new JoystickAxisToButton(op_ctrl, 5, .1);
+    private ButtonBase fast_shoot_btn;
+    private ButtonBase shoot_btn;
+    private ButtonBase intake_btn;
+    private ButtonBase intake_rev_btn;
+    private ButtonBase shoot_prep_btn;
 
-    private ButtonBase climb_start_btn = new ButtonOrGroup(
-        new JoystickButton(driver_ctrl, 7),
-        new JoystickButton(op_ctrl, 7)
-    );
-    private ButtonBase climb_btn = new ButtonOrGroup(
-        new JoystickButton(driver_ctrl, 8),
-        new JoystickButton(op_ctrl, 8)
-    );
+    private ButtonBase climb_start_btn;
+    private ButtonBase climb_btn;
 
     // LED Control
     int led_count = 69;
@@ -106,6 +94,48 @@ public class OperatorInterface extends SubsystemBase {
         // Create Joysticks
         driver_ctrl = new Joystick(0);
         op_ctrl = new Joystick(1);
+
+        // Setup Drivetrain Controls
+        slow_speed_btn = new JoystickButton(driver_ctrl, 5);
+
+        track_speaker_btn = new JoystickButton(driver_ctrl, 1);
+        align_speaker_btn = new JoystickButton(driver_ctrl, 2);
+        center_robot_btn = new JoystickButton(driver_ctrl, 3);
+
+        zero_pose_btn = new JoystickPOVToButton(driver_ctrl, JoystickPOVToButton.Direction.UP);
+
+        // Setup Arm Controls
+        speaker_preset_btn = new JoystickButton(op_ctrl, 1);
+        line_speaker_preset_btn = new JoystickButton(op_ctrl, 2);
+        amp_preset_btn = new JoystickButton(op_ctrl, 3);
+        intake_preset_btn = new JoystickButton(op_ctrl, 4);
+        arm_auto_align_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.Direction.RIGHT);
+        home_preset_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.Direction.LEFT);
+
+        manual_extend_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.Direction.UP);
+        manual_retract_btn = new JoystickPOVToButton(op_ctrl, JoystickPOVToButton.Direction.DOWN);
+
+        // Setup Pizzabox Controls
+        fast_shoot_btn = new JoystickButton(driver_ctrl, 6);
+        shoot_btn = new ButtonOrGroup(
+                new JoystickButton(driver_ctrl, 6),
+                new JoystickAxisToButton(op_ctrl, 3, .1)
+        );
+        intake_btn = new ButtonOrGroup(
+                new JoystickAxisToButton(driver_ctrl, 3, .1),
+                new JoystickButton(op_ctrl, 5)
+        );
+        intake_rev_btn = new JoystickAxisToButton(op_ctrl, 2, .2);
+        shoot_prep_btn = new JoystickAxisToButton(op_ctrl, 5, .1);
+
+        // Setup Climber Controls
+        climb_start_btn = new ButtonOrGroup(
+                new JoystickButton(driver_ctrl, 7),
+                new JoystickButton(op_ctrl, 7)
+        );
+        climb_btn = new ButtonOrGroup(
+                new JoystickButton(driver_ctrl, 8),
+                new JoystickButton(op_ctrl, 8));
 
         // Setup LEDs
         leds = new AddressableLED(0);
@@ -155,7 +185,6 @@ public class OperatorInterface extends SubsystemBase {
         sb_rumbleTimer = rumble_layout.add("Rumble Timer", 0).getEntry();
         sb_isEndGame = rumble_layout.add("Is End Game", false).getEntry();
     }
-    
 
     /**
      * Subsystem Period Method
@@ -187,16 +216,15 @@ public class OperatorInterface extends SubsystemBase {
         double xSpeed = MathUtil.applyDeadband(driver_ctrl.getRawAxis(1), 0.05) * maxSpeed * alliance_dir;
         double ySpeed = MathUtil.applyDeadband(driver_ctrl.getRawAxis(0), 0.05) * maxSpeed * alliance_dir;
         double rSpeed = MathUtil.applyDeadband(driver_ctrl.getRawAxis(4), 0.05) * maxAngleRate * -1;
-        
+
         if (track_speaker_btn.pressed()) {
             drive.setAngleTracking(Rotation2d.fromDegrees(-90));
         } else if (align_speaker_btn.pressed()) {
             drive.setPointTracking(
-                FieldLayout.getSpeakerPose().getTranslation(), 
-                FieldLayout.getSpeakerPose().getRotation()
-            );
-        } else if (center_robot_btn.pressed()){
-            drive.setPointTracking(new Translation2d(0,0), Rotation2d.fromDegrees(180));
+                    FieldLayout.getSpeakerPose().getTranslation(),
+                    FieldLayout.getSpeakerPose().getRotation());
+        } else if (center_robot_btn.pressed()) {
+            drive.setPointTracking(new Translation2d(0, 0), Rotation2d.fromDegrees(180));
         } else {
             drive.setAngleRate(rSpeed);
         }
@@ -222,24 +250,32 @@ public class OperatorInterface extends SubsystemBase {
         Arm arm = Arm.getInstance();
 
         // Set Arm Presets
-        if (speaker_preset_btn.risingEdge()) arm.gotoPreset("Speaker");
-        if (line_speaker_preset_btn.risingEdge()) arm.gotoPreset("lineSpeaker");
-        if (amp_preset_btn.risingEdge()) arm.gotoPreset("Amp");
-        if (intake_preset_btn.risingEdge()) arm.gotoPreset("Intake");
-        if (arm_auto_align_btn.risingEdge()) arm.startAutoAlign();
-        if (home_preset_btn.risingEdge()) arm.gotoPreset("home");
-        
+        if (speaker_preset_btn.risingEdge())
+            arm.gotoPreset("Speaker");
+        if (line_speaker_preset_btn.risingEdge())
+            arm.gotoPreset("lineSpeaker");
+        if (amp_preset_btn.risingEdge())
+            arm.gotoPreset("Amp");
+        if (intake_preset_btn.risingEdge())
+            arm.gotoPreset("Intake");
+        if (arm_auto_align_btn.risingEdge())
+            arm.startAutoAlign();
+        if (home_preset_btn.risingEdge())
+            arm.gotoPreset("home");
+
         // Manual Arm Angle Control
         double armManual = MathUtil.applyDeadband(op_ctrl.getRawAxis(1), 0.1);
         double armManualRate = armManual * Constants.maxArmSpeed;
-        
+
         arm.setArmRate(armManualRate);
-        
+
         sb_armRate.setDouble(armManualRate);
 
         // Manual Arm Extension control
-        if (manual_extend_btn.risingEdge()) arm.stepExtOut();
-        if (manual_retract_btn.risingEdge()) arm.stepExtIn();
+        if (manual_extend_btn.risingEdge())
+            arm.stepExtOut();
+        if (manual_retract_btn.risingEdge())
+            arm.stepExtIn();
     }
 
     /**
@@ -268,9 +304,9 @@ public class OperatorInterface extends SubsystemBase {
      */
     private void updateClimber() {
         Climber climber = Climber.getInstance();
-        
+
         climber.setRatchet(slow_speed_btn.pressed());
-        
+
         if (climb_start_btn.pressed()) {
             climber.extend();
         } else if (climb_btn.pressed()) {
@@ -288,7 +324,8 @@ public class OperatorInterface extends SubsystemBase {
         IntakePizzaBox intakePB = IntakePizzaBox.getInstance();
         AddressableLEDBuffer ledColor = led_idle;
 
-        boolean isEndGame = DriverStation.isTeleop() && DriverStation.getMatchTime() <= 50 && DriverStation.getMatchType() != MatchType.None;
+        boolean isEndGame = DriverStation.isTeleop() && DriverStation.getMatchTime() <= 50
+                && DriverStation.getMatchType() != MatchType.None;
 
         // Rumble the controllers at half power for .5 seconds when a note is in the
         // intake
