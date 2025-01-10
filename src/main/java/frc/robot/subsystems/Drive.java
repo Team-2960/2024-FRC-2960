@@ -1,9 +1,9 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.SPI;
 
-import com.kauailabs.navx.frc.AHRS;
+import com.studica.frc.AHRS;
+import com.studica.frc.AHRS.NavXComType;
 
 import frc.robot.Constants;
 
@@ -28,7 +28,7 @@ public class Drive extends SwerveDriveBase {
         this.settings = settings;
 
         // Initialize NavX
-        navx = new AHRS(SPI.Port.kMXP);
+        navx = new AHRS(NavXComType.kMXP_SPI);
         navx.reset(); 
     }
 
